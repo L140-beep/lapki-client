@@ -6,6 +6,7 @@ import { CodeEditor, DiagramEditor } from '@renderer/components';
 import { SerialMonitorTab } from '@renderer/components/SerialMonitor';
 import { useModelContext } from '@renderer/store/ModelContext';
 import { useTabs } from '@renderer/store/useTabs';
+import { Tab as TabType } from '@renderer/types/tabs';
 
 import { Tab } from './Tab';
 
@@ -46,6 +47,25 @@ export const Tabs: React.FC = () => {
     return <NotInitialized />;
   }
 
+  const selectTab = (item: TabType) => {
+    switch (item.type) {
+      case 'editor':
+        return (
+          <DiagramEditor
+            editor={getCanvasBySmId(item.name) ?? modelController.getCurrentCanvas()}
+          />
+        );
+      case 'transition':
+      case 'state':
+      case 'code':
+        return <CodeEditor initialValue={item.code} language={item.language} />;
+      case 'serialMonitor':
+        return <SerialMonitorTab />;
+      default:
+        return undefined;
+    }
+  };
+
   return (
     <>
       <section
@@ -82,15 +102,7 @@ export const Tabs: React.FC = () => {
           key={item.name}
           className={twMerge('hidden h-[calc(100vh-44.19px)]', activeTab === item.name && 'block')}
         >
-          {item.type === 'editor' ? (
-            <DiagramEditor
-              editor={getCanvasBySmId(item.name) ?? modelController.getCurrentCanvas()}
-            />
-          ) : item.type === 'code' ? (
-            <CodeEditor initialValue={item.code} language={item.language} />
-          ) : (
-            <SerialMonitorTab />
-          )}
+          {selectTab(item)}
         </div>
       ))}
     </>
