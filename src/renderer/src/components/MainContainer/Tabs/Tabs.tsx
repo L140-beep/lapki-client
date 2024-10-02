@@ -61,6 +61,9 @@ export const Tabs: React.FC = () => {
         return <CodeEditor initialValue={item.code} language={item.language} />;
       case 'serialMonitor':
         return <SerialMonitorTab />;
+      case 'scheme':
+        // TODO: открытие вкладки с экраном
+        return undefined;
       default:
         return undefined;
     }
