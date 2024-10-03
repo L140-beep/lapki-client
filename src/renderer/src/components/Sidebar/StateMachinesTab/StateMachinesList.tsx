@@ -24,14 +24,6 @@ export const StateMachinesList: React.FC = () => {
     onRequestDeleteStateMachine,
   } = useStateMachines();
 
-  const button = [
-    {
-      name: 'Добавить машину состояний',
-      handler: onRequestAddStateMachine,
-      disabled: !isInitialized,
-    },
-  ];
-
   return (
     <section>
       <h3 className="mx-4 mb-3 border-b border-border-primary py-2 text-center text-lg">
@@ -56,11 +48,13 @@ export const StateMachinesList: React.FC = () => {
         ))}
       </div>
       <div className="flex flex-col px-4">
-        {button.map(({ name, handler, disabled }, i) => (
-          <button key={i} className="btn-primary mb-2" onClick={handler} disabled={disabled}>
-            {name}
-          </button>
-        ))}
+        <button
+          className="btn-primary mb-2"
+          onClick={onRequestAddStateMachine}
+          disabled={!isInitialized}
+        >
+          Добавить машину состояний
+        </button>
       </div>
       <StateMachineEditModal {...editProps} />
     </section>
