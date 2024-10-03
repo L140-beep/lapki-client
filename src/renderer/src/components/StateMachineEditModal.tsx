@@ -1,23 +1,24 @@
 import React, { useLayoutEffect, useState } from 'react';
 
+import { UseFormReturn } from 'react-hook-form';
+
 import { Modal } from '@renderer/components/UI';
 import { useModelContext } from '@renderer/store/ModelContext';
 
+import { ComponentFormFieldLabel } from './ComponentFormFieldLabel';
 import { StateMachineFormFields } from './StateMachineFormFields';
-
-// название ключа ошибки для поля ввода имени, он также нужен для ComponentFormFields
-export const nameError = 'name';
 
 interface StateMachineEditModalProps {
   isOpen: boolean;
   onClose: () => void;
-
-  idx: string;
-  data: StateMachineData;
-  onEdit: (idx: string, data: StateMachineData) => void;
-  onDelete: (idx: string) => void;
+  onSubmit: (data: StateMachineData) => void;
+  submitLabel: string;
+  sideLabel: string | undefined;
+  onSide: (() => void) | undefined;
+  form: UseFormReturn<StateMachineData>;
 }
 
+// TODO: наверное стоит перенести этот тип данных в другое место?
 export type StateMachineData = {
   name: string;
   platform: string;
@@ -25,70 +26,53 @@ export type StateMachineData = {
 
 export const StateMachineEditModal: React.FC<StateMachineEditModalProps> = ({
   isOpen,
-  idx,
-  data,
   onClose,
-  onEdit,
-  onDelete,
+  onSubmit,
+  submitLabel,
+  sideLabel,
+  onSide,
+  form,
 }) => {
+  const { handleSubmit: hookHandleSubmit, register } = form;
   const modelController = useModelContext();
   const editor = modelController.getCurrentCanvas();
 
-  const [name, setName] = useState('');
-  const [parameters, setParameters] = useState<StateMachineData>({ name: '', platform: '' });
-
-  const [errors, setErrors] = useState({} as Record<string, string>);
-
   // Сброс к начальному состоянию после закрытия
   const handleAfterClose = () => {
-    setName(idx);
-    setParameters({ ...data });
     editor.focus();
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-
-    // Если есть ошибка то не отправляем форму
-    for (const key in errors) {
-      if (errors[key]) return;
-    }
-
-    const submitData = parameters;
-
-    onEdit(idx, submitData);
+  const handleSubmit = hookHandleSubmit((data) => {
+    onSubmit(data);
     onClose();
-  };
+  });
 
   const handleDelete = () => {
-    onDelete(idx);
+    if (onSide == undefined) return;
+    onSide();
     onClose();
   };
-
-  useLayoutEffect(() => {
-    setName(idx);
-  }, [idx]);
-
-  useLayoutEffect(() => {
-    setParameters({ ...data });
-  }, [data]);
 
   return (
     <Modal
       isOpen={isOpen}
       onRequestClose={onClose}
       onAfterClose={handleAfterClose}
-      title={name}
-      submitLabel="Применить"
+      title="Машина состояний"
+      submitLabel={submitLabel}
       onSubmit={handleSubmit}
-      sideLabel="Удалить"
-      onSide={handleDelete}
+      sideLabel={sideLabel}
+      onSide={handleDelete ?? undefined}
     >
-      <StateMachineFormFields
-        parameters={{ ...data, ...parameters }}
-        setParameters={setParameters}
-        errors={errors}
-        setErrors={setErrors}
+      <ComponentFormFieldLabel
+        label="Название:"
+        hint={'Название машины состояний'}
+        {...register('name')}
+      />
+      <ComponentFormFieldLabel
+        label="Платформа:"
+        hint={'Платформа машины состояний'}
+        {...register('platform')}
       />
     </Modal>
   );

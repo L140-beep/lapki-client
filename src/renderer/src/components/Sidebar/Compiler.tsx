@@ -47,7 +47,6 @@ export const CompilerTab: React.FC<CompilerProps> = ({
   const isInitialized = modelController.model.useData('', 'canvas.isInitialized', editor.id);
 
   const handleFlashButton = () => {
-    // TODO: индекс должен браться из какой-то переменной
     changeSidebarTab(SidebarIndex.flasher);
   };
 
