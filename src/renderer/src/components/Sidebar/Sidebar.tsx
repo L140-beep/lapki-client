@@ -88,6 +88,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     setFlasherSetting({ ...flasherSetting, ...data });
   };
 
+  // при добавлении новой вкладки или изменения их расположения нужно обновить SidebarIndex из useSidebar
   const menus = useMemo(
     () => [
       <Menu
