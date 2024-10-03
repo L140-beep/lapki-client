@@ -6,6 +6,7 @@ import { ReactComponent as FlasherIcon } from '@renderer/assets/icons/flasher.sv
 import { ReactComponent as HistoryIcon } from '@renderer/assets/icons/history.svg';
 import { ReactComponent as MenuIcon } from '@renderer/assets/icons/menu.svg';
 import { ReactComponent as SettingsIcon } from '@renderer/assets/icons/settings.svg';
+import { ReactComponent as StateIcon } from '@renderer/assets/icons/state_add.svg';
 import { useSettings } from '@renderer/hooks';
 import { useModal } from '@renderer/hooks/useModal';
 import { useModelContext } from '@renderer/store/ModelContext';
@@ -136,6 +137,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
       {
         Icon: <ComponentsIcon />,
         hint: 'Проводник',
+      },
+      {
+        Icon: <StateIcon />,
+        hint: 'Машины состояний',
       },
       {
         Icon: <CompilerIcon />,
