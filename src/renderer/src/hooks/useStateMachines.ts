@@ -15,6 +15,10 @@ export const useStateMachines = () => {
   const currentSm = model.useData('', 'currentSm');
 
   const [idx, setIdx] = useState<string | undefined>(undefined); // индекс текущей машины состояний
+  const [data, setData] = useState<StateMachineData>({
+    name: '',
+    platform: '',
+  });
 
   const [isAddOpen, openAdd, closeAdd] = useModal(false);
   const [isEditOpen, openEdit, editClose] = useModal(false);
@@ -34,23 +38,25 @@ export const useStateMachines = () => {
       console.log(`sm doesnot exist ${idx}`);
       return;
     }
-    const smName = sm.name ?? '';
-    const platform = sm.platform;
+    const smData = { name: sm.name ?? '', platform: sm.platform };
     setIdx(idx);
-    editForm.reset({ name: smName, platform: platform });
+    setData(smData);
+    editForm.reset(smData);
     openEdit();
   };
 
   const onRequestDeleteStateMachine = (idx: string) => {
     const stateMachine = model.data.elements.stateMachines[idx];
     if (!stateMachine) return;
+    const smData = { name: stateMachine.name ?? '', platform: stateMachine.platform };
     setIdx(idx);
+    setData(smData);
     openDelete();
   };
 
   const onAdd = (data: StateMachineData) => {
     const smId = generateId();
-    // TODO: создание машины состояний на основе полученных данных
+    // TODO (Roundabout1): нужен метод, который создаст машину состояний из переданных данных
     modelController.createStateMachine(smId, emptyStateMachine());
     modelController.editStateMachine(smId, data);
   };
@@ -90,6 +96,8 @@ export const useStateMachines = () => {
       isOpen: isDeleteOpen,
       onClose: deleteClose,
       onSubmit: onDelete,
+      data: data,
+      idx: idx,
     },
     onRequestAddStateMachine,
     onRequestDeleteStateMachine,

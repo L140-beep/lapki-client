@@ -5,6 +5,8 @@ import { StateMachineEditModal } from '@renderer/components/StateMachineEditModa
 import { useStateMachines } from '@renderer/hooks';
 import { useModelContext } from '@renderer/store/ModelContext';
 
+import { StateMachineDeleteModal } from './StateMachineDeleteModal';
+
 import { Component } from '../Explorer/Component';
 
 export const StateMachinesList: React.FC = () => {
@@ -80,6 +82,7 @@ export const StateMachinesList: React.FC = () => {
         sideLabel={undefined}
         platformList={platformList}
       />
+      <StateMachineDeleteModal {...deleteProps} />
     </section>
   );
 };
