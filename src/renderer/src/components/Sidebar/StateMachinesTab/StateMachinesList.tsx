@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { ReactComponent as AddIcon } from '@renderer/assets/icons/new transition.svg';
 import { StateMachineEditModal } from '@renderer/components/StateMachineEditModal';
 import { useStateMachines } from '@renderer/hooks';
+import { getAvailablePlatforms } from '@renderer/lib/data/PlatformLoader';
 import { useModelContext } from '@renderer/store/ModelContext';
 
 import { StateMachineDeleteModal } from './StateMachineDeleteModal';
@@ -27,7 +28,9 @@ export const StateMachinesList: React.FC = () => {
     onRequestDeleteStateMachine,
   } = useStateMachines();
   // TODO (Roundabout1): этот массив используется для теста, нужно будет доставать его из другого места
-  const platformList = ['ArduinoMicro', 'ArduinoUno'];
+  const platformList = getAvailablePlatforms().map((platform) => {
+    return { value: platform.idx, label: platform.name };
+  });
   return (
     <section>
       <h3 className="mx-4 mb-3 border-b border-border-primary py-2 text-center text-lg">

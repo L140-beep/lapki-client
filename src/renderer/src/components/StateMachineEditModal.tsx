@@ -5,6 +5,11 @@ import { useModelContext } from '@renderer/store/ModelContext';
 
 import { ComponentFormFieldLabel } from './ComponentFormFieldLabel';
 
+type optionType = {
+  label: string;
+  value: string;
+};
+
 interface StateMachineEditModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -13,7 +18,7 @@ interface StateMachineEditModalProps {
   sideLabel: string | undefined;
   onSide: (() => void) | undefined;
   form: UseFormReturn<StateMachineData>;
-  platformList: string[];
+  platformList: optionType[];
 }
 
 // TODO (Roundabout1): наверное стоит перенести этот тип данных в другое место?
@@ -35,11 +40,6 @@ export const StateMachineEditModal: React.FC<StateMachineEditModalProps> = ({
   const { handleSubmit: hookHandleSubmit, control, reset } = form;
   const modelController = useModelContext();
   const editor = modelController.getCurrentCanvas();
-
-  const makeOption = (x) => {
-    return { label: x, value: x };
-  };
-  const platformOptions = platformList.map(makeOption);
 
   // Сброс к начальному состоянию после закрытия
   const handleAfterClose = () => {
@@ -91,8 +91,8 @@ export const StateMachineEditModal: React.FC<StateMachineEditModalProps> = ({
                 className="w-[250px]"
                 isSearchable={false}
                 placeholder="Выберите платформу..."
-                options={platformOptions}
-                value={value == '' || value == undefined ? undefined : makeOption(value)} // при undefined показывает placeholader
+                options={platformList}
+                value={platformList.find((opt) => opt.value === value)}
                 onChange={(opt) => {
                   onChange(opt?.value);
                 }}

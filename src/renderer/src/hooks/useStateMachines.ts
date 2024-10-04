@@ -68,6 +68,7 @@ export const useStateMachines = () => {
 
   const onDelete = () => {
     if (!idx) return;
+    // TODO: вызывает краш IDE
     modelController.deleteStateMachine(idx);
 
     editClose();
