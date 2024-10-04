@@ -1,12 +1,7 @@
 import React, { useState } from 'react';
 
-import { useForm } from 'react-hook-form';
-
 import { ReactComponent as AddIcon } from '@renderer/assets/icons/new transition.svg';
-import {
-  StateMachineData,
-  StateMachineEditModal,
-} from '@renderer/components/StateMachineEditModal';
+import { StateMachineEditModal } from '@renderer/components/StateMachineEditModal';
 import { useStateMachines } from '@renderer/hooks';
 import { useModelContext } from '@renderer/store/ModelContext';
 
@@ -20,8 +15,6 @@ export const StateMachinesList: React.FC = () => {
   const elements = modelController.model.useData('', 'elements.stateMachines');
   console.log(elements);
   const [selectedSm, setSmSelected] = useState<string | null>(null);
-  const editForm = useForm<StateMachineData>();
-  const addForm = useForm<StateMachineData>();
   const {
     addProps,
     editProps,
@@ -31,21 +24,8 @@ export const StateMachinesList: React.FC = () => {
     onRequestEditStateMachine,
     onRequestDeleteStateMachine,
   } = useStateMachines();
-  const onSubmitEdit = (data: StateMachineData) => {
-    editProps.onEdit(editProps.idx, data);
-  };
-  const onEditDelete = () => {
-    onRequestDeleteStateMachine(editProps.idx);
-  };
-  const onSubmitAdd = (data: StateMachineData) => {
-    // TODO: добавление новой машины состояния
-    console.log(`Add new state machine ${data}`);
-  };
-  const onEdit = (idx: string, smId: string) => {
-    onRequestEditStateMachine(idx, smId);
-    console.log('data', editProps.data);
-    editForm.reset(elements[idx]);
-  };
+  // TODO: этот массив используется для теста, нужно будет доставать его из другого места
+  const platformList = ['ArduinoMicro', 'ArduinoUno'];
   return (
     <section>
       <h3 className="mx-4 mb-3 border-b border-border-primary py-2 text-center text-lg">
@@ -70,7 +50,7 @@ export const StateMachinesList: React.FC = () => {
               description={undefined}
               isSelected={(sm.name || id) === selectedSm}
               onSelect={() => setSmSelected(sm.name || id)}
-              onEdit={() => onEdit(id, id)}
+              onEdit={() => onRequestEditStateMachine(id)}
               onDelete={() => onRequestDeleteStateMachine(id)}
               // TODO: Доделать свап машин состояний
               onDragStart={() => console.log('setDragState')}
@@ -81,22 +61,24 @@ export const StateMachinesList: React.FC = () => {
         </div>
       </div>
       <StateMachineEditModal
-        form={editForm}
+        form={editProps.editForm}
         isOpen={editProps.isOpen}
         onClose={editProps.onClose}
-        onSubmit={onSubmitEdit}
+        onSubmit={editProps.onEdit}
         submitLabel="Применить"
-        onSide={onEditDelete}
+        onSide={editProps.onDelete}
         sideLabel="Удалить"
+        platformList={platformList}
       />
       <StateMachineEditModal
-        form={addForm}
+        form={addProps.addForm}
         isOpen={addProps.isOpen}
         onClose={addProps.onClose}
-        onSubmit={onSubmitAdd}
+        onSubmit={addProps.onSubmit}
         submitLabel="Добавить"
         onSide={undefined}
         sideLabel={undefined}
+        platformList={platformList}
       />
     </section>
   );
