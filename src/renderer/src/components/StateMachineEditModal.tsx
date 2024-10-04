@@ -1,12 +1,9 @@
-import React, { useLayoutEffect, useState } from 'react';
+import { Controller, UseFormReturn } from 'react-hook-form';
 
-import { UseFormReturn } from 'react-hook-form';
-
-import { Modal } from '@renderer/components/UI';
+import { Modal, Select } from '@renderer/components/UI';
 import { useModelContext } from '@renderer/store/ModelContext';
 
 import { ComponentFormFieldLabel } from './ComponentFormFieldLabel';
-import { StateMachineFormFields } from './StateMachineFormFields';
 
 interface StateMachineEditModalProps {
   isOpen: boolean;
@@ -16,6 +13,7 @@ interface StateMachineEditModalProps {
   sideLabel: string | undefined;
   onSide: (() => void) | undefined;
   form: UseFormReturn<StateMachineData>;
+  platformList: string[];
 }
 
 // TODO: наверное стоит перенести этот тип данных в другое место?
@@ -32,10 +30,16 @@ export const StateMachineEditModal: React.FC<StateMachineEditModalProps> = ({
   sideLabel,
   onSide,
   form,
+  platformList,
 }) => {
-  const { handleSubmit: hookHandleSubmit, register } = form;
+  const { handleSubmit: hookHandleSubmit, control, reset } = form;
   const modelController = useModelContext();
   const editor = modelController.getCurrentCanvas();
+
+  const makeOption = (x) => {
+    return { label: x, value: x };
+  };
+  const platformOptions = platformList.map(makeOption);
 
   // Сброс к начальному состоянию после закрытия
   const handleAfterClose = () => {
@@ -44,6 +48,7 @@ export const StateMachineEditModal: React.FC<StateMachineEditModalProps> = ({
 
   const handleSubmit = hookHandleSubmit((data) => {
     onSubmit(data);
+    reset({ name: '', platform: '' });
     onClose();
   });
 
@@ -52,7 +57,7 @@ export const StateMachineEditModal: React.FC<StateMachineEditModalProps> = ({
     onSide();
     onClose();
   };
-
+  //value={{ value: value, label: value }}
   return (
     <Modal
       isOpen={isOpen}
@@ -64,15 +69,34 @@ export const StateMachineEditModal: React.FC<StateMachineEditModalProps> = ({
       sideLabel={sideLabel}
       onSide={handleDelete ?? undefined}
     >
-      <ComponentFormFieldLabel
-        label="Название:"
-        hint={'Название машины состояний'}
-        {...register('name')}
+      <Controller
+        name="name"
+        control={control}
+        render={({ field: { onChange, value } }) => (
+          <ComponentFormFieldLabel
+            label="Название"
+            placeholder="Введите название машины состояний"
+            onChange={onChange}
+            value={value ?? ''}
+          ></ComponentFormFieldLabel>
+        )}
       />
-      <ComponentFormFieldLabel
-        label="Платформа:"
-        hint={'Платформа машины состояний'}
-        {...register('platform')}
+      <Controller
+        name="platform"
+        control={control}
+        render={({ field: { onChange, value } }) => (
+          <ComponentFormFieldLabel label="Платформа">
+            <Select
+              isSearchable={false}
+              placeholder="Выберите платформу..."
+              options={platformOptions}
+              value={value == '' || value == undefined ? undefined : makeOption(value)} // при undefined показывает placeholader
+              onChange={(opt) => {
+                onChange(opt?.value);
+              }}
+            />
+          </ComponentFormFieldLabel>
+        )}
       />
     </Modal>
   );
