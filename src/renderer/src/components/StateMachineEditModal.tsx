@@ -16,7 +16,7 @@ interface StateMachineEditModalProps {
   platformList: string[];
 }
 
-// TODO: наверное стоит перенести этот тип данных в другое место?
+// TODO (Roundabout1): наверное стоит перенести этот тип данных в другое место?
 export type StateMachineData = {
   name: string;
   platform: string;
@@ -57,7 +57,7 @@ export const StateMachineEditModal: React.FC<StateMachineEditModalProps> = ({
     onSide();
     onClose();
   };
-  //value={{ value: value, label: value }}
+
   return (
     <Modal
       isOpen={isOpen}
@@ -69,35 +69,38 @@ export const StateMachineEditModal: React.FC<StateMachineEditModalProps> = ({
       sideLabel={sideLabel}
       onSide={handleDelete ?? undefined}
     >
-      <Controller
-        name="name"
-        control={control}
-        render={({ field: { onChange, value } }) => (
-          <ComponentFormFieldLabel
-            label="Название"
-            placeholder="Введите название машины состояний"
-            onChange={onChange}
-            value={value ?? ''}
-          ></ComponentFormFieldLabel>
-        )}
-      />
-      <Controller
-        name="platform"
-        control={control}
-        render={({ field: { onChange, value } }) => (
-          <ComponentFormFieldLabel label="Платформа">
-            <Select
-              isSearchable={false}
-              placeholder="Выберите платформу..."
-              options={platformOptions}
-              value={value == '' || value == undefined ? undefined : makeOption(value)} // при undefined показывает placeholader
-              onChange={(opt) => {
-                onChange(opt?.value);
-              }}
-            />
-          </ComponentFormFieldLabel>
-        )}
-      />
+      <div className="flex flex-col gap-2">
+        <Controller
+          name="name"
+          control={control}
+          render={({ field: { onChange, value } }) => (
+            <ComponentFormFieldLabel
+              label="Название"
+              placeholder="Введите название..."
+              onChange={onChange}
+              value={value ?? ''}
+            ></ComponentFormFieldLabel>
+          )}
+        />
+        <Controller
+          name="platform"
+          control={control}
+          render={({ field: { onChange, value } }) => (
+            <ComponentFormFieldLabel label="Платформа">
+              <Select
+                className="w-[250px]"
+                isSearchable={false}
+                placeholder="Выберите платформу..."
+                options={platformOptions}
+                value={value == '' || value == undefined ? undefined : makeOption(value)} // при undefined показывает placeholader
+                onChange={(opt) => {
+                  onChange(opt?.value);
+                }}
+              />
+            </ComponentFormFieldLabel>
+          )}
+        />
+      </div>
     </Modal>
   );
 };
