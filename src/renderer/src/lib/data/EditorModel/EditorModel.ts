@@ -127,7 +127,7 @@ export class EditorModel {
     if (!sm) return;
 
     sm.name = data.name;
-    sm.name = data.name;
+    sm.platform = data.platform;
 
     this.triggerDataUpdate('elements.stateMachines');
   }
