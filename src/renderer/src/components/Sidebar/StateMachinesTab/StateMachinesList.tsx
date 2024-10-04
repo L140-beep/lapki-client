@@ -24,7 +24,7 @@ export const StateMachinesList: React.FC = () => {
     onRequestEditStateMachine,
     onRequestDeleteStateMachine,
   } = useStateMachines();
-  // TODO: этот массив используется для теста, нужно будет доставать его из другого места
+  // TODO (Roundabout1): этот массив используется для теста, нужно будет доставать его из другого места
   const platformList = ['ArduinoMicro', 'ArduinoUno'];
   return (
     <section>
@@ -48,8 +48,8 @@ export const StateMachinesList: React.FC = () => {
               name={sm.name || id}
               icon={undefined}
               description={undefined}
-              isSelected={(sm.name || id) === selectedSm}
-              onSelect={() => setSmSelected(sm.name || id)}
+              isSelected={id === selectedSm}
+              onSelect={() => setSmSelected(id)}
               onEdit={() => onRequestEditStateMachine(id)}
               onDelete={() => onRequestDeleteStateMachine(id)}
               // TODO: Доделать свап машин состояний
