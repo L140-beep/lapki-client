@@ -45,12 +45,15 @@ export const StateMachineDeleteModal: React.FC<StateMachineDeleteModalProps> = (
     >
       <p>
         Вы действительно хотите удалить машину состояний{' '}
-        <span className="px-1 font-bold">{`${data.name ?? idx} (${data.platform})`}</span>?
+        <span className="px-1 font-bold">{`${data.name ?? idx} (${
+          data.platform == '' ? 'неизвестная платформа' : data.platform
+        })`}</span>
+        ?
       </p>
       <br />
       <p className="italic">
         Здесь можно написать дополнительную информацию о том, что произойдёт при удалении. Если этот
-        текст не нужен то его надо удалить.
+        текст не нужен, то его надо удалить.
       </p>
     </Modal>
   );

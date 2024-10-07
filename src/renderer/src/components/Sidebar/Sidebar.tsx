@@ -22,6 +22,8 @@ import { Menus } from './Menus';
 import { Setting } from './Setting';
 // import { StateMachinesList } from './StateMachinesTab';
 
+import { StateMachinesList } from './StateMachinesTab/StateMachinesList';
+
 import { AvrdudeGuideModal } from '../AvrdudeGuide';
 import { Flasher } from '../Modules/Flasher';
 import { CompilerSelectModal } from '../serverSelect/CompilerSelectModal';
@@ -101,7 +103,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         setOpenData={setOpenData}
       />,
       <Explorer />,
-      // <StateMachinesList />,
+      <StateMachinesList />,
       <CompilerTab
         openData={openData}
         openCompilerSettings={openCompilerSettings}

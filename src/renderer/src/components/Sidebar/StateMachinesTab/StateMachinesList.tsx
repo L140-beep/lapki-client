@@ -1,21 +1,24 @@
-// import React, { useState } from 'react';
+import { useState } from 'react';
 
 import { ReactComponent as AddIcon } from '@renderer/assets/icons/new transition.svg';
 import { StateMachineEditModal } from '@renderer/components/StateMachineEditModal';
 import { useStateMachines } from '@renderer/hooks';
 import { getAvailablePlatforms } from '@renderer/lib/data/PlatformLoader';
 import { useModelContext } from '@renderer/store/ModelContext';
+import { StateMachine } from '@renderer/types/diagram';
 
 import { StateMachineDeleteModal } from './StateMachineDeleteModal';
 
-// import { Component } from '../Explorer/Component';
+import { Component } from '../Explorer/Component';
 
-// export const StateMachinesList: React.FC = () => {
-//   const modelController = useModelContext();
+export const StateMachinesList: React.FC = () => {
+  const modelController = useModelContext();
 
   const editor = modelController.getCurrentCanvas();
   const isInitialized = modelController.model.useData('', 'canvas.isInitialized', editor.id);
-  const elements = modelController.model.useData('', 'elements.stateMachines');
+  const elements = modelController.model.useData('', 'elements.stateMachinesId') as {
+    [ID: string]: StateMachine;
+  };
   console.log(elements);
   const [selectedSm, setSmSelected] = useState<string | null>(null);
   const {

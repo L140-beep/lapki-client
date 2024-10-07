@@ -29,7 +29,7 @@ export const useStateMachines = () => {
   const addForm = useForm<StateMachineData>();
 
   const onRequestAddStateMachine = () => {
-    // openAdd();
+    openAdd();
   };
 
   const onRequestEditStateMachine = (idx: string) => {
