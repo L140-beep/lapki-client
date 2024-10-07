@@ -20,7 +20,7 @@ import { Loader } from './Loader';
 import { Menu } from './Menu';
 import { Menus } from './Menus';
 import { Setting } from './Setting';
-import { StateMachinesList } from './StateMachinesTab';
+// import { StateMachinesList } from './StateMachinesTab';
 
 import { AvrdudeGuideModal } from '../AvrdudeGuide';
 import { Flasher } from '../Modules/Flasher';
@@ -101,7 +101,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         setOpenData={setOpenData}
       />,
       <Explorer />,
-      <StateMachinesList />,
+      // <StateMachinesList />,
       <CompilerTab
         openData={openData}
         openCompilerSettings={openCompilerSettings}

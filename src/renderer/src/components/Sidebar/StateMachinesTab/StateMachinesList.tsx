@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+// import React, { useState } from 'react';
 
 import { ReactComponent as AddIcon } from '@renderer/assets/icons/new transition.svg';
 import { StateMachineEditModal } from '@renderer/components/StateMachineEditModal';
@@ -8,10 +8,10 @@ import { useModelContext } from '@renderer/store/ModelContext';
 
 import { StateMachineDeleteModal } from './StateMachineDeleteModal';
 
-import { Component } from '../Explorer/Component';
+// import { Component } from '../Explorer/Component';
 
-export const StateMachinesList: React.FC = () => {
-  const modelController = useModelContext();
+// export const StateMachinesList: React.FC = () => {
+//   const modelController = useModelContext();
 
   const editor = modelController.getCurrentCanvas();
   const isInitialized = modelController.model.useData('', 'canvas.isInitialized', editor.id);

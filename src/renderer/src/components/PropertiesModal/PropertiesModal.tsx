@@ -24,17 +24,19 @@ export const PropertiesModal: React.FC<PropertiesModalProps> = ({ onClose, ...pr
   const model = modelController.model;
   const name = model.useData('', 'name');
   const basename = model.useData('', 'basename');
-  const currentSm = model.useData('', 'currentSm');
+  const headControllerId = modelController.model.useData('', 'headControllerId');
+  // TODO: Передавать в модалки машину состояний
+  const stateMachines = Object.keys(modelController.controllers[headControllerId].stateMachinesSub);
+  const currentSm = stateMachines[0];
   const platform = model.useData(currentSm, 'elements.platform');
   const meta: MetaData = model.useData(currentSm, 'elements.meta');
   const [properties, setProperties] = useState<[string, string][]>([]);
 
   const metaForm = useForm<MetaFormValues>();
-
   const onAfterOpen = async () => {
     metaForm.setValue(
       'meta',
-      Object.entries(meta).map(([name, value]) => ({ name, value }))
+      Object.entries(meta).map(([name, value]) => ({ name, value })) as never // Почему линтер ругается?
     );
     metaForm.clearErrors();
 

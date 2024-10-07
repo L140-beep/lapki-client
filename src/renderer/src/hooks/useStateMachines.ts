@@ -12,7 +12,8 @@ import { useModal } from './useModal';
 export const useStateMachines = () => {
   const modelController = useModelContext();
   const model = modelController.model;
-  const currentSm = model.useData('', 'currentSm');
+
+  // const currentSm = model.useData('', 'currentSm');
 
   const [idx, setIdx] = useState<string | undefined>(undefined); // индекс текущей машины состояний
   const [data, setData] = useState<StateMachineData>({
@@ -28,7 +29,7 @@ export const useStateMachines = () => {
   const addForm = useForm<StateMachineData>();
 
   const onRequestAddStateMachine = () => {
-    openAdd();
+    // openAdd();
   };
 
   const onRequestEditStateMachine = (idx: string) => {

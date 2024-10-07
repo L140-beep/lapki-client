@@ -30,6 +30,17 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
     setIsOpen(false);
   };
 
+  // Открыть вкладки на каждый контроллер
+  const openTabs = () => {
+    for (const canvasId in modelController.controllers) {
+      if (canvasId === '') continue;
+      const controller = modelController.controllers[canvasId];
+      const stateMachines = Object.keys(controller.stateMachinesSub);
+      const smId = stateMachines.length ? stateMachines[0] : canvasId;
+      openTab({ type: 'editor', name: smId, canvasId });
+    }
+  };
+
   /*Открытие файла*/
   const handleOpenFile = async (path?: string) => {
     if (isStale) {
@@ -58,15 +69,14 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
 
     if (result && isRight(result)) {
       clearTabs();
-      for (const smId in modelController.model.data.elements.stateMachines) {
-        openTab({ type: 'editor', name: smId });
-      }
+      openTabs();
     }
   };
 
   const handleOpenFromTemplate = async (type: string, name: string) => {
     await modelController.files.createFromTemplate(type, name, openImportError);
-    openTab({ type: 'editor', name: 'editor' });
+    clearTabs();
+    openTabs();
     // openTab({ type: 'scheme', name: 'scheme' });
   };
 
@@ -90,7 +100,11 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
     modelController.files.newFile(idx);
     // schemeModel?.files.newFile(idx);
     clearTabs();
-    openTab({ type: 'editor', name: 'editor' });
+    openTab({
+      type: 'editor',
+      name: 'editor',
+      canvasId: modelController.model.data.headControllerId,
+    });
   };
 
   const handleSaveAsFile = async () => {
@@ -139,7 +153,8 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
       const result = await modelController.files.import(setOpenData);
       if (result) {
         clearTabs();
-        openTab({ type: 'editor', name: 'editor' });
+        // TODO: Откуда брать CanvasId?
+        openTab({ type: 'editor', name: 'editor', canvasId: '' });
       }
     }
   };

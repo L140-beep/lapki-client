@@ -73,7 +73,7 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
     {
       text: 'Открыть редактор',
       onClick: () => {
-        openTab({ type: 'editor', name: 'editor' });
+        // openTab({ type: 'editor', name: 'editor' });
       },
       disabled: !isInitialized,
       // Отделение кнопки для работы с холстом от кнопок для работы с файлом схемы

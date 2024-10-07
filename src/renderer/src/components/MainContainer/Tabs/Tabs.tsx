@@ -6,6 +6,7 @@ import { CodeEditor, DiagramEditor } from '@renderer/components';
 import { SerialMonitorTab } from '@renderer/components/SerialMonitor';
 import { useModelContext } from '@renderer/store/ModelContext';
 import { useTabs } from '@renderer/store/useTabs';
+import { Tab as TabData } from '@renderer/types/tabs';
 
 import { Tab } from './Tab';
 
@@ -32,14 +33,34 @@ export const Tabs: React.FC = () => {
 
     swapTabs(dragId, tabName);
   };
-  const getCanvasBySmId = (smId: string) => {
-    for (const canvasId in modelController.controllers) {
-      const controller = modelController.controllers[canvasId].controller;
-      if (controller.stateMachinesSub[smId]) {
-        return controller.app;
+
+  const changeHeadController = (items: TabData[], closedTab: TabData) => {
+    const { name } = closedTab;
+    const closedTabIndex = items.findIndex((tab) => tab.name === name);
+    const activeTabIndex = items.findIndex((tab) => tab.name === activeTab);
+
+    const newItems = items.filter((tab) => tab.name !== name);
+
+    if (newItems.length === 0) {
+      modelController.model.changeHeadControllerId('');
+      return;
+    }
+
+    // Если закрываемая вкладка была текущей то открываем вкладку которая была перед ней
+    // TODO: Менять текущий главный канвас при закрытии вкладки
+    if (closedTabIndex === activeTabIndex) {
+      if (closedTabIndex === items.length - 1) {
+        const prevTab = newItems[newItems.length - 1];
+        if (prevTab.type === 'editor') {
+          modelController.model.changeHeadControllerId(prevTab.canvasId);
+        }
+      } else {
+        const prevTab = newItems[closedTabIndex];
+        if (prevTab.type === 'editor') {
+          modelController.model.changeHeadControllerId(prevTab.canvasId);
+        }
       }
     }
-    return null;
   };
 
   if (items.length === 0) {
@@ -52,27 +73,27 @@ export const Tabs: React.FC = () => {
         className="flex gap-1 overflow-x-auto break-words border-b border-border-primary bg-bg-secondary px-1 py-1 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-current"
         tabIndex={-1}
       >
-        {items.map(({ type, name }) => (
+        {items.map((tab) => (
           <Tab
-            key={name}
-            isActive={activeTab === name}
-            isDragging={dragId === name}
-            draggable={type !== 'editor'}
-            type={type}
-            name={name}
-            showName={type !== 'editor'}
-            onDragStart={() => handleDrag(name)}
-            onDrop={() => handleDrop(name)}
+            key={tab.name}
+            isActive={activeTab === tab.name}
+            isDragging={dragId === tab.name}
+            draggable={tab.type !== 'editor'}
+            type={tab.type}
+            name={tab.name}
+            showName={true}
+            onDragStart={() => handleDrag(tab.name)}
+            onDrop={() => handleDrop(tab.name)}
             onMouseDown={() => {
-              const canvas = getCanvasBySmId(name);
-              if (!canvas) {
-                return;
+              if (tab.type === 'editor') {
+                modelController.model.changeHeadControllerId(tab.canvasId);
               }
-              modelController.setHeadCanvas(canvas.id);
-              modelController.model.changeCurrentSm(name);
-              setActiveTab(name);
+              setActiveTab(tab.name);
             }}
-            onClose={() => closeTab(name)}
+            onClose={() => {
+              changeHeadController(items, tab);
+              closeTab(tab.name);
+            }}
           />
         ))}
       </section>
@@ -84,7 +105,10 @@ export const Tabs: React.FC = () => {
         >
           {item.type === 'editor' ? (
             <DiagramEditor
-              editor={getCanvasBySmId(item.name) ?? modelController.getCurrentCanvas()}
+              editor={
+                modelController.controllers[item.canvasId]?.app ??
+                modelController.controllers['']?.app
+              }
             />
           ) : item.type === 'code' ? (
             <CodeEditor initialValue={item.code} language={item.language} />

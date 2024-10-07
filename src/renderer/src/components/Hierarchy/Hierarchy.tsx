@@ -38,16 +38,23 @@ export const Hierarchy: React.FC = () => {
   const controller = useModelContext();
   const model = controller.model;
   const [theme] = useSettings('theme');
-  const smId = controller.model.useData('', 'currentSm');
+  const headControllerId = controller.model.useData('', 'headControllerId');
+  const stateMachines = Object.keys(controller.controllers[headControllerId].stateMachinesSub);
+  // TODO: Пофиксить иерархию, чтобы на ней отображались разные МС
+  const smId = stateMachines[0];
   const states = model.useData(smId, 'elements.states') as { [id: string]: State };
   const initialStates = model.useData(smId, 'elements.initialStates') as {
     [id: string]: InitialState;
   };
-  const finalStates = model.useData(smId, 'elements.finalStates') as { [id: string]: FinalState };
+  const finalStates = model.useData(smId, 'elements.finalStates') as {
+    [id: string]: FinalState;
+  };
   const choiceStates = model.useData(smId, 'elements.choiceStates') as {
     [id: string]: ChoiceState;
   };
-  const transitions = model.useData(smId, 'elements.transitions') as { [id: string]: Transition };
+  const transitions = model.useData(smId, 'elements.transitions') as {
+    [id: string]: Transition;
+  };
   const notes = model.useData(smId, 'elements.notes') as { [id: string]: Note };
 
   const [search, setSearch] = useState('');
@@ -163,7 +170,7 @@ export const Hierarchy: React.FC = () => {
     }
 
     return data;
-  }, [smId, choiceStates, finalStates, initialStates, notes, states, transitions]);
+  }, [headControllerId, choiceStates, finalStates, initialStates, notes, states, transitions]);
 
   // Синхронизация дерева и состояний
   const handleFocusItem = (item: TreeItem<HierarchyItemData>) => setFocusedItem(item.index);

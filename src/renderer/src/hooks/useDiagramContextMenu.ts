@@ -17,7 +17,10 @@ export const useDiagramContextMenu = () => {
   const modelController = useModelContext();
   const editor = modelController.getCurrentCanvas();
   const name = modelController.model.useData('', 'name') as string | null;
-  const currentSm = modelController.model.useData('', 'currentSm');
+  const headControllerId = modelController.model.useData('', 'headControllerId');
+  // TODO: Передавать в модалки машину состояний
+  const stateMachines = Object.keys(modelController.controllers[headControllerId].stateMachinesSub);
+  const currentSm = stateMachines[0];
   const openTab = useTabs((state) => state.openTab);
 
   const [isOpen, setIsOpen] = useState(false);
@@ -184,7 +187,7 @@ export const useDiagramContextMenu = () => {
             openTab({
               type: 'state',
               name: state.data.name,
-              code: modelController.model.serializer.getState(state.id) ?? '',
+              code: modelController.model.serializer.getState(currentSm, state.id) ?? '',
               language: 'json',
             });
           },
@@ -351,7 +354,8 @@ export const useDiagramContextMenu = () => {
                   openTab({
                     type: 'transition',
                     name: transitionId,
-                    code: modelController.model.serializer.getTransition(transitionId) ?? '',
+                    code:
+                      modelController.model.serializer.getTransition(currentSm, transitionId) ?? '',
                     language: 'json',
                   });
                 },
