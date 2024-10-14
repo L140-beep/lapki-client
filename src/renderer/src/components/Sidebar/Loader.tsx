@@ -12,6 +12,7 @@ import { useFlasher } from '@renderer/store/useFlasher';
 import { useSerialMonitor } from '@renderer/store/useSerialMonitor';
 import { useTabs } from '@renderer/store/useTabs';
 import { CompilerResult } from '@renderer/types/CompilerTypes';
+import { StateMachine } from '@renderer/types/diagram';
 import { Device, FlashResult } from '@renderer/types/FlasherTypes';
 
 import {
@@ -20,6 +21,7 @@ import {
   SerialMonitor,
 } from '../Modules/SerialMonitor';
 import { ClientStatus } from '../Modules/Websocket/ClientStatus';
+import { Select } from '../UI/Select';
 
 export interface FlasherProps {
   compilerData: CompilerResult | undefined;
@@ -344,6 +346,67 @@ export const Loader: React.FC<FlasherProps> = ({
       </button>
     );
   };
+
+  const getDevicePlatform = (device: Device) => {
+    // TODO: подумать, можно ли найти более надёжный способ сверки платформ на клиенте и сервере
+    // названия платформ на загрузчике можно посмотреть здесь: https://github.com/kruzhok-team/lapki-flasher/blob/main/src/device_list.JSON
+    const name = device.name.toLocaleLowerCase();
+    switch (name) {
+      case 'arduino micro':
+      case 'arduino micro (bootloader)':
+        return 'ArduinoMicro';
+      case 'arduino uno':
+        return 'ArduinoUno';
+    }
+    return undefined;
+  };
+
+  const stateMachinesId = modelController.model.useData('', 'elements.stateMachinesId') as {
+    [ID: string]: StateMachine;
+  };
+  // ключ: ID устройства; значение: ID машины состояний
+  const [deviceStateMachine, setDeviceStateMachine] = useState<Map<string, string>>(new Map());
+
+  const stateMachineOptions = () => {
+    if (currentDeviceID == undefined) return undefined;
+    const currentDevice = devices.get(currentDeviceID);
+    if (currentDevice == undefined) return undefined;
+    const platform = getDevicePlatform(currentDevice);
+    return [...Object.entries(stateMachinesId)]
+      .filter(([, sm]) => sm.platform == platform)
+      .map(([id, sm]) => {
+        return { value: id, label: sm.name ?? id };
+      });
+  };
+  const getSelectMachineStateOption = () => {
+    const emptyValue = { value: '', label: '' };
+    if (currentDeviceID == undefined) return emptyValue;
+    const smId = deviceStateMachine.get(currentDeviceID);
+    if (smId == undefined) return emptyValue;
+    const sm = stateMachinesId[smId];
+    if (!sm) {
+      setDeviceStateMachine((oldValue) => {
+        const newValue = new Map(oldValue);
+        newValue.delete(currentDeviceID);
+        return newValue;
+      });
+      return emptyValue;
+    }
+    return { value: smId, label: sm.name ?? smId };
+  };
+  /**
+   * Изменение выбранной машины состояний для текущего устройства
+   * @param smId ID машины состояний
+   */
+  const onSelectMachineState = (smId: string | undefined) => {
+    if (currentDeviceID == undefined || smId == undefined) return;
+    setDeviceStateMachine((oldValue) => {
+      const newValue = new Map(oldValue);
+      newValue.set(currentDeviceID, smId);
+      return newValue;
+    });
+  };
+
   return (
     <section className="flex h-full flex-col text-center">
       <h3 className="mx-4 mb-3 border-b border-border-primary py-2 text-center text-lg">
@@ -445,6 +508,15 @@ export const Loader: React.FC<FlasherProps> = ({
         ) : (
           ''
         )}
+        <Select
+          className="mb-2"
+          isSearchable={false}
+          placeholder="Выберите машину состояний..."
+          options={stateMachineOptions()}
+          value={getSelectMachineStateOption()}
+          onChange={(opt) => onSelectMachineState(opt?.value)}
+          isDisabled={currentDeviceID == undefined}
+        />
         <button
           className="btn-primary mb-2 w-full"
           onClick={handleAddAvrdudeTab}
