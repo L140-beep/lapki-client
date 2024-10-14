@@ -41,7 +41,7 @@ export const StateMachinesList: React.FC = () => {
     onRequestEditStateMachine,
     isDuplicateName,
   } = useStateMachines();
-  // TODO (Roundabout1): этот массив используется для теста, нужно будет доставать его из другого места
+
   const platformList = getAvailablePlatforms().map((platform) => {
     return { value: platform.idx, label: platform.name };
   });
