@@ -22,10 +22,7 @@ export const useStateMachines = () => {
     state.renameTab,
   ]);
   const [idx, setIdx] = useState<string | undefined>(undefined); // индекс текущей машины состояний
-  const [data, setData] = useState<StateMachineData>({
-    name: '',
-    platform: '',
-  });
+  const [data, setData] = useState<StateMachineData | undefined>(undefined);
 
   const [isAddOpen, openAdd, closeAdd] = useModal(false);
   const [isEditOpen, openEdit, editClose] = useModal(false);
@@ -35,6 +32,8 @@ export const useStateMachines = () => {
   const addForm = useForm<StateMachineData>();
 
   const onRequestAddStateMachine = () => {
+    setIdx(undefined);
+    setData(undefined);
     openAdd();
   };
 
@@ -89,10 +88,18 @@ export const useStateMachines = () => {
     editClose();
   };
 
+  /**
+   * Использовать только после вызова {@link onRequestEditStateMachine} или {@link onRequestAddStateMachine}.
+   * @param name имя машины состояний.
+   * @returns true, если имя дублирует имя другой машины состояний или её ID;
+   * false, если имя отсутствует, или оно не дублирует другие имена или ID.
+   */
   const isDuplicateName = (name: string) => {
+    if (!name) return false;
     const machines = [...Object.entries(modelController.model.data.elements.stateMachines)];
-    for (const [, value] of machines) {
-      if (value.name && value.name == name) {
+    for (const [id, value] of machines) {
+      if (id == idx) continue;
+      if ((value.name && value.name == name) || name == id) {
         return true;
       }
     }

@@ -56,15 +56,13 @@ export const StateMachineEditModal: React.FC<StateMachineEditModalProps> = ({
 
   const handleSubmit = hookHandleSubmit((data) => {
     if (isDuplicateName(data.name)) {
-      setError('name', { message: 'Имя не должно повторяться' });
+      setError('name', { message: 'Имя не должно повторять имена или ID других машин состояний' });
       return;
     }
     if (!data.platform) {
       setError('platform', { message: 'Выберите платформу' });
       return;
     }
-    //setError('name', { message: '' });
-    //return;
     onSubmit(data);
     reset({ name: undefined, platform: undefined });
     onClose();
