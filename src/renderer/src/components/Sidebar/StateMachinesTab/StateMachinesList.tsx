@@ -91,6 +91,7 @@ export const StateMachinesList: React.FC = () => {
         sideLabel="Удалить"
         platformList={platformList}
         isDuplicateName={isDuplicateName}
+        selectPlatformDisabled={true}
       />
       <StateMachineEditModal
         form={addProps.addForm}
@@ -102,6 +103,7 @@ export const StateMachinesList: React.FC = () => {
         sideLabel={undefined}
         platformList={platformList}
         isDuplicateName={isDuplicateName}
+        selectPlatformDisabled={false}
       />
       <StateMachineDeleteModal {...{ ...deleteProps, idx: selectedSm ?? undefined }} />
     </section>
