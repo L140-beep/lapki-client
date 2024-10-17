@@ -516,6 +516,7 @@ export const Loader: React.FC<FlasherProps> = ({
           value={getSelectMachineStateOption()}
           onChange={(opt) => onSelectMachineState(opt?.value)}
           isDisabled={currentDeviceID == undefined}
+          noOptionsMessage={() => 'Нет подходящих машин состояний'}
         />
         <button
           className="btn-primary mb-2 w-full"
