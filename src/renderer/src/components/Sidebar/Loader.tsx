@@ -35,6 +35,11 @@ export const Loader: React.FC<FlasherProps> = ({
   openAvrdudeGuideModal,
 }) => {
   const modelController = useModelContext();
+  const stateMachinesId = modelController.model.useData('', 'elements.stateMachinesId') as {
+    [ID: string]: StateMachine;
+  };
+  // ключ: ID устройства; значение: ID машины состояний
+  const [deviceStateMachine, setDeviceStateMachine] = useState<Map<string, string>>(new Map());
   const [flasherSetting, setFlasherSetting] = useSettings('flasher');
   const flasherIsLocal = flasherSetting?.type === 'local';
   const { connectionStatus, setFlasherConnectionStatus, isFlashing, setIsFlashing } = useFlasher();
@@ -360,12 +365,6 @@ export const Loader: React.FC<FlasherProps> = ({
     }
     return undefined;
   };
-
-  const stateMachinesId = modelController.model.useData('', 'elements.stateMachinesId') as {
-    [ID: string]: StateMachine;
-  };
-  // ключ: ID устройства; значение: ID машины состояний
-  const [deviceStateMachine, setDeviceStateMachine] = useState<Map<string, string>>(new Map());
 
   const stateMachineOptions = () => {
     if (currentDeviceID == undefined) return undefined;
