@@ -115,7 +115,7 @@ export const Loader: React.FC<FlasherProps> = ({
       Flasher.flash(currentDevice, serialMonitorDevice, serialConnectionStatus);
     } else {
       Flasher.flashCompiler(
-        compilerData!.binary!,
+        compilerData!.state_machines[currentDeviceID].binary!,
         currentDevice,
         serialMonitorDevice,
         serialConnectionStatus
@@ -351,32 +351,12 @@ export const Loader: React.FC<FlasherProps> = ({
     if (flasherFile) {
       return false;
     }
-    // проверка на соответствие платформы схемы и типа устройства
-    if (!(compilerData?.binary === undefined || compilerData.binary.length === 0)) {
-      let platform = compilerData?.platform;
-      if (platform === undefined) {
-        return;
-      }
-      platform = platform?.toLowerCase();
-      const device = devices.get(currentDeviceID)?.name.toLowerCase();
-      // TODO: подумать, можно ли найти более надёжный способ сверки платформ на клиенте и сервере
-      // названия платформ на загрузчике можно посмотреть здесь: https://github.com/kruzhok-team/lapki-flasher/blob/main/src/device_list.JSON
-      switch (platform) {
-        case 'arduinomicro':
-          // arduino micro - состоит из двух устройств, прошивку можно загрузить в любое
-          if (!(device == 'arduino micro' || device == 'arduino micro (bootloader)')) {
-            return true;
-          }
-          break;
-        case 'arduinouno':
-          if (device != 'arduino uno') {
-            return true;
-          }
-          break;
-        default:
-          return true;
-      }
-    } else {
+    const smId = deviceStateMachine.get(currentDeviceID);
+    if (smId === undefined) {
+      return true;
+    }
+    const stateData = compilerData?.state_machines[smId];
+    if (stateData === undefined || stateData.binary.length === 0) {
       return true;
     }
     // для безопасности, лучше всего блокировать кнопку загрузки, пока не произойдёт подключения к монитору порта,
