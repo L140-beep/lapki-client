@@ -2,7 +2,7 @@ import React, { Dispatch, useLayoutEffect } from 'react';
 
 import { twMerge } from 'tailwind-merge';
 
-import { PropertiesModal } from '@renderer/components';
+import { PropertiesModal, TextModeModal } from '@renderer/components';
 import { useModal } from '@renderer/hooks/useModal';
 import { useModelContext } from '@renderer/store/ModelContext';
 import { useTabs } from '@renderer/store/useTabs';
@@ -11,6 +11,7 @@ interface MenuItem {
   text: string;
   onClick: () => void;
   disabled?: boolean;
+  hidden?: boolean;
   className?: string;
 }
 
@@ -28,6 +29,7 @@ export interface MenuProps {
 export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
   const [openTab] = useTabs((state) => [state.openTab]);
   const modelController = useModelContext();
+  // const headControllerId = modelController.model.useData('', 'headControllerId');
   const editor = modelController.getCurrentCanvas();
   const isStale = modelController.model.useData('', 'isStale');
   const isInitialized = modelController.model.useData(
@@ -35,8 +37,10 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
     'canvas.isInitialized',
     editor.id
   ) as string;
-  const [isPropertiesModalOpen, openPropertiesModalOpen, closePropertiesModalOpen] =
-    useModal(false);
+  const [isPropertiesModalOpen, openPropertiesModal, closePropertiesModal] = useModal(false);
+  const [isTextModeModalOpen, closeTextModeModal] = useModal(false);
+  // TODO: visual
+  // const visual = modelController.controllers[headControllerId].useData('visual');
 
   const items: MenuItem[] = [
     {
@@ -66,7 +70,7 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
     },
     {
       text: 'Свойства',
-      onClick: openPropertiesModalOpen,
+      onClick: openPropertiesModal,
       disabled: !isInitialized,
     },
     // {
@@ -85,8 +89,7 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
         if (!schemeEditorId) return;
         const controller = modelController.controllers[schemeEditorId];
         if (!controller) return;
-        // TODO: Схемотехнический экран
-        openTab({
+        openTab(modelController, {
           type: 'editor',
           canvasId: schemeEditorId,
           name: 'Схемотехнический экран',
@@ -95,6 +98,11 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
       },
       disabled: !isInitialized,
     },
+    // {
+    //   text: 'Перейти в текстовый режим (β)',
+    //   onClick: () => openTextModeModal(),
+    //   hidden: !visual || !isInitialized,
+    // },
     // {
     //   text: 'Примеры',
     //   TODO: модальное окно с выбором примера
@@ -126,7 +134,7 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
         Документ
       </h3>
 
-      {items.map(({ text, onClick, disabled = false, className }) => (
+      {items.map(({ text, onClick, disabled = false, hidden = false, className }) => (
         <button
           key={text}
           className={twMerge(
@@ -135,12 +143,14 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
           )}
           onClick={onClick}
           disabled={disabled}
+          hidden={hidden}
         >
           {text}
         </button>
       ))}
 
-      <PropertiesModal isOpen={isPropertiesModalOpen} onClose={closePropertiesModalOpen} />
+      <PropertiesModal isOpen={isPropertiesModalOpen} onClose={closePropertiesModal} />
+      <TextModeModal isOpen={isTextModeModalOpen} onClose={closeTextModeModal} />
     </section>
   );
 };

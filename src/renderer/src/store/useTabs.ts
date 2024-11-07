@@ -7,7 +7,7 @@ interface TabsState {
   items: Tab[];
   activeTab: string | null;
   setActiveTab: (tabName: string) => void;
-  openTab: (tab: Tab) => void;
+  openTab: (modelController: ModelController, tab: Tab) => void;
   closeTab: (tabName: string, modelController: ModelController) => void;
   swapTabs: (a: string, b: string) => void;
   clearTabs: () => void;
@@ -20,11 +20,15 @@ export const useTabs = create<TabsState>((set) => ({
   setActiveTab: (activeTab) => {
     set({ activeTab });
   },
-  openTab: (tab) =>
+  openTab: (modelController, tab) =>
     set(({ items }) => {
       // Если пытаемся открыть одну и ту же вкладку
       if (items.find(({ name }) => name === tab.name)) {
         return { activeTab: tab.name };
+      }
+
+      if (tab.type === 'editor') {
+        modelController.model.changeHeadControllerId(tab.canvasId);
       }
 
       return {
@@ -32,6 +36,7 @@ export const useTabs = create<TabsState>((set) => ({
         activeTab: tab.name,
       };
     }),
+  // Передаем ModelController, чтобы он сам разобрался с тем, какой Controller в итоге будет главный
   closeTab: (tabName, modelController: ModelController) =>
     set(({ items, activeTab }) => {
       const closedTabIndex = items.findIndex((tab) => tab.name === tabName);
@@ -86,10 +91,12 @@ export const useTabs = create<TabsState>((set) => ({
       };
     }),
   clearTabs: () =>
-    set(() => ({
-      items: [],
-      activeTab: null,
-    })),
+    set(() => {
+      return {
+        items: [],
+        activeTab: null,
+      };
+    }),
   renameTab: (oldName, newName) =>
     set(({ items, activeTab }) => {
       const newItems = [...items];

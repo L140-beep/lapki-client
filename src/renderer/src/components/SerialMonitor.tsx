@@ -6,9 +6,36 @@ import {
   SERIAL_MONITOR_NO_SERVER_CONNECTION,
   SerialMonitor,
 } from '@renderer/components/Modules/SerialMonitor';
+import { useSettings } from '@renderer/hooks';
 import { useSerialMonitor } from '@renderer/store/useSerialMonitor';
 
 import { Select, SelectOption, Switch, TextInput } from './UI';
+
+type LineBreakType = 'LF' | 'CR' | 'CR&LF' | 'Без';
+// опции выбора символа окончания строки
+// при изменение данных здесь, нужно не забыть проверить стандартные настройки (setting.ts)
+class LineBreakOptions {
+  static LF = {
+    label: 'LF' as LineBreakType,
+    value: String.fromCharCode(10),
+    hint: 'Символ новой строки',
+  };
+  static CR = {
+    label: 'CR' as LineBreakType,
+    value: String.fromCharCode(13),
+    hint: 'Символ возврата каретки',
+  };
+  static CRLF = {
+    label: 'CR&LF' as LineBreakType,
+    value: this.CR.value + this.LF.value,
+    hint: 'Символы возврата каретки и новой строки',
+  };
+  static EMPTY = {
+    label: 'Без' as LineBreakType,
+    value: '',
+    hint: 'Без символов окончания строки',
+  };
+}
 
 export const SerialMonitorTab: React.FC = () => {
   const {
@@ -30,18 +57,7 @@ export const SerialMonitorTab: React.FC = () => {
     2000000, 2500000, 3000000, 3500000, 4000000,
   ].map(makeOption);
 
-  // при изменение данных здесь, нужно не забыть проверить стандартные настройки (setting.ts)
-  const lineBreakAll = [
-    { label: 'LF', value: String.fromCharCode(10), hint: 'Символ новой строки' },
-    { label: 'CR', value: String.fromCharCode(13), hint: 'Символ возврата каретки' },
-    {
-      label: 'CR&LF',
-      value: String.fromCharCode(10) + String.fromCharCode(13),
-      hint: 'Символы возврата каретки и новой строки',
-    },
-    { label: 'Без', value: '', hint: 'Без символов окончания строки' },
-  ];
-  const [lineBreak, setLineBreak] = useState<SelectOption>(lineBreakAll[0]);
+  const [lineBreak, setLineBreak] = useState<SelectOption>(LineBreakOptions.LF);
 
   const [autoScroll, setAutoScroll] = useState<boolean>(true);
   const [inputValue, setInputValue] = useState<string>('');
@@ -86,18 +102,54 @@ export const SerialMonitorTab: React.FC = () => {
     if (device === undefined) {
       return 'Устройство отсутствует';
     }
-    return `${device?.name} (${device?.portName})`;
+    return device.displaySerialName();
   };
 
   const handleConnectionButton = () => {
-    if (device == undefined) {
+    if (device === undefined) {
       return;
     }
-    if (connectionStatus == SERIAL_MONITOR_CONNECTED) {
+    if (connectionStatus === SERIAL_MONITOR_CONNECTED) {
       SerialMonitor.closeMonitor(device?.deviceID);
     } else {
       SerialMonitor.openMonitor(device, Number(baudRate.value));
     }
+  };
+
+  const [monitorSetting, setMonitorSetting] = useSettings('serialmonitor');
+
+  useLayoutEffect(() => {
+    if (!monitorSetting) return;
+    setBaudRate(makeOption(monitorSetting.baudRate));
+    switch (monitorSetting.lineBreak) {
+      case 'LF':
+        setLineBreak(LineBreakOptions.LF);
+        break;
+      case 'CR':
+        setLineBreak(LineBreakOptions.CR);
+        break;
+      case 'CR&LF':
+        setLineBreak(LineBreakOptions.CRLF);
+        break;
+      case 'Без':
+        setLineBreak(LineBreakOptions.EMPTY);
+    }
+  }, [setMonitorSetting, monitorSetting]);
+
+  const settingLineBreak = (newBreakLine: LineBreakType) => {
+    if (!monitorSetting) return;
+    setMonitorSetting({
+      ...monitorSetting,
+      lineBreak: newBreakLine,
+    });
+  };
+
+  const settingBaudRate = (newBaudRate: number) => {
+    if (!monitorSetting) return;
+    setMonitorSetting({
+      ...monitorSetting,
+      baudRate: newBaudRate,
+    });
   };
 
   return (
@@ -118,10 +170,15 @@ export const SerialMonitorTab: React.FC = () => {
             placeholder="Выберите конец строки..."
             onChange={(option) => {
               if (option) {
-                setLineBreak(option);
+                settingLineBreak(option.label as LineBreakType);
               }
             }}
-            options={lineBreakAll}
+            options={[
+              LineBreakOptions.LF,
+              LineBreakOptions.CR,
+              LineBreakOptions.CRLF,
+              LineBreakOptions.EMPTY,
+            ]}
           />
         </div>
         <button
@@ -154,14 +211,14 @@ export const SerialMonitorTab: React.FC = () => {
               placeholder="Выберите скорость передачи..."
               onChange={(option) => {
                 if (option) {
-                  setBaudRate(option);
-                  if (device && connectionStatus == SERIAL_MONITOR_CONNECTED) {
+                  settingBaudRate(Number(option.value));
+                  if (device && connectionStatus === SERIAL_MONITOR_CONNECTED) {
                     SerialMonitor.changeBaud(device?.deviceID, Number(option.value));
                   }
                 }
               }}
               options={baudRateAll}
-              isDisabled={connectionStatus == SERIAL_MONITOR_CONNECTING}
+              isDisabled={connectionStatus === SERIAL_MONITOR_CONNECTING}
             />
           </div>
           <div>
@@ -169,11 +226,11 @@ export const SerialMonitorTab: React.FC = () => {
               className="btn-primary"
               onClick={handleConnectionButton}
               disabled={
-                connectionStatus == SERIAL_MONITOR_NO_SERVER_CONNECTION ||
-                connectionStatus == SERIAL_MONITOR_CONNECTING
+                connectionStatus === SERIAL_MONITOR_NO_SERVER_CONNECTION ||
+                connectionStatus === SERIAL_MONITOR_CONNECTING
               }
             >
-              {connectionStatus == SERIAL_MONITOR_CONNECTED ? 'Отключиться' : 'Подключиться'}
+              {connectionStatus === SERIAL_MONITOR_CONNECTED ? 'Отключиться' : 'Подключиться'}
             </button>
           </div>
         </div>

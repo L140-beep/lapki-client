@@ -4,7 +4,6 @@ import { Canvas, EditorView, Keyboard, Mouse } from '@renderer/lib/basic';
 import { Render } from '@renderer/lib/common';
 import { preloadPicto } from '@renderer/lib/drawable';
 
-import { ModelController } from './data/ModelController';
 import { CanvasController } from './data/ModelController/CanvasController';
 
 interface CanvasEditorSettings {
@@ -27,8 +26,8 @@ export class CanvasEditor {
 
   id: string;
   view: EditorView;
-  constructor(id: string, modelController: ModelController) {
-    this.view = new EditorView(this, modelController);
+  constructor(id: string) {
+    this.view = new EditorView(this);
     this.id = id;
   }
 
@@ -145,10 +144,11 @@ export class CanvasEditor {
     this._keyboard = null;
     this._render = null;
 
-    this.controller.isMounted = true;
+    this.controller.isMounted = false;
+    this.controller.needToRewatchEdgeHandlers = true;
     this.controller.emit('isMounted', {
       canvasId: this.controller.id,
-      status: true,
+      status: false,
     });
   }
 

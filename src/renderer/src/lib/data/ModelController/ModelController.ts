@@ -21,9 +21,12 @@ import {
 } from '@renderer/lib/types/ControllerTypes';
 import {
   ChangeEventParams,
+  ChangeNoteBackgroundColorParams,
+  ChangeNoteFontSizeParams,
   ChangeNoteText,
+  ChangeNoteTextColorParams,
   ChangePosition,
-  ChangeStateEventsParams,
+  ChangeStateParams,
   ChangeTransitionParams,
   CreateChoiceStateParams,
   CreateComponentParams,
@@ -48,6 +51,7 @@ import {
   State,
   FinalState,
   emptyStateMachine,
+  Action,
 } from '@renderer/types/diagram';
 
 import { CanvasController, CanvasControllerEvents } from './CanvasController';
@@ -116,7 +120,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
 
   // Создаем пустой контроллер с пустыми данными и назначаем его главным
   emptyController() {
-    const editor = new CanvasEditor('', this);
+    const editor = new CanvasEditor('');
     const controller = new CanvasController(
       '',
       'specific',
@@ -163,15 +167,15 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
   ) {
     for (const smId in smIds) {
       const sm = smIds[smId];
-
+      if (smId === '') continue;
       if (!sm) return;
       const smToSubscribe = {};
       smToSubscribe[smId] = emptyStateMachine();
       controller.addStateMachineId(smId);
       controller.subscribe(smId, 'stateMachine', {});
       controller.subscribe(smId, 'component', sm.components);
-      controller.watch();
     }
+    controller.watch();
   }
 
   // Подписываем контроллер на нужные нам данные
@@ -247,6 +251,42 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     this.emit('initPlatform', null);
   }
 
+  changeNoteFontSize(args: ChangeNoteFontSizeParams) {
+    const { id, smId, fontSize } = args;
+    const sm = this.model.data.elements.stateMachines[smId];
+    const note = sm.notes[id];
+    if (!note) return;
+
+    this.model.changeNoteFontSize(smId, id, fontSize);
+
+    this.emit('changeNoteFontSize', args);
+    // TODO: History
+  }
+
+  changeNoteTextColor(args: ChangeNoteTextColorParams) {
+    const { id, smId, textColor } = args;
+    const sm = this.model.data.elements.stateMachines[smId];
+    const note = sm.notes[id];
+    if (!note) return;
+
+    this.model.changeNoteTextColor(smId, id, textColor);
+
+    this.emit('changeNoteTextColor', args);
+    // TODO: History
+  }
+
+  changeNoteBackgroundColor(args: ChangeNoteBackgroundColorParams) {
+    const { id, smId, backgroundColor } = args;
+    const sm = this.model.data.elements.stateMachines[smId];
+    const note = sm.notes[id];
+    if (!note) return;
+
+    this.model.changeNoteBackgroundColor(smId, id, backgroundColor);
+
+    this.emit('changeNoteBackgroundColor', args);
+    // TODO: History
+  }
+
   initData(basename: string | null, filename: string, elements: Elements) {
     this.reset();
     this.model.init(basename, filename, elements);
@@ -272,7 +312,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
 
   createSchemeScreenController(stateMachines: { [id: string]: StateMachine }) {
     const schemeScreenId = generateId();
-    const editor = new CanvasEditor(schemeScreenId, this);
+    const editor = new CanvasEditor(schemeScreenId);
     const platforms: { [id: string]: string } = {};
 
     for (const smId in stateMachines) {
@@ -310,16 +350,15 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
   private getSmId(id: string, element: `${keyof StateMachine}`) {
     for (const smId in this.model.data.elements.stateMachines) {
       const sm = this.model.data.elements.stateMachines[smId];
-      if (sm[element] === undefined || sm[element] === null) {
-        throw new Error('Never is reached');
-      }
-      if (sm[element][id]) {
+      const elements = sm[element];
+      if (elements && elements[id]) {
         return smId;
       }
     }
     throw new Error('Never is reached');
   }
 
+  // TODO: Думаю, из-за этого не очень хорошо компоненты выделяются
   selectComponent(id: string) {
     this.removeSelection();
 
@@ -328,7 +367,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     this.emit('selectComponent', { id: id, smId: '' });
   }
 
-  createComponent(args: CreateComponentParams, canUndo = true) {
+  createComponent(args: CreateComponentParams) {
     this.model.createComponent(args);
     this.emit('createComponent', args);
     // if (canUndo) {
@@ -524,7 +563,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
 
   createStateMachine(smId: string, data: StateMachine) {
     const canvasId = generateId();
-    const editor = new CanvasEditor(canvasId, this);
+    const editor = new CanvasEditor(canvasId);
     const controller = new CanvasController(
       canvasId,
       'specific',
@@ -544,7 +583,6 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     this.model.createStateMachine(smId, data);
     this.watch(controller);
     this.setupDiagramEditorController(smId, controller);
-
     if (this.schemeEditorId) {
       const schemeController = this.controllers[this.schemeEditorId];
       this.setupSchemeScreenEditorController(
@@ -628,7 +666,6 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
   }
 
   private deleteInitialStateWithTransition(smId: string, initialStateId: string, canUndo = true) {
-    // debugger;
     const transitionWithId = this.getBySourceId(smId, initialStateId);
     if (!transitionWithId) return;
 
@@ -988,29 +1025,25 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     );
   }
 
-  changeStateEvents(args: ChangeStateEventsParams, canUndo = true) {
-    const { smId, id, eventData } = args;
+  changeState(args: ChangeStateParams, canUndo = true) {
+    const { smId, id } = args;
     const state = this.model.data.elements.stateMachines[smId].states[id];
     if (!state) return;
 
     if (canUndo) {
-      const prevEvent = state.events.find(
-        (value) =>
-          eventData.trigger.component === value.trigger.component &&
-          eventData.trigger.method === value.trigger.method &&
-          undefined === value.trigger.args // FIXME: сравнение по args может не работать
-      );
-
-      const prevActions = structuredClone(prevEvent?.do ?? []);
+      // TODO: Что делать тут?
+      const prevEvents = state.events;
+      const prevColor = state.color;
+      // const prevActions = structuredClone(prevEvent ?? []);
 
       this.history.do({
-        type: 'changeStateEvents',
-        args: { args, prevActions },
+        type: 'changeState',
+        args: { args, prevEvents, prevColor },
       });
     }
 
-    this.model.changeStateEvents(args);
-    this.emit('changeStateEvents', args);
+    this.model.changeState(args);
+    this.emit('changeState', args);
   }
 
   changeStateName = (smId: string, id: string, name: string, canUndo = true) => {
@@ -1208,15 +1241,26 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
   getEachObjectByParentId(
     smId: string,
     parentId: string
-  ): Omit<StateMachine, 'transitions' | 'components' | 'platform' | 'meta'> {
+  ): Omit<
+    StateMachine,
+    'visual' | 'transitions' | 'components' | 'platform' | 'meta' | 'position' | 'compilerSettings'
+  > {
     const sm = this.model.data.elements.stateMachines[smId];
-    const objects: Omit<StateMachine, 'transitions' | 'components' | 'platform' | 'meta'> = {
+    const objects: Omit<
+      StateMachine,
+      | 'visual'
+      | 'transitions'
+      | 'components'
+      | 'platform'
+      | 'meta'
+      | 'position'
+      | 'compilerSettings'
+    > = {
       states: {},
       initialStates: {},
       finalStates: {},
       choiceStates: {},
       notes: {},
-      position: { x: 0, y: 0 },
     };
 
     for (const objectType of StateTypes) {
@@ -1237,13 +1281,12 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     if ([...Object.values(children)].length === 0) return 0;
 
     const bottomChildData = this.getChildren(children);
-    if (!bottomChildData) throw Error('No bottom child!');
+    if (!bottomChildData || !bottomChildData[0]) return 0;
     let bottomChildId = bottomChildData[0];
     let bottomChildType = bottomChildData[1];
-    let bottomChild = children[bottomChildType][bottomChildType];
+    let bottomChild = children[bottomChildType][bottomChildId];
     let bottomChildContainerHeight = 0;
     let result = 0;
-
     for (const childType of StateTypes) {
       for (const childId in children[childType]) {
         const child = children[childType][childId];
@@ -1297,7 +1340,16 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
   }
 
   private getChildren(
-    objects: Omit<StateMachine, 'transitions' | 'components' | 'platform' | 'meta'>
+    objects: Omit<
+      StateMachine,
+      | 'visual'
+      | 'transitions'
+      | 'components'
+      | 'platform'
+      | 'meta'
+      | 'position'
+      | 'CompilerSettings'
+    >
   ): [string, StateType] | undefined {
     for (const stateType of StateTypes) {
       if ([Object.values(objects[stateType])].length !== 0) {
@@ -1316,8 +1368,10 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     let width = state.dimensions.width / this.model.data.scale;
 
     const children = this.getEachObjectByParentId(smId, stateId);
-
-    if (stateType === 'states' && [...Object.values(children)].length !== 0) {
+    const notEmptyChildrens = Object.values(children).filter(
+      (value) => Object.values(value).length !== 0
+    );
+    if (stateType === 'states' && notEmptyChildrens.length !== 0) {
       const rightChildren = this.getChildren(children);
       if (!rightChildren) throw Error('NO RIGHT CHILDREN');
       let rightChildrenId = rightChildren[0];
@@ -1403,8 +1457,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     const { smId, parentId, position, linkByPoint = true } = params;
 
     const id = this.model.createChoiceState(params);
-
-    this.emit('createChoice', params);
+    this.emit('createChoice', { ...params, id: id });
     const state = this.model.data.elements.stateMachines[smId].choiceStates[id];
 
     if (parentId) {
@@ -1499,7 +1552,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
       this.model.deleteFinalState(smId, id);
       return;
     }
-    this.emit('createFinal', params);
+    this.emit('createFinal', { ...params, id });
 
     if (gotParent && parentId) {
       this.linkFinalState(smId, id, parentId);
@@ -1632,7 +1685,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
       if (canUndo) {
         this.history.do({
           type: 'changeEventAction',
-          args: { smId, stateId, event, newValue, prevValue },
+          args: { smId, stateId, event, newValue, prevValue: prevValue as Action },
         });
       }
     } else {
@@ -1643,7 +1696,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
       if (canUndo) {
         this.history.do({
           type: 'changeEvent',
-          args: { smId, stateId, event, newValue, prevValue },
+          args: { smId, stateId, event, newValue, prevValue: prevValue as Action },
         });
       }
     }
@@ -1671,7 +1724,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
       if (canUndo) {
         this.history.do({
           type: 'deleteEventAction',
-          args: { smId, stateId, event, prevValue },
+          args: { smId, stateId, event, prevValue: prevValue as Action },
         });
       }
     } else {
@@ -1898,6 +1951,16 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
 
       this.emit('selectChoice', { smId: '', id: id });
       break;
+    }
+  }
+
+  setTextMode(canvasController: CanvasController) {
+    if (canvasController.id === '') return;
+
+    const stateMachines = Object.keys(canvasController.stateMachinesSub);
+    canvasController.setTextMode();
+    for (const stateMachine of stateMachines) {
+      this.model.setTextMode(stateMachine);
     }
   }
 

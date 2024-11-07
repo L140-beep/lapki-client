@@ -3,9 +3,11 @@ import { useState } from 'react';
 import { twMerge } from 'tailwind-merge';
 
 import { CodeEditor, DiagramEditor } from '@renderer/components';
+import { ManagerMSTab } from '@renderer/components/ManagerMS';
 import { SerialMonitorTab } from '@renderer/components/SerialMonitor';
 import { useModelContext } from '@renderer/store/ModelContext';
 import { useTabs } from '@renderer/store/useTabs';
+import { Tab as TabType } from '@renderer/types/tabs';
 
 import { Tab } from './Tab';
 
@@ -36,6 +38,31 @@ export const Tabs: React.FC = () => {
   if (items.length === 0) {
     return <NotInitialized />;
   }
+
+  const selectTab = (item: TabType) => {
+    switch (item.type) {
+      case 'editor':
+        // Вкладки удаляются только после удаления контроллеров.
+        // И до удаления вкладок вызывается ререндер, вызывающий эту функцию
+        if (!modelController.controllers[item.canvasId]) return undefined;
+        return (
+          <DiagramEditor
+            controller={modelController.controllers[item.canvasId]}
+            editor={modelController.controllers[item.canvasId].app}
+          />
+        );
+      case 'transition':
+      case 'state':
+      case 'code':
+        return <CodeEditor initialValue={item.code} language={item.language} />;
+      case 'serialMonitor':
+        return <SerialMonitorTab />;
+      case 'managerMS':
+        return <ManagerMSTab />;
+      default:
+        return undefined;
+    }
+  };
 
   return (
     <>
@@ -72,20 +99,7 @@ export const Tabs: React.FC = () => {
           key={item.name}
           className={twMerge('hidden h-[calc(100vh-44.19px)]', activeTab === item.name && 'block')}
         >
-          {item.type === 'editor' ? (
-            <DiagramEditor
-              editor={
-                (modelController.controllers[item.canvasId] ?? modelController.controllers['']).app
-              }
-              controller={
-                modelController.controllers[item.canvasId] ?? modelController.controllers['']
-              }
-            />
-          ) : item.type === 'code' ? (
-            <CodeEditor initialValue={item.code} language={item.language} />
-          ) : (
-            <SerialMonitorTab />
-          )}
+          {selectTab(item)}
         </div>
       ))}
     </>

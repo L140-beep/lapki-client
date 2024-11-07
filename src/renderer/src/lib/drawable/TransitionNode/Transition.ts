@@ -12,12 +12,13 @@ export class Transition extends Shape {
   isSelected = false;
   label!: Label;
   arrow!: ArrowsWithLabel | ArrowsWithoutLabel;
-  data: DataTransition;
-  smId: string;
-  constructor(protected app: CanvasEditor, public id: string, smId: string, data: DataTransition) {
+  constructor(
+    protected app: CanvasEditor,
+    public id: string,
+    public smId: string,
+    public data: DataTransition
+  ) {
     super(app, id);
-    this.data = data;
-    this.smId = smId;
     this.label = new Label(this, this.app);
     this.arrow = this.data.label
       ? new ArrowsWithLabel(this, this.app)
@@ -63,6 +64,13 @@ export class Transition extends Shape {
   get dimensions() {
     if (!this.data.label) {
       return { width: 0, height: 0 };
+    }
+
+    if (!this.app.controller.visual) {
+      return {
+        width: 250,
+        height: Math.max(70, this.label.textData.height + 15 * 2),
+      };
     }
 
     return { width: 130, height: 70 };

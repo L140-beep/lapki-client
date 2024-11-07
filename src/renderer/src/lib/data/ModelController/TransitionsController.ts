@@ -22,7 +22,7 @@ import { indexOfMin } from '@renderer/lib/utils';
 
 interface TransitionsControllerEvents {
   changeTransition: string;
-  transitionContextMenu: { transitionId: string; position: Point };
+  transitionContextMenu: { transition: Transition; position: Point };
 }
 
 /**
@@ -87,8 +87,15 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
     return [...this.items.values()].find(({ source }) => source.id === sourceId);
   }
 
+  updateAll() {
+    this.forEach((transition) => {
+      transition.label.update();
+    });
+    this.view.isDirty = true;
+  }
+
   createTransition = (params: CreateTransitionParams) => {
-    const { sourceId, targetId, smId } = params;
+    const { smId, sourceId, targetId, label } = params;
     //TODO: (XidFanSan) где-то должна быть проверка, что цель может быть не-состоянием, только если источник – заметка.
     const source = this.controller.states.get(sourceId) || this.controller.notes.get(sourceId);
     const target =
@@ -97,6 +104,13 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
       this.controller.transitions.get(targetId);
 
     if (!source || !target || !params.id) return;
+
+    if (label && !label.position) {
+      label.position = {
+        x: (source.position.x + target.position.x) / 2,
+        y: (source.position.y + target.position.y) / 2,
+      };
+    }
 
     // Создание модельки
     const transition = new Transition(this.app, params.id, smId, { ...params });
@@ -140,6 +154,7 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
     const transition = this.items.get(args.id);
     if (!transition) return;
     transition.data = { ...args };
+    transition.label.update();
     this.view.isDirty = true;
   };
 
@@ -147,6 +162,8 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
     const transition = this.items.get(args.id);
     if (!transition) return;
     transition.position = args.endPosition;
+
+    transition.label.update();
 
     this.view.isDirty = true;
   };
@@ -198,7 +215,7 @@ export class TransitionsController extends EventEmitter<TransitionsControllerEve
     if (item.source instanceof InitialState) return;
 
     this.emit('transitionContextMenu', {
-      transitionId,
+      transition: item,
       position: { x: e.event.nativeEvent.clientX, y: e.event.nativeEvent.clientY },
     });
   };

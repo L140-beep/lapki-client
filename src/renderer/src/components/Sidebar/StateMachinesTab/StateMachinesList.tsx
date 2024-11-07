@@ -22,7 +22,11 @@ export const StateMachinesList: React.FC = () => {
       const controller = modelController.controllers[controllerId];
       if (!controller.stateMachinesSub[name] || !(controller.type === 'specific')) continue;
 
-      openTab({ type: 'editor', name: sM.name ? sM.name : name, canvasId: controller.id });
+      openTab(modelController, {
+        type: 'editor',
+        name: sM.name ?? name,
+        canvasId: controller.id,
+      });
     }
   };
 
@@ -66,8 +70,6 @@ export const StateMachinesList: React.FC = () => {
             <Component
               key={id}
               name={sm.name || id}
-              icon={undefined}
-              description={undefined}
               isSelected={id === selectedSm}
               onSelect={() => setSmSelected(id)}
               onEdit={() => onRequestEditStateMachine(id)}

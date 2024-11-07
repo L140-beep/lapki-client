@@ -12,7 +12,6 @@ import { useModal } from './useModal';
 
 export const useStateMachines = () => {
   const modelController = useModelContext();
-  const model = modelController.model;
 
   // const currentSm = model.useData('', 'currentSm');
   const [items, openTab, closeTab, renameTab] = useTabs((state) => [
@@ -56,15 +55,19 @@ export const useStateMachines = () => {
     const sm = { ...emptyStateMachine(), ...data };
     const canvasId = modelController.createStateMachine(smId, sm);
     modelController.model.changeHeadControllerId(canvasId);
-    openTab({ type: 'editor', canvasId: canvasId, name: sm.name ? sm.name : smId });
+    openTab(modelController, {
+      type: 'editor',
+      canvasId: canvasId,
+      name: sm.name ?? smId,
+    });
   };
 
   const onEdit = (data: StateMachineData) => {
     if (!idx) return;
     const sm = modelController.model.data.elements.stateMachines[idx];
     const smName = sm.name ?? '';
-    if (data.name != smName) {
-      renameTab(smName ? smName : idx, data.name ? data.name : idx);
+    if (data.name !== smName) {
+      renameTab(smName ?? idx, data.name ?? idx);
     }
     modelController.editStateMachine(idx, data);
   };
@@ -96,7 +99,7 @@ export const useStateMachines = () => {
    */
   const isDuplicateName = (name: string) => {
     if (!name) return false;
-    const machines = [...Object.entries(modelController.model.data.elements.stateMachines)];
+    const machines = Object.entries(modelController.model.data.elements.stateMachines);
     for (const [id, value] of machines) {
       if (id == idx) continue;
       if ((value.name && value.name == name) || name == id) {

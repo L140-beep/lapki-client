@@ -50,7 +50,8 @@ export const StateMachineEditModal: React.FC<StateMachineEditModalProps> = ({
     formState: { errors },
   } = form;
   const modelController = useModelContext();
-  const editor = modelController.getCurrentCanvas();
+  const headControllerId = modelController.model.useData('', 'headControllerId');
+  const editor = modelController.controllers[headControllerId].app;
 
   // Сброс к начальному состоянию после закрытия
   const handleAfterClose = () => {
@@ -72,7 +73,7 @@ export const StateMachineEditModal: React.FC<StateMachineEditModalProps> = ({
   });
 
   const handleDelete = () => {
-    if (onSide == undefined) return;
+    if (onSide === undefined) return;
     onSide();
     onClose();
   };

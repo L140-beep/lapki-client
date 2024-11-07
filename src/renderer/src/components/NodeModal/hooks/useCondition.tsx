@@ -3,6 +3,7 @@ import { useCallback, useMemo, useState } from 'react';
 import { SingleValue } from 'react-select';
 
 import { SelectOption } from '@renderer/components/UI';
+import { serializeCondition } from '@renderer/lib/data/GraphmlBuilder';
 import { operatorSet } from '@renderer/lib/data/PlatformManager';
 import { useModelContext } from '@renderer/store/ModelContext';
 import { Component, Condition, Variable as VariableData } from '@renderer/types/diagram';
@@ -20,10 +21,12 @@ export const useCondition = () => {
   const componentsData = modelController.model.useData(smId, 'elements.components') as {
     [id: string]: Component;
   };
-  const editor = modelController.getCurrentCanvas();
-  const controller = editor.controller;
+  const visual = modelController.controllers[headControllerId].useData('visual');
+  const controller = modelController.controllers[headControllerId];
 
   const [errors, setErrors] = useState({} as Record<string, string>);
+
+  const [tabValue, setTabValue] = useState(0);
 
   const [conditionOperator, setConditionOperator] = useState<string | null>(null);
 
@@ -39,6 +42,8 @@ export const useCondition = () => {
   const [show, setShow] = useState(false);
   const [isParamOneInput1, setIsParamOneInput1] = useState(true);
   const [isParamOneInput2, setIsParamOneInput2] = useState(true);
+
+  const [text, setText] = useState('');
 
   const componentOptionsParam1: SelectOption[] = useMemo(() => {
     const getComponentOption = (id: string) => {
@@ -63,7 +68,7 @@ export const useCondition = () => {
     const result = Object.keys(componentsData).map((idx) => getComponentOption(idx));
 
     return result;
-  }, [componentsData, controller]);
+  }, [componentsData, controller.platform, visual]);
 
   const componentOptionsParam2: SelectOption[] = useMemo(() => {
     const getComponentOption = (id: string) => {
@@ -88,7 +93,7 @@ export const useCondition = () => {
     const result = Object.keys(componentsData).map((idx) => getComponentOption(idx));
 
     return result;
-  }, [componentsData, controller]);
+  }, [componentsData, controller.platform, visual]);
 
   const methodOptionsParam1: SelectOption[] = useMemo(() => {
     if (!selectedComponentParam1 || !controller.platform[smId]) return [];
@@ -111,7 +116,7 @@ export const useCondition = () => {
           ),
         };
       });
-  }, [controller, selectedComponentParam1]);
+  }, [controller.platform, selectedComponentParam1, visual]);
 
   const methodOptionsParam2: SelectOption[] = useMemo(() => {
     if (!selectedComponentParam2 || !controller.platform[smId]) return [];
@@ -134,26 +139,30 @@ export const useCondition = () => {
           ),
         };
       });
-  }, [controller, selectedComponentParam2]);
+  }, [controller.platform, selectedComponentParam2, visual]);
 
   const checkForErrors = useCallback(() => {
     const newErrors: Record<string, string> = {};
 
-    if (isParamOneInput1) {
-      newErrors.selectedComponentParam1 = selectedComponentParam1 ? '' : 'Обязательно';
-      newErrors.selectedMethodParam1 = selectedMethodParam1 ? '' : 'Обязательно';
-    } else {
-      newErrors.argsParam1 = argsParam1 ? '' : 'Обязательно';
-    }
+    if (tabValue === 0) {
+      if (isParamOneInput1) {
+        newErrors.selectedComponentParam1 = selectedComponentParam1 ? '' : 'Обязательно';
+        newErrors.selectedMethodParam1 = selectedMethodParam1 ? '' : 'Обязательно';
+      } else {
+        newErrors.argsParam1 = argsParam1 ? '' : 'Обязательно';
+      }
 
-    if (isParamOneInput2) {
-      newErrors.selectedComponentParam2 = selectedComponentParam2 ? '' : 'Обязательно';
-      newErrors.selectedMethodParam2 = selectedMethodParam2 ? '' : 'Обязательно';
-    } else {
-      newErrors.argsParam2 = argsParam2 ? '' : 'Обязательно';
-    }
+      if (isParamOneInput2) {
+        newErrors.selectedComponentParam2 = selectedComponentParam2 ? '' : 'Обязательно';
+        newErrors.selectedMethodParam2 = selectedMethodParam2 ? '' : 'Обязательно';
+      } else {
+        newErrors.argsParam2 = argsParam2 ? '' : 'Обязательно';
+      }
 
-    newErrors.conditionOperator = conditionOperator ? '' : 'Обязательно';
+      newErrors.conditionOperator = conditionOperator ? '' : 'Обязательно';
+    } else {
+      newErrors.text = text ? '' : 'Обязательно';
+    }
 
     setErrors(newErrors);
 
@@ -168,6 +177,8 @@ export const useCondition = () => {
     selectedComponentParam2,
     selectedMethodParam1,
     selectedMethodParam2,
+    tabValue,
+    text,
   ]);
 
   const handleComponentParam1Change = useCallback((value: SingleValue<SelectOption>) => {
@@ -202,18 +213,35 @@ export const useCondition = () => {
     setIsParamOneInput1(true);
     setIsParamOneInput2(true);
 
+    setText('');
+    setTabValue(0);
+
     setErrors({});
   }, []);
 
   //Позволяет найти начальные значения условия(условий), если таковые имеются
-  const parseCondition = useCallback(
-    (c: Condition | undefined | null) => {
-      if (!c) {
-        clear();
+  const parse = useCallback(
+    (c: Condition | string | undefined | null) => {
+      clear();
+
+      if (!c) return;
+
+      setShow(true);
+
+      if (typeof c === 'string') {
+        setTabValue(1);
+        setText(c);
         return undefined;
       }
 
-      setShow(true);
+      setTabValue(0);
+
+      if (!controller.platform) {
+        console.error('wtf missing platform in useCondition.parse');
+        return undefined;
+      }
+
+      if (!visual) setText(serializeCondition(c, controller.platform[smId].data, componentsData)); // для перехода в текст
 
       const operator = c.type;
       if (!operatorSet.has(operator) || !Array.isArray(c.value) || c.value.length != 2) {
@@ -251,7 +279,7 @@ export const useCondition = () => {
       ) {
         setIsParamOneInput2(false);
         setArgsParam2(param2.value);
-      } else if (param2.type == 'component') {
+      } else if (param2.type === 'component') {
         const compoName = (param2.value as VariableData).component;
         const methodName = (param2.value as VariableData).method;
         setIsParamOneInput2(true);
@@ -263,12 +291,15 @@ export const useCondition = () => {
       }
       return setConditionOperator(operator);
     },
-    [clear]
+    [clear, visual] // visual для того, чтобы при смене режима парсер работал корректно
   );
 
   return {
     show,
     handleChangeConditionShow: setShow,
+
+    tabValue,
+    onTabChange: setTabValue,
 
     isParamOneInput1,
     handleParamOneInput1: setIsParamOneInput1,
@@ -297,6 +328,9 @@ export const useCondition = () => {
     argsParam2,
     handleArgsParam2Change: setArgsParam2,
 
+    text,
+    onChangeText: setText,
+
     errors,
     setErrors,
     checkForErrors,
@@ -309,7 +343,7 @@ export const useCondition = () => {
     setSelectedMethodParam2,
     setArgsParam2,
 
-    parseCondition,
+    parse,
     clear,
   };
 };

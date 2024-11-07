@@ -12,8 +12,8 @@ import {
   EditorDataReturn,
   CreateTransitionParams,
   ChangeTransitionParams,
-  ChangeStateEventsParams,
   CreateComponentParams,
+  ChangeStateParams,
   CreateNoteParams,
   Point,
   CreateInitialStateParams,
@@ -212,7 +212,7 @@ export class EditorModel {
       name,
       parentId,
       id = generateId(this.getNodeIds()),
-      events = args.events || [],
+      events = args.events,
       placeInCenter = false,
       color,
       smId,
@@ -243,36 +243,13 @@ export class EditorModel {
     return id;
   }
 
-  changeStateEvents(args: ChangeStateEventsParams) {
-    const {
-      id,
-      eventData: { do: actions, trigger, condition },
-      color,
-      smId,
-    } = args;
+  changeState(args: ChangeStateParams) {
+    const { smId, id, events, color } = args;
 
     const state = this.data.elements.stateMachines[smId].states[id];
     if (!state) return false;
 
-    const eventIndex = state.events.findIndex(
-      (value) =>
-        trigger.component === value.trigger.component &&
-        trigger.method === value.trigger.method &&
-        undefined === value.trigger.args // FIXME: сравнение по args может не работать
-    );
-    const event = state.events[eventIndex];
-
-    if (event === undefined) {
-      state.events = [...state.events, args.eventData];
-    } else {
-      if (actions.length) {
-        event.condition = condition;
-        event.do = [...actions];
-      } else {
-        state.events.splice(eventIndex, 1);
-      }
-    }
-
+    state.events = events;
     state.color = color;
 
     this.triggerDataUpdate('elements.states');
@@ -541,7 +518,11 @@ export class EditorModel {
 
     const { eventIdx, actionIdx } = event;
 
-    state.events[eventIdx].do.splice(actionIdx ?? state.events[eventIdx].do.length - 1, 0, value);
+    (state.events[eventIdx].do as Action[]).splice(
+      actionIdx ?? state.events[eventIdx].do.length - 1,
+      0,
+      value
+    );
 
     this.triggerDataUpdate('elements.states');
 
@@ -574,7 +555,7 @@ export class EditorModel {
 
     const { eventIdx, actionIdx } = event;
 
-    state.events[eventIdx].do[actionIdx as number] = newValue;
+    (state.events[eventIdx].do as Action[])[actionIdx as number] = newValue;
 
     this.triggerDataUpdate('elements.states');
 
@@ -598,7 +579,7 @@ export class EditorModel {
 
     const { eventIdx, actionIdx } = event;
 
-    state.events[eventIdx].do.splice(actionIdx as number, 1);
+    (state.events[eventIdx].do as Action[]).splice(actionIdx as number, 1);
 
     this.triggerDataUpdate('elements.states');
 
@@ -794,6 +775,9 @@ export class EditorModel {
       id = generateId(Object.keys(this.data.elements.stateMachines[smId].notes)),
       text,
       placeInCenter = false,
+      fontSize,
+      backgroundColor,
+      textColor,
     } = params;
     let position = params.position;
 
@@ -809,6 +793,9 @@ export class EditorModel {
     this.data.elements.stateMachines[smId].notes[id] = {
       text,
       position,
+      fontSize,
+      backgroundColor,
+      textColor,
     };
 
     this.triggerDataUpdate('elements.notes');
@@ -832,6 +819,32 @@ export class EditorModel {
     if (!note) return false;
 
     note.selection = selection;
+    return true;
+  }
+  changeNoteBackgroundColor(smId: string, id: string, color: string | undefined) {
+    if (!this.data.elements.stateMachines[smId].notes.hasOwnProperty(id)) return false;
+
+    this.data.elements.stateMachines[smId].notes[id].backgroundColor = color;
+
+    this.triggerDataUpdate('elements.notes');
+
+    return true;
+  }
+
+  changeNoteTextColor(smId: string, id: string, color: string | undefined) {
+    if (!this.data.elements.stateMachines[smId].notes.hasOwnProperty(id)) return false;
+
+    this.data.elements.stateMachines[smId].notes[id].textColor = color;
+
+    this.triggerDataUpdate('elements.notes');
+
+    return true;
+  }
+
+  changeNoteFontSize(smId: string, id: string, fontSize: number | undefined) {
+    if (!this.data.elements.stateMachines[smId].notes.hasOwnProperty(id)) return false;
+
+    this.data.elements.stateMachines[smId].notes[id].fontSize = fontSize;
 
     this.triggerDataUpdate('elements.notes');
 
@@ -864,6 +877,14 @@ export class EditorModel {
     this.data.elements.stateMachines[smId].meta = meta;
 
     this.triggerDataUpdate('elements.meta');
+
+    return true;
+  }
+
+  setTextMode(smId: string) {
+    this.data.elements.stateMachines[smId].visual = false;
+
+    this.triggerDataUpdate('elements.visual');
 
     return true;
   }

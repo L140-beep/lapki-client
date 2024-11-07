@@ -4,8 +4,10 @@ import { Note } from '@renderer/lib/drawable';
 import { Layer } from '@renderer/lib/types';
 import { Point } from '@renderer/lib/types/graphics';
 import {
+  ChangeNoteBackgroundColorParams,
+  ChangeNoteFontSizeParams,
   ChangeNoteText,
-  ChangePosition,
+  ChangeNoteTextColorParams,
   CreateNoteParams,
   DeleteDrawableParams,
 } from '@renderer/lib/types/ModelTypes';
@@ -15,7 +17,7 @@ interface NotesControllerEvents {
   change: Note;
   mouseUpOnNote: Note;
   startNewTransitionNote: Note;
-  contextMenu: { noteId: string; position: Point };
+  contextMenu: { note: Note; position: Point };
 }
 
 /**
@@ -64,14 +66,62 @@ export class NotesController extends EventEmitter<NotesControllerEvents> {
     this.view.isDirty = true;
   };
 
-  changeNotePosition = (args: ChangePosition) => {
+  changeNoteBackgroundColor = (args: ChangeNoteBackgroundColorParams) => {
+    const note = this.items.get(args.id);
+    if (!note) return;
+
+    note.data.backgroundColor = args.backgroundColor;
+    // if (canUndo) {
+    //   this.history.do({
+    //     type: 'changeNoteBackgroundColor',
+    //     args: { id, color, prevColor: note.data?.backgroundColor },
+    //   });
+    // }
+
+    this.view.isDirty = true;
+  };
+
+  changeNoteTextColor = (args: ChangeNoteTextColorParams) => {
+    const note = this.items.get(args.id);
+    if (!note) return;
+
+    note.data.textColor = args.textColor;
+    // if (canUndo) {
+    //   this.history.do({
+    //     type: 'changeNoteTextColor',
+    //     args: { id, color, prevColor: note.data?.textColor },
+    //   });
+    // }
+
+    this.view.isDirty = true;
+  };
+
+  changeNoteFontSize = (args: ChangeNoteFontSizeParams) => {
+    const note = this.items.get(args.id);
+    if (!note) return;
+
+    note.data.fontSize = args.fontSize;
+    // if (canUndo) {
+    //   this.history.do({
+    //     type: 'changeNoteFontSize',
+    //     args: { id, fontSize, prevFontSize: note.data?.fontSize },
+    //   });
+    // }
+
+    // this.app.model.changeNoteFontSize(id, fontSize);
+    note.prepareText();
+
+    this.view.isDirty = true;
+  };
+
+  changeNotePosition(args: { id: string; endPosition: Point }) {
     const note = this.items.get(args.id);
     if (!note) return;
 
     note.position = args.endPosition;
 
     this.view.isDirty = true;
-  };
+  }
 
   deleteNote = (args: DeleteDrawableParams) => {
     const { id } = args;
@@ -116,13 +166,13 @@ export class NotesController extends EventEmitter<NotesControllerEvents> {
     this.controller.selectNote({ smId: '', id: noteId });
 
     this.emit('contextMenu', {
-      noteId,
+      note: item,
       position: { x: e.event.nativeEvent.clientX, y: e.event.nativeEvent.clientY },
     });
   };
 
   handleDragEnd = (note: Note, e: { dragStartPosition: Point; dragEndPosition: Point }) => {
-    this.changeNotePosition({ smId: '', id: note.id, endPosition: e.dragEndPosition });
+    this.changeNotePosition({ id: note.id, endPosition: e.dragEndPosition });
   };
 
   watch(note: Note) {
@@ -133,6 +183,7 @@ export class NotesController extends EventEmitter<NotesControllerEvents> {
     note.on('dragend', this.handleDragEnd.bind(this, note));
 
     note.edgeHandlers.onStartNewTransition = this.handleStartNewTransition.bind(this, note);
+    note.edgeHandlers.bindEvents();
   }
 
   unwatch(note: Note) {

@@ -8,8 +8,8 @@ interface ComponentProps {
   name: string;
   isSelected: boolean;
   isDragging: boolean;
-  icon: React.ReactNode | undefined;
-  description: string | undefined;
+  icon?: React.ReactNode;
+  description?: string;
   onSelect: () => void;
   onEdit: () => void;
   onCallContextMenu: () => void; // TODO: Сделать контекстное меню для машин состояний
@@ -36,7 +36,6 @@ export const Component: React.FC<ComponentProps> = (props) => {
   const [dragOver, setDragOver] = useState(false);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLButtonElement>) => {
-    console.log('HEREEEEEEEEEEEEEEEEEEEE', e.key);
     if (e.key !== 'Delete') return;
 
     onDelete();

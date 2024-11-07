@@ -1,6 +1,7 @@
 import React, { useLayoutEffect, useState } from 'react';
 
 import { Modal } from '@renderer/components/UI';
+import { getPlatform } from '@renderer/lib/data/PlatformLoader';
 import { ComponentEntry } from '@renderer/lib/data/PlatformManager';
 import { useModelContext } from '@renderer/store/ModelContext';
 import { Component as ComponentData } from '@renderer/types/diagram';
@@ -37,9 +38,11 @@ export const ComponentEditModal: React.FC<ComponentEditModalProps> = ({
   const { model } = modelController;
   const headControllerId = modelController.model.useData('', 'headControllerId');
   const stateMachines = Object.keys(modelController.controllers[headControllerId].stateMachinesSub);
-  const components = model.useData(stateMachines[0], 'elements.components');
-
+  const smId = stateMachines[0];
+  const components = model.useData(smId, 'elements.components');
   const [name, setName] = useState('');
+  const platformId = model.useData(smId, 'elements.platform');
+  const platform = getPlatform(platformId);
   const [parameters, setParameters] = useState<ComponentData['parameters']>({});
 
   const [errors, setErrors] = useState({} as Record<string, string>);
@@ -52,7 +55,7 @@ export const ComponentEditModal: React.FC<ComponentEditModalProps> = ({
   };
 
   const handleNameValidation = (): boolean => {
-    if (proto.singletone) {
+    if (proto.singletone || (platform && platform.staticComponents)) {
       return true;
     }
 
@@ -61,7 +64,7 @@ export const ComponentEditModal: React.FC<ComponentEditModalProps> = ({
       return false;
     }
 
-    if (name == '') {
+    if (name === '') {
       setErrors((p) => ({ ...p, [nameError]: `Имя не должно быть пустым` }));
       return false;
     }
@@ -87,13 +90,13 @@ export const ComponentEditModal: React.FC<ComponentEditModalProps> = ({
       }
     }
     for (const word of reservedWordsC) {
-      if (word == name) {
+      if (word === name) {
         setErrors((p) => ({ ...p, [nameError]: `Нельзя использовать ключевые слова языка C` }));
         return false;
       }
     }
     for (const word of frameworkWords) {
-      if (word == name) {
+      if (word === name) {
         setErrors((p) => ({
           ...p,
           [nameError]: `Название является недопустимым. Выберите другое`,
@@ -103,7 +106,7 @@ export const ComponentEditModal: React.FC<ComponentEditModalProps> = ({
     }
     // проверка на то, что название не является типом данных
     for (const key in validators) {
-      if (key == name) {
+      if (key === name) {
         setErrors((p) => ({ ...p, [nameError]: `Нельзя использовать название типа данных` }));
         return false;
       }
@@ -111,7 +114,7 @@ export const ComponentEditModal: React.FC<ComponentEditModalProps> = ({
     // проверка на то, что название не совпадает с названием класса компонентов
     const vacantComponents = modelController.getVacantComponents() as ComponentEntry[];
     for (const component of vacantComponents) {
-      if (component.name == name) {
+      if (component.name === name) {
         setErrors((p) => ({ ...p, [nameError]: `Нельзя дублировать название класса компонентов` }));
         return false;
       }
@@ -165,7 +168,8 @@ export const ComponentEditModal: React.FC<ComponentEditModalProps> = ({
     >
       <ComponentFormFields
         showMainData={!proto.singletone}
-        protoParameters={proto.parameters}
+        protoParameters={proto.constructorParameters}
+        protoInitializationParameters={proto.initializationParameters}
         name={name}
         setName={setName}
         parameters={parameters}

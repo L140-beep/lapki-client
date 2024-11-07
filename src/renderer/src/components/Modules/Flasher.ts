@@ -2,18 +2,21 @@ import { Dispatch, SetStateAction } from 'react';
 
 import Websocket from 'isomorphic-ws';
 
+import { Device, ArduinoDevice, MSDevice } from '@renderer/components/Modules/Device';
 import { Binary } from '@renderer/types/CompilerTypes';
 import {
-  Device,
-  FlashStart,
   FlashUpdatePort,
   FlasherMessage,
   UpdateDelete,
   FlashResult,
-  SerialStatus,
+  DeviceCommentCode,
   SerialRead,
+  FlasherPayload,
+  FlasherType,
+  MSPingResult,
 } from '@renderer/types/FlasherTypes';
 
+import { ManagerMS } from './ManagerMS';
 import {
   SerialMonitor,
   SERIAL_MONITOR_CONNECTED,
@@ -45,7 +48,7 @@ export class Flasher extends ClientWS {
   static initReader(reader): void {
     this.reader = reader;
     this.reader.onloadend = function (evt) {
-      if (evt.target?.readyState == FileReader.DONE) {
+      if (evt.target?.readyState === FileReader.DONE) {
         Flasher.connection?.send(this.result as ArrayBuffer);
         Flasher.filePos += Flasher.currentBlob.size;
       }
@@ -69,9 +72,10 @@ export class Flasher extends ClientWS {
     setFlasherFile: Dispatch<SetStateAction<string | undefined | null>>,
     onFlashingChange: (flashing: boolean) => void,
     setErrorMessage: Dispatch<SetStateAction<string | undefined>>,
-    setFlashResult: Dispatch<SetStateAction<FlashResult | undefined>>
+    setFlashResult: Dispatch<SetStateAction<FlashResult | undefined>>,
+    setSecondsUntilReconnect: Dispatch<SetStateAction<number | null>>
   ): void {
-    super.setOnStatusChange(setFlasherConnectionStatus);
+    super.bind(setFlasherConnectionStatus, setSecondsUntilReconnect);
     this.setFlasherDevices = setFlasherDevices;
     this.setFlasherLog = setFlasherLog;
     this.setFlasherFile = setFlasherFile;
@@ -95,6 +99,9 @@ export class Flasher extends ClientWS {
       newValue.set(device.deviceID, device);
       return newValue;
     });
+    if (isNew) {
+      this.setFlasherLog('Добавлено устройство!');
+    }
     return isNew;
   }
 
@@ -106,10 +113,15 @@ export class Flasher extends ClientWS {
     });
   }
 
+  // обновление порта (только для ArduinoDevice)
+  /**
+   * обновление порта (сообщение приходит только для {@link ArduinoDevice})
+   * @param port сообщение от сервера об обновлении порта
+   */
   static updatePort(port: FlashUpdatePort): void {
     this.setFlasherDevices((oldValue) => {
       const newValue = new Map(oldValue);
-      const device = newValue.get(port.deviceID)!;
+      const device = newValue.get(port.deviceID)! as ArduinoDevice;
       device.portName = port.portName;
       newValue.set(port.deviceID, device);
 
@@ -118,12 +130,7 @@ export class Flasher extends ClientWS {
   }
 
   static getList(): void {
-    this.connection?.send(
-      JSON.stringify({
-        type: 'get-list',
-        payload: undefined,
-      } as FlasherMessage)
-    );
+    this.send('get-list', undefined);
     this.setFlasherLog('Запрос на обновление списка отправлен!');
   }
 
@@ -178,29 +185,52 @@ export class Flasher extends ClientWS {
     }
   }
 
-  static flashCompiler(binaries: Array<Binary>, device: Device): void {
+  static flashPreparation(
+    device: Device,
+    serialMonitorDevice: Device | undefined = undefined,
+    serialConnectionStatus: string = ''
+  ) {
+    if (
+      serialMonitorDevice &&
+      serialMonitorDevice.deviceID === device.deviceID &&
+      serialConnectionStatus === SERIAL_MONITOR_CONNECTED
+    ) {
+      /*
+      см. 'flash-open-serial-monitor' в Flasher.ts обработку случая, 
+      когда монитор порта не успевает закрыться перед отправкой запроса на прошивку
+      */
+      SerialMonitor.closeMonitor(serialMonitorDevice.deviceID);
+    }
+    this.currentFlashingDevice = device;
+    this.refresh();
+    this.setFlasherLog('Идет загрузка...');
+  }
+
+  static flashCompiler(
+    binaries: Array<Binary>,
+    device: Device,
+    serialMonitorDevice: Device | undefined = undefined,
+    serialConnectionStatus: string = ''
+  ): void {
     binaries.map((bin) => {
       if (bin.extension.endsWith('ino.hex')) {
         Flasher.binary = new Blob([bin.fileContent as Uint8Array]);
         return;
       }
     });
-    this.flash(device);
+    this.flash(device, serialMonitorDevice, serialConnectionStatus);
   }
 
-  static flash(device: Device) {
-    this.refresh();
-    const payload = {
+  static flash(
+    device: Device,
+    serialMonitorDevice: Device | undefined = undefined,
+    serialConnectionStatus: string = ''
+  ) {
+    this.flashPreparation(device, serialMonitorDevice, serialConnectionStatus);
+    this.send('flash-start', {
       deviceID: device.deviceID,
       fileSize: Flasher.binary.size,
-    } as FlashStart;
-    const request = {
-      type: 'flash-start',
-      payload: payload,
-    } as FlasherMessage;
-    this.connection?.send(JSON.stringify(request));
-    this.setFlasherLog('Идет загрузка...');
-    this.currentFlashingDevice = device;
+    });
   }
 
   // получение адреса в виде строки
@@ -252,11 +282,13 @@ export class Flasher extends ClientWS {
         break;
       }
       case 'device': {
-        if (this.addDevice(response.payload as Device)) {
-          this.setFlasherLog('Добавлено устройство!');
-        } else {
-          this.setFlasherLog('Состояние об устройстве синхронизировано.');
-        }
+        const device = new ArduinoDevice(response.payload as ArduinoDevice);
+        this.addDevice(device);
+        break;
+      }
+      case 'ms-device': {
+        const device = new MSDevice(response.payload as MSDevice);
+        this.addDevice(device);
         break;
       }
       case 'device-update-delete': {
@@ -267,7 +299,7 @@ export class Flasher extends ClientWS {
         this.updatePort(response.payload as FlashUpdatePort);
         break;
       }
-      case 'unmarshal-error': {
+      case 'unmarshal-err': {
         this.setFlasherLog('Не удалось прочесть запрос от клиента (возможно, конфликт версий).');
         break;
       }
@@ -331,7 +363,7 @@ export class Flasher extends ClientWS {
         break;
       }
       case 'serial-connection-status': {
-        const serialStatus = response.payload as SerialStatus;
+        const serialStatus = response.payload as DeviceCommentCode;
         switch (serialStatus.code) {
           case 0:
             SerialMonitor.addLog('Открыт монитор порта!');
@@ -425,7 +457,7 @@ export class Flasher extends ClientWS {
         break;
       }
       case 'serial-sent-status': {
-        const serialStatus = response.payload as SerialStatus;
+        const serialStatus = response.payload as DeviceCommentCode;
         switch (serialStatus.code) {
           case 0:
             SerialMonitor.addLog('Сообщение доставлено на устройство.');
@@ -468,10 +500,72 @@ export class Flasher extends ClientWS {
         break;
       }
       case 'flash-open-serial-monitor':
-        this.flashingEnd(
-          'Нельзя начать прошивку этого устройства, так как для него открыт монитора порта.',
-          undefined
-        );
+        // если не удалось закрыть монитор порта перед прошивкой, то повторяем попытку (см. handleFlash из Loader.tsx)
+        // обычно монитор порта закрывается с первой попытки и этот код не воспроизводится
+        console.log('flash-open-serial-monitor');
+        if (this.currentFlashingDevice) {
+          SerialMonitor.closeMonitor(this.currentFlashingDevice.deviceID);
+          this.flash(this.currentFlashingDevice);
+        } else {
+          /*
+            если эта ошибка получена и currentFlashingDevice == undefined, то значит что-то пошло не так, 
+            ведь перед тем как получить эту ошибку клиент должен вызвать функцию flash в которой назначается 
+            currentFlashingDevice
+          */
+          this.flashingEnd(
+            'Получена неожиданная ошибка типа "flash-open-serial-monitor", сообщите об этом разработчикам! Эта ошибка означает, что монитор порта не удалось отключить автоматически перед тем, как начать прошивку. Вам придётся самостоятельно отключить монитор порта и повторить попытку прошивки.',
+            undefined
+          );
+        }
+        break;
+      case 'ms-ping-result':
+        {
+          const pingResult = response.payload as MSPingResult;
+          switch (pingResult.code) {
+            case 0:
+              ManagerMS.addLog('Получен ответ устройства на пинг');
+              break;
+            case 1:
+              ManagerMS.addLog('Не удалось отправить пинг, так как устройство не подключено.');
+              break;
+            case 2:
+              ManagerMS.addLog('Возникла ошибка при попытке отправить пинг.');
+              break;
+          }
+        }
+        break;
+      case 'ms-address': {
+        const getAddressStatus = response.payload as DeviceCommentCode;
+        switch (getAddressStatus.code) {
+          case 0:
+            ManagerMS.addLog(`Получен адрес устройства: ${getAddressStatus.comment}`);
+            ManagerMS.setAddress(getAddressStatus.comment);
+            break;
+          case 1:
+            ManagerMS.addLog('Не удалось получить адрес устройства, так как оно не подключено.');
+            ManagerMS.setAddress('');
+            break;
+          case 2: {
+            const errorText = getAddressStatus.comment;
+            const errorLog = 'Возникла ошибка при попытке узнать адрес';
+            if (errorText != '') {
+              ManagerMS.addLog(`${errorLog}. Текст ошибки: ${getAddressStatus.comment}`);
+            } else {
+              ManagerMS.addLog(`${errorLog}.`);
+            }
+            ManagerMS.setAddress('');
+            break;
+          }
+        }
+      }
     }
+  }
+
+  static send(type: FlasherType, payload: FlasherPayload) {
+    const request = {
+      type: type,
+      payload: payload,
+    } as FlasherMessage;
+    this.connection?.send(JSON.stringify(request));
   }
 }

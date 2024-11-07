@@ -23,7 +23,7 @@ import { Point } from '@renderer/lib/types/graphics';
 import {
   ChangeEventParams,
   ChangePosition,
-  ChangeStateEventsParams,
+  ChangeStateParams,
   CreateChoiceStateParams,
   CreateEventActionParams,
   CreateEventParams,
@@ -49,8 +49,8 @@ interface StatesControllerEvents {
   changeState: State;
   changeStateName: State;
   stateContextMenu: { state: State; position: Point };
-  finalStateContextMenu: { stateId: string; position: Point };
-  choiceStateContextMenu: { stateId: string; position: Point };
+  finalStateContextMenu: { state: FinalState; position: Point };
+  choiceStateContextMenu: { state: ChoiceState; position: Point };
   changeEvent: {
     state: State;
     eventSelection: EventSelection;
@@ -144,38 +144,6 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     this.view.children.add(state, Layer.States);
 
     this.watch(state);
-
-    this.view.isDirty = true;
-  };
-
-  changeStateEvents = (args: ChangeStateEventsParams) => {
-    const {
-      id,
-      eventData: { do: actions, trigger, condition },
-    } = args;
-    const state = this.data.states.get(id);
-    if (!state) return;
-
-    const eventIndex = state.data.events.findIndex(
-      (value) =>
-        trigger.component === value.trigger.component &&
-        trigger.method === value.trigger.method &&
-        undefined === value.trigger.args // FIXME: сравнение по args может не работать
-    );
-
-    const event = state.data.events[eventIndex];
-
-    if (event === undefined) {
-      state.data.events = [...state.data.events, args.eventData];
-    } else {
-      if (actions.length) {
-        event.condition = condition;
-        event.do = [...actions];
-      } else {
-        state.data.events.splice(eventIndex, 1);
-      }
-    }
-    state.updateEventBox();
 
     this.view.isDirty = true;
   };
@@ -333,7 +301,6 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
   createChoiceState = (params: CreateChoiceStateParams) => {
     const { id, smId } = params;
     if (!id) return;
-
     const state = new ChoiceState(this.app, id, smId, { ...params });
 
     this.data.choiceStates.set(id, state);
@@ -367,6 +334,14 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     this.view.isDirty = true;
   };
 
+  updateAll() {
+    this.forEachState((state) => {
+      state.updateEventBox();
+    });
+
+    this.view.isDirty = true;
+  }
+
   linkChoiceState = (args: LinkStateParams) => {
     const { childId, parentId } = args;
     const state = this.data.choiceStates.get(childId);
@@ -394,6 +369,19 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     const { stateId } = args;
     const state = this.data.states.get(stateId);
     if (!state) return;
+
+    state.updateEventBox();
+
+    this.view.isDirty = true;
+  };
+
+  changeState = (args: ChangeStateParams) => {
+    const { id, events } = args;
+
+    const state = this.data.states.get(id);
+    if (!state) return;
+
+    state.data.events = events;
 
     state.updateEventBox();
 
@@ -467,24 +455,29 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     const targetPos = state.computedPosition;
     const titleHeight = state.computedTitleSizes.height;
     const y = e.event.y - targetPos.y;
-    if (y <= titleHeight) {
-      this.emit('changeStateName', state);
-    } else {
-      // FIXME: если будет учёт нажатий на дочерний контейнер, нужно отсеять их здесь
-      // FIXME: пересчитывает координаты внутри, ещё раз
-      const eventSelection = state.eventBox.handleDoubleClick({ x: e.event.x, y: e.event.y });
-      if (!eventSelection) {
-        this.emit('changeState', state);
-      } else {
-        const eventData = state.eventBox.data[eventSelection.eventIdx];
-        const event =
-          eventSelection.actionIdx === null
-            ? eventData.trigger
-            : eventData.do[eventSelection.actionIdx];
-        const isEditingEvent = eventSelection.actionIdx === null;
 
-        this.emit('changeEvent', { state, eventSelection, event, isEditingEvent });
-      }
+    if (y <= titleHeight) {
+      return this.emit('changeStateName', state);
+    }
+
+    if (!this.app.controller.visual) {
+      return this.emit('changeState', state);
+    }
+
+    // FIXME: если будет учёт нажатий на дочерний контейнер, нужно отсеять их здесь
+    // FIXME: пересчитывает координаты внутри, ещё раз
+    const eventSelection = state.eventBox.handleDoubleClick({ x: e.event.x, y: e.event.y });
+    if (!eventSelection) {
+      this.emit('changeState', state);
+    } else {
+      const eventData = state.eventBox.data[eventSelection.eventIdx];
+      const event =
+        eventSelection.actionIdx === null
+          ? eventData.trigger
+          : eventData.do[eventSelection.actionIdx];
+      const isEditingEvent = eventSelection.actionIdx === null;
+
+      this.emit('changeEvent', { state, eventSelection, event: event as Event, isEditingEvent });
     }
   };
 
@@ -578,7 +571,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     const item = this.data.finalStates.get(stateId);
     if (!item) return;
     this.emit('finalStateContextMenu', {
-      stateId,
+      state: item,
       position: { x: e.event.nativeEvent.clientX, y: e.event.nativeEvent.clientY },
     });
   };
@@ -599,7 +592,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     if (!item) return;
     this.controller.selectChoice({ smId: '', id: stateId });
     this.emit('choiceStateContextMenu', {
-      stateId,
+      state: item,
       position: { x: e.event.nativeEvent.clientX, y: e.event.nativeEvent.clientY },
     });
   };
@@ -655,6 +648,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     state.on('longpress', this.handleLongPress.bind(this, state));
 
     state.edgeHandlers.onStartNewTransition = this.handleStartNewTransition.bind(this, state);
+    state.edgeHandlers.bindEvents();
   }
   private unwatchState(state: State) {
     state.off('dragend', this.handleDragEnd.bind(this, state));
@@ -693,6 +687,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     state.on('contextmenu', this.handleChoiceStateContextMenu.bind(this, state.id));
 
     state.edgeHandlers.onStartNewTransition = this.handleStartNewTransition.bind(this, state);
+    state.edgeHandlers.bindEvents();
   }
   private unwatchChoiceState(state: ChoiceState) {
     state.off('dragend', this.handleChoiceStateDragEnd.bind(this, state));
