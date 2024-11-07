@@ -39,6 +39,7 @@ type DragHandler = (state: State, e: { event: MyMouseEvent }) => void;
 type DragInfo = {
   parentId: string;
   childId: string;
+  smId: string;
 } | null;
 
 interface StatesControllerEvents {
@@ -71,7 +72,7 @@ interface StatesControllerEvents {
 export class StatesController extends EventEmitter<StatesControllerEvents> {
   dragInfo: DragInfo = null;
 
-  __data = getStatesControllerDefaultData();
+  data = getStatesControllerDefaultData();
 
   constructor(private app: CanvasEditor) {
     super();
@@ -85,9 +86,6 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
     return this.app.controller;
   }
 
-  get data() {
-    return this.__data;
-  }
   /**
    * ! По всем видам состояний
    */
@@ -440,7 +438,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
   handleStateMouseDown = (state: State, e: { event: MyMouseEvent }) => {
     // Пустое название машины состояний - заглушка
     this.controller.selectState({ smId: '', id: state.id });
-    this.controller.emit('selectState', { id: state.id });
+    this.controller.emit('selectState', { smId: state.smId, id: state.id });
     const targetPos = state.computedPosition;
     const titleHeight = state.titleHeight;
     const y = e.event.y - targetPos.y;
@@ -528,8 +526,9 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
 
     this.dragInfo = null;
 
-    if (possibleParent) {
+    if (possibleParent instanceof State) {
       this.dragInfo = {
+        smId: possibleParent.smId,
         parentId: possibleParent.id,
         childId: state.id,
       };
@@ -544,6 +543,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
         childId: this.dragInfo.childId,
       });
       this.app.controller.emit('linkState', {
+        smId: this.dragInfo.smId,
         childId: this.dragInfo.childId,
         parentId: this.dragInfo.parentId,
       });
@@ -578,6 +578,7 @@ export class StatesController extends EventEmitter<StatesControllerEvents> {
 
   handleChoiceStateMouseDown = (state: ChoiceState) => {
     this.controller.selectChoice({ smId: '', id: state.id });
+    this.controller.emit('selectChoice', { smId: state.smId, id: state.id });
   };
 
   handleChoiceStateDragEnd = (

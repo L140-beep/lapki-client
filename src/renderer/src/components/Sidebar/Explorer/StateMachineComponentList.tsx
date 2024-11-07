@@ -1,11 +1,14 @@
 import { useMemo } from 'react';
 
+import { CanvasController } from '@renderer/lib/data/ModelController/CanvasController';
+import { PlatformManager } from '@renderer/lib/data/PlatformManager';
 import { useModelContext } from '@renderer/store/ModelContext';
 import { Component as ComponentData } from '@renderer/types/diagram';
 
 import { Component } from './Component';
 
 export interface StateMachineComponentListProps {
+  controller: CanvasController;
   smId: string;
   dragName: string | null;
   selectedComponent: string | null;
@@ -17,6 +20,7 @@ export interface StateMachineComponentListProps {
 }
 
 export const StateMachineComponentList: React.FC<StateMachineComponentListProps> = ({
+  controller,
   smId,
   dragName,
   selectedComponent,
@@ -31,9 +35,8 @@ export const StateMachineComponentList: React.FC<StateMachineComponentListProps>
   const components = model.useData(smId, 'elements.components') as {
     [id: string]: ComponentData;
   };
-
-  const name = model.useData(smId, 'elements.name');
-  const editor = modelController.getCurrentCanvas();
+  const platform = controller.useData('platform') as { [id: string]: PlatformManager };
+  const smName = model.useData(smId, 'elements.name');
 
   const sortedComponents = useMemo(() => {
     return Object.entries(components)
@@ -43,7 +46,7 @@ export const StateMachineComponentList: React.FC<StateMachineComponentListProps>
 
   return (
     <div>
-      <div>{name ?? smId}</div>
+      <div>{smName ?? smId}</div>
       {/* <Panel
         id="panel2"
         ref={hierarchyPanelRef}
@@ -70,14 +73,12 @@ export const StateMachineComponentList: React.FC<StateMachineComponentListProps>
           key={name}
           name={name}
           description={
-            editor.controller.platform[smId] !== undefined
-              ? editor.controller.platform[smId].getComponent(name)?.description
+            platform[smId] !== undefined
+              ? platform[smId].getComponent(name)?.description
               : undefined
           }
           icon={
-            editor.controller.platform[smId] !== undefined
-              ? editor.controller.platform[smId].getFullComponentIcon(name)
-              : undefined
+            platform[smId] !== undefined ? platform[smId].getFullComponentIcon(name) : undefined
           }
           isSelected={name === selectedComponent}
           isDragging={name === dragName}

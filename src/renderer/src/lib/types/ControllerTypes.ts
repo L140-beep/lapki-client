@@ -15,14 +15,14 @@ import { DrawableComponent } from '../drawable/ComponentNode';
 
 export interface SelectDrawable {
   id: string;
-  smId?: string;
+  smId: string;
 }
 
 export const emptyControllerData = () => ({
   stateMachinesSub: {},
 });
 
-export type ControllerDataPropertyName = 'stateMachinesSub' | 'visual';
+export type ControllerDataPropertyName = 'stateMachinesSub' | 'visual' | 'platform';
 
 export type ControllerDataListeners = { [key in ControllerDataPropertyName]: (() => void)[] };
 
@@ -71,7 +71,7 @@ export interface LinkStateParams {
   childId: string;
 
   // Поля ниже нужны для коректной отмены этого действия с помощью истории
-  smId?: string;
+  smId: string;
   addOnceOff?: boolean;
   canBeInitial?: boolean;
 }
