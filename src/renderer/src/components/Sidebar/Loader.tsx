@@ -115,7 +115,8 @@ export const Loader: React.FC<FlasherProps> = ({
       Flasher.flash(currentDevice, serialMonitorDevice, serialConnectionStatus);
     } else {
       Flasher.flashCompiler(
-        compilerData!.state_machines[currentDeviceID].binary!,
+        // проверка на undefined осуществляется в flashButtonDisabled
+        compilerData!.state_machines[deviceStateMachine.get(currentDeviceID)!].binary!,
         currentDevice,
         serialMonitorDevice,
         serialConnectionStatus
@@ -360,7 +361,7 @@ export const Loader: React.FC<FlasherProps> = ({
       return true;
     }
     // для безопасности, лучше всего блокировать кнопку загрузки, пока не произойдёт подключения к монитору порта,
-    // чтобы гарантированно избежать ситуации одноремнной прошивки и подключения к порту
+    // чтобы гарантированно избежать ситуации одновремнной прошивки и подключения к порту
     if (serialConnectionStatus == SERIAL_MONITOR_CONNECTING) {
       return true;
     }
