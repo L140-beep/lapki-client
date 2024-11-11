@@ -160,36 +160,36 @@ export const CompilerTab: React.FC<CompilerProps> = ({
       name: 'Показать журнал компиляции',
       handler: handleAddStdoutTab,
       disabled:
-        compilerData?.state_machines[smId].commands.length === 0 ||
-        compilerData?.state_machines[smId].commands === undefined,
+        compilerData?.state_machines[smId]?.commands === undefined ||
+        compilerData?.state_machines[smId]?.commands.length === 0,
     },
     {
       name: 'Сохранить результат',
       handler: handleSaveBinaryIntoFolder,
       disabled:
-        compilerData?.state_machines[smId].binary === undefined ||
-        compilerData.state_machines[smId].binary.length === 0,
+        compilerData?.state_machines[smId]?.binary === undefined ||
+        compilerData.state_machines[smId]?.binary.length === 0,
     },
     {
       name: 'Сохранить код',
       handler: handleSaveSourceIntoFolder,
       disabled:
-        compilerData?.state_machines[smId].source == undefined ||
-        compilerData?.state_machines[smId].source.length === 0,
+        compilerData?.state_machines[smId]?.source == undefined ||
+        compilerData?.state_machines[smId]?.source.length === 0,
     },
     {
       name: 'Показать код',
       handler: handleShowSource,
       disabled:
-        compilerData?.state_machines[smId].source == undefined ||
-        compilerData?.state_machines[smId].source.length === 0,
+        compilerData?.state_machines[smId]?.source == undefined ||
+        compilerData?.state_machines[smId]?.source.length === 0,
     },
     {
       name: 'Прошить...',
       handler: handleFlashButton,
       disabled:
-        compilerData?.state_machines[smId].binary === undefined ||
-        compilerData.state_machines[smId].binary.length === 0,
+        compilerData?.state_machines[smId]?.binary === undefined ||
+        compilerData?.state_machines[smId]?.binary.length === 0,
     },
   ];
   const processing =
