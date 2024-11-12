@@ -219,9 +219,12 @@ export const CompilerTab: React.FC<CompilerProps> = ({
     return options;
   };
   const getSelectMachineStateOption = () => {
-    if (!smId) return;
+    if (!smId) return null;
     const sm = stateMachines[smId];
-    if (!sm) return;
+    if (!sm) {
+      setSmId(undefined);
+      return null;
+    }
     return getSmOption(smId, sm);
   };
 
