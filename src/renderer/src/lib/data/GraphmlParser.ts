@@ -1,7 +1,6 @@
 import {
   CGMLElements,
   parseCGML,
-  CGMLInitialState,
   CGMLState,
   CGMLTransition,
   CGMLComponent,
@@ -234,7 +233,7 @@ function getFinals(rawFinalStates: { [id: string]: CGMLVertex }): { [id: string]
   return finalStates;
 }
 
-function getInitialStates(rawInitialStates: { [id: string]: CGMLInitialState }): {
+function getInitialStates(rawInitialStates: { [id: string]: CGMLVertex }): {
   [id: string]: InitialState;
 } {
   const initialStates: { [id: string]: InitialState } = {};
@@ -356,6 +355,8 @@ function getTransitions(
         sourceId: rawTransition.source,
         targetId: rawTransition.target,
         color: rawTransition.color,
+        sourcePoint: rawTransition.sourcePoint,
+        targetPoint: rawTransition.targetPoint,
       };
       continue;
     }
@@ -374,6 +375,8 @@ function getTransitions(
         do: eventData[0].do,
         condition: eventData[0].condition,
       },
+      sourcePoint: rawTransition.sourcePoint,
+      targetPoint: rawTransition.targetPoint,
     };
   }
   return [visual, transitions];
@@ -646,7 +649,7 @@ export function importGraphml(
       sm.name = rawSm.name;
       sm.position = rawSm.position ?? { x: 0, y: 0 };
       elements.stateMachines[smId] = sm;
-      platforms[rawSm.platform] = platform;
+      platforms[platformName] = platform;
     }
     validateElements(elements, platforms);
 

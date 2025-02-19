@@ -15,6 +15,7 @@ import {
   ChangeStateNameParams,
   ChangeStateParams,
   ChangeTransitionParams,
+  ChangeTransitionPosition,
   ControllerDataPropertyName,
   CreateChoiceStateParams,
   CreateComponentParams,
@@ -35,6 +36,7 @@ import {
   Layer,
   LinkStateParams,
   LinkTransitionParams,
+  Point,
   RenameComponentParams,
   SelectDrawable,
   UnlinkStateParams,
@@ -157,7 +159,7 @@ export type CanvasControllerEvents = {
   setTextMode: boolean;
   editStateMachine: EditStateMachine;
   changeStateMachinePosition: ChangePosition;
-  changeTransitionPositionFromController: ChangePosition;
+  changeTransitionPositionFromController: ChangeTransitionPosition;
   changeNotePositionFromController: ChangePosition;
   changeChoicePositionFromController: ChangePosition;
   changeFinalPositionFromController: ChangePosition;
