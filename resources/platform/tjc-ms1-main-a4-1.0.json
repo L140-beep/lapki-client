@@ -776,7 +776,7 @@
       "singletone": false,
       "variables": {}
     },
-      
+
     "UserSignal": {
       "description": "Пользовательский сигнал",
       "img": "arduino/timer.svg",
@@ -808,11 +808,16 @@
           "img": "arduino/timeout.svg",
           "description": "Итерации завершены",
           "checkMethod": "onEnd"
+        },
+        "onIteration": {
+          "img": "arduino/timeout.svg",
+          "description": "Очередная итерация",
+          "checkMethod": "onIteration"
         }
       },
       "constructorParameters": {},
       "methods": {
-        "break_": {
+        "stop": {
           "img": "arduino/timer-start.svg",
           "description": "Остановить итератор."
         },
@@ -840,7 +845,6 @@
       },
       "buildFiles": ["Iterator.hpp"],
       "importFiles": ["Iterator.hpp"],
-      "loopActions": ["onIteration"],
       "singletone": false,
       "variables": {
         "index": {
