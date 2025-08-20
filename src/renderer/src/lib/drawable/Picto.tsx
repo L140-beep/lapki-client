@@ -253,7 +253,8 @@ export class Picto {
   MATRIX_LED_WIDTH = 5;
   MATRIX_LED_HEIGHT = 5;
   TEXT_FONT = 'px/0 monospace';
-
+  PICTO_OFFSET_X = 15;
+  PICTO_OFFSET_Y = 10;
   drawRect(
     ctx: CanvasRenderingContext2D,
     x: number,
@@ -392,7 +393,6 @@ export class Picto {
       this.eventWidth / scalePictoSize,
       parametersDimensions.width * this.scale
     );
-    console.log(parameters, eventWidth, this.eventWidth);
     const eventHeight: number = this.pictoHeight / scalePictoSize;
     const iconSize: number = this.iconSize / scalePictoSize;
     const iconVOffset: number = this.iconVOffset / scalePictoSize;
@@ -522,8 +522,23 @@ export class Picto {
         }
       }
     }
-
-    return basePictoDimensions;
+    // Return dimensions considering parameter width
+    let totalWidth = basePictoDimensions.width;
+    let totalHeight = basePictoDimensions.height;
+    if (ps.drawParamWindow) {
+      // The parameter window starts at x + PARAMETERS_OFFSET_X / scale and extends by parametersWidth
+      // So, the total width is the maximum of basePictoDimensions.width and the rightmost parameter edge
+      const parametersTotalWidth = this.PARAMETERS_OFFSET_X / this.scale + parametersWidth;
+      if (parametersTotalWidth > totalWidth) {
+        totalWidth = parametersTotalWidth;
+      }
+      // The parameter window is drawn below the event, so height may increase
+      const parametersTotalHeight = eventHeight / this.scale + parameterHeight;
+      if (parametersTotalHeight > totalHeight) {
+        totalHeight = parametersTotalHeight;
+      }
+    }
+    return { width: totalWidth, height: totalHeight };
     // вернуть с учетом ширины параметров
   }
   calculateParametersDimensions(parameters: DrawFunction[]): Dimensions {
@@ -554,8 +569,8 @@ export class Picto {
   }
 
   calculateBasePictoDimensions = (scalePictoSize: number): Dimensions => {
-    const eventWidth = this.eventWidth / scalePictoSize;
-    const eventHeight: number = this.pictoHeight / scalePictoSize;
+    const eventWidth = this.eventWidth / scalePictoSize / this.scale;
+    const eventHeight: number = this.pictoHeight / scalePictoSize / this.scale;
 
     return {
       width: eventWidth,
@@ -579,7 +594,7 @@ export class Picto {
     const scaledHeight = height / this.scale;
     return {
       width: scaledWidth * matrix[0].length,
-      height: scaledHeight * matrix.length, // может сломаться при загрузке пустой матрциы
+      height: scaledHeight * matrix.length, // может сломаться при загрузке пустой матрицы
     };
   };
   drawParametersWindow(
@@ -687,7 +702,7 @@ export class Picto {
 
     return {
       width: scaledWidth * values[0].length,
-      height: scaledHeight * values.length, // может сломаться при загрузке пустой матрциы
+      height: scaledHeight * values.length, // может сломаться при загрузке пустой матрицы
     };
   };
 }
