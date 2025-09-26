@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
 export let appVersion = null;
-export const releaseName = 'EgyptianMau';
+export const releaseName = 'Foldex';
 
 export const appName = 'Cyberiada IDE';
 export const seriousMode = true;
