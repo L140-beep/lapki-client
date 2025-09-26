@@ -232,7 +232,7 @@
       "methods": {
         "on": {
           "alias": "Установить яркость",
-          "img": "arduino/switch-on.svg",
+          "img": "tjc-ms/setBright.svg",
           "parameters": [
             {
               "name": "Яркость",
@@ -257,16 +257,21 @@
           "alias": "Помигать",
           "img": "arduino/blink.svg",
           "parameters": [
-            {
-              "name": "Интервал",
-              "type": "unsigned int",
-              "description": "Длительность каждого мигания (мс)."
-            },
-            {
-              "name": "Миганий",
-              "type": "byte",
-              "description": "Количество миганий."
-            }
+              {
+                "name": "Интервал свечения",
+                "type": "unsigned int",
+                "description": "Сколько времени светодиод будет включен (мс)"
+              },
+              {
+                "name": "Интервал паузы",
+                "type": "unsigned int",
+                "description": "Сколько времени светодиод будет выключен (мс)"
+              },
+              {
+                "name": "Количество миганий",
+                "type": "byte",
+                "description": "Количество миганий"
+              }
           ],
           "description": "Мигает светодиодом определенное количество раз с определенной длительностью каждого мигания."
         }
