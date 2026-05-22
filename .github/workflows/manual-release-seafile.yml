@@ -47,6 +47,8 @@ jobs:
             npm run bundle:win
             VERSION=$(node -p "require('./package.json').version")
             mkdir -p outputs
+            rm -rf outputs/seafile-upload
+            mkdir -p outputs/seafile-upload
             rm -rf outputs/windows-release
             mkdir -p outputs/windows-release
             cp dist/*-setup.exe outputs/windows-release/
@@ -65,6 +67,10 @@ jobs:
             cp dist/*.deb outputs/
             cp dist/*.snap outputs/
             cp dist/*.AppImage outputs/
+            cp outputs/cyberiada-${VERSION}-windows.zip outputs/seafile-upload/
+            cp dist/*.deb outputs/seafile-upload/
+            cp dist/*.snap outputs/seafile-upload/
+            cp dist/*.AppImage outputs/seafile-upload/
 
       - name: Get current date
         id: date
@@ -80,11 +86,7 @@ jobs:
           repo-id: ${{ secrets.SEAFILE_REPO_ID }}
           remote-path: '/'
           # remote-path: /${{ env.date }}
-          local-path: |
-            outputs/cyberiada-*-windows.zip
-            outputs/*.deb
-            outputs/*.snap
-            outputs/*.AppImage
+          local-path: 'outputs/seafile-upload/*'
           overwrite: 'true'
 
       - name: Save deb artifact
