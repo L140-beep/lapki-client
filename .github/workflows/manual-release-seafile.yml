@@ -43,9 +43,24 @@ jobs:
             npm run build
             npm run bundle:linux
             npm run bundle:win
+            VERSION=$(node -p "require('./package.json').version")
             mkdir -p outputs
+            rm -rf outputs/windows-release
+            mkdir -p outputs/windows-release
+            cp dist/*-setup.exe outputs/windows-release/
+            mkdir -p outputs/windows-release/setup_data
+            cp -r build/gcc-arm-none-eabi outputs/windows-release/setup_data/gcc-arm-none-eabi
+            mkdir -p outputs/windows-release/setup_data/irpcb
+            cp -r build/irpcb/bin outputs/windows-release/setup_data/irpcb/bin
+            mkdir -p outputs/windows-release/setup_data/lapki-compiler/fullgraphmlparser
+            cp -r build/lapki-compiler/compiler/library outputs/windows-release/setup_data/lapki-compiler/library
+            cp -r build/lapki-compiler/compiler/platforms outputs/windows-release/setup_data/lapki-compiler/platforms
+            cp -r build/lapki-compiler/compiler/fullgraphmlparser/templates outputs/windows-release/setup_data/lapki-compiler/fullgraphmlparser/templates
+            (
+              cd outputs/windows-release
+              zip -r "../cyberiada-${VERSION}-windows.zip" .
+            )
             cp dist/*.deb outputs/
-            cp dist/*.exe outputs/
             cp dist/*.snap outputs/
             cp dist/*.AppImage outputs/
 
@@ -79,6 +94,13 @@ jobs:
           name: exe-build
           path: |
             dist/*.exe
+
+      - name: Save windows zip artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-zip-build
+          path: |
+            outputs/cyberiada-*-windows.zip
 
       - name: Save snap artifact
         uses: actions/upload-artifact@v4
