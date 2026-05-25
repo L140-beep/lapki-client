@@ -1,5 +1,4 @@
-param($packagesPath)
-param($indexPath)
+param($packagesPath, $indexesPath)
 
 $arduino15Path = "$env:LOCALAPPDATA\Arduino15\packages"
 $arduinoIndexesPath = "$env:LOCALAPPDATA\Arduino15"
@@ -12,7 +11,7 @@ Get-ChildItem -LiteralPath $packagesPath -Force |
         -Destination $arduino15Path `
         -Recurse `
         -Force
-Get-ChildItem -LiteralPath $indexPath -Force |
+Get-ChildItem -LiteralPath $indexesPath -Force |
     Copy-Item `
         -Destination $arduinoIndexesPath `
         -Recurse `
