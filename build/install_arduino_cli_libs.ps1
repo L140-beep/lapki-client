@@ -1,8 +1,12 @@
 param($packagesPath)
 
-$arduino15Path = "$env:LOCALAPPDATA\Arduino15"
+$arduino15Path = "$env:LOCALAPPDATA\Arduino15\packages"
 
 if (!(Test-Path $arduino15Path)) {
     New-Item -ItemType Directory -Path $arduino15Path
-    Move-Item -Path $packagesPath -Destination $arduino15Path -Force
 }
+Get-ChildItem -LiteralPath $packagesPath -Force |
+    Copy-Item `
+        -Destination $arduino15Path `
+        -Recurse `
+        -Force
