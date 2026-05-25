@@ -28,6 +28,10 @@ jobs:
           wget https://seafile.polyus-nt.ru/f/b596a9c281dc423b9cec/?dl=1 -O build/arduino-cli-libs.zip
           unzip build/arduino-cli-libs.zip -d build/arduino-cli-libs
           rm -f build/arduino-cli-libs.zip
+
+          wget https://seafile.polyus-nt.ru/f/5ce5051888204a0196db/?dl=1 -O build/library_indexes.zip
+          unzip build/library_indexes.zip -d build/library_indexes
+          rm -f build/library_indexes.zip
       - name: Download gcc-arm-none-eabi
         run: |
           wget https://seafile.polyus-nt.ru/f/83d0be836d1c491fa3b3/?dl=1 -O build/gcc-arm-none-eabi.zip
@@ -67,7 +71,8 @@ jobs:
             
             mkdir -p outputs/windows-release/setup_data/
             cp -r build/arduino-cli-libs outputs/windows-release/setup_data/
-            
+            cp -r build/library_indexes outputs/windows-release/setup_data/
+
             (
               cd outputs/windows-release
               zip -r "../cyberiada-${VERSION}-windows.zip" .

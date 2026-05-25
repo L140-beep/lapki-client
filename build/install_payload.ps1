@@ -215,9 +215,11 @@ if ($LASTEXITCODE -ne 0) {
 $installArduinoCliLibsScript =
     Join-Path (Split-Path -Parent $MyInvocation.MyCommand.Path) "install_arduino_cli_libs.ps1"
 $packagesPath = Join-Path $SetupDataDir "arduino-cli-libs\packages"
+$indexesPath = Join-Path $SetupDataDir "library_indexes"
 
 & powershell.exe `
 -NoProfile `
 -ExecutionPolicy Bypass `
 -File $installArduinoCliLibsScript `
-$packagesPath
+$packagesPath `
+$indexesPath
