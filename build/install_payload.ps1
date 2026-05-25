@@ -120,7 +120,6 @@ $missing = @()
 
 # Проверяем наличие всех обязательных директорий
 foreach ($item in $requiredItems) {
-
     # Формируем полный путь
     $fullPath = Join-Path $SetupDataDir $item.Path
 
@@ -134,6 +133,9 @@ foreach ($item in $requiredItems) {
 if ($missing.Count -gt 0) {
     $message = "Missing setup_data items:`n - " + ($missing -join "`n - ")
     Write-Error $message
+
+    # Ожидание Enter от пользователя
+    Read-Host "Press Enter to exit"
     exit 2
 }
 

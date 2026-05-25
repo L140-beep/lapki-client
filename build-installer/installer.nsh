@@ -28,7 +28,7 @@
   SetOutPath "$PLUGINSDIR"
   File /oname=$PLUGINSDIR\install_payload.ps1 "${BUILD_RESOURCES_DIR}\install_payload.ps1"
   File /oname=$PLUGINSDIR\install_compiler_deps.ps1 "${BUILD_RESOURCES_DIR}\install_compiler_deps.ps1"
-  File /oname=$PLUGINSDIR\install_payload.ps1 "${BUILD_RESOURCES_DIR}\install_arduino_cli_libs.ps1"
+  File /oname=$PLUGINSDIR\install_arduino_cli_libs.ps1 "${BUILD_RESOURCES_DIR}\install_arduino_cli_libs.ps1"
   DetailPrint "Running external setup data installer..."
   ExecWait 'powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$PLUGINSDIR\install_payload.ps1" -InstallDir "$INSTDIR" -SetupDataDir "$EXEDIR\setup_data"' $0
   StrCmp $0 0 payload_done
