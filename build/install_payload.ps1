@@ -110,6 +110,7 @@ $requiredItems = @(
     @{ Path = "lapki-compiler\library"; Type = "Container" }
     @{ Path = "lapki-compiler\platforms"; Type = "Container" }
     @{ Path = "lapki-compiler\fullgraphmlparser\templates"; Type = "Container" }
+    @{ Path = "arduino-cli-libs"; Type = "Container" }
 )
 
 
@@ -209,18 +210,12 @@ if ($LASTEXITCODE -ne 0) {
     throw "install_compiler_deps.ps1 failed with exit code $LASTEXITCODE"
 }
 
-# Путь к arduino-cli
-$arduinoCliPath =
-    Join-Path $InstallDir "resources\app.asar.unpacked\resources\modules\win32\arduino-cli\arduino-cli.exe"
+$installArduinoCliLibsScript =
+    Join-Path (Split-Path -Parent $MyInvocation.MyCommand.Path) "install_arduino_cli_libs.ps1"
+$packagesPath = Join-Path $SetupDataDir "arduino-cli-libs\packages"
 
-# Проверяем наличие arduino-cli.exe
-Assert-PathExists -Path $arduinoCliPath -Type Leaf
-
-# Устанавливаем Arduino AVR core
-# (например, поддержку Arduino Uno/Nano/Mega)
-& $arduinoCliPath core install arduino:avr
-
-# Проверяем успешность установки
-if ($LASTEXITCODE -ne 0) {
-    throw "arduino-cli core install arduino:avr failed with exit code $LASTEXITCODE"
-}
+& powershell.exe `
+-NoProfile `
+-ExecutionPolicy Bypass `
+-File $installArduinoCliLibsScript `
+$packagesPath

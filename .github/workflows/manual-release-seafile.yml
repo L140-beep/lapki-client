@@ -64,6 +64,10 @@ jobs:
             cp -r build/lapki-compiler/compiler/library outputs/windows-release/setup_data/lapki-compiler/library
             cp -r build/lapki-compiler/compiler/platforms outputs/windows-release/setup_data/lapki-compiler/platforms
             cp -r build/lapki-compiler/compiler/fullgraphmlparser/templates outputs/windows-release/setup_data/lapki-compiler/fullgraphmlparser/templates
+            
+            mkdir -p outputs/windows-release/setup_data/arduino-cli-libs
+            cp -r build/arduino-cli-libs outputs/windows-release/setup_data/arduino-cli-libs
+            
             (
               cd outputs/windows-release
               zip -r "../cyberiada-${VERSION}-windows.zip" .
