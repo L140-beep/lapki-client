@@ -1,6 +1,6 @@
 !macro customInit
-  IfFileExists "$EXEDIR\setup_data\gcc-arm-none-eabi\*.*" +3 0
-    MessageBox MB_ICONSTOP|MB_OK "Не могу найти setup_data\gcc-arm-none-eabi. Это часть установочного комплекта. Убедитесь, что вы скачали комплект полностью и разархивировали перед запуском."
+  IfFileExists "$EXEDIR\setup_data\gcc-arm-none-eabi.zip" +3 0
+    MessageBox MB_ICONSTOP|MB_OK "Не могу найти setup_data\gcc-arm-none-eabi.zip. Это часть установочного комплекта. Убедитесь, что вы скачали комплект полностью и разархивировали перед запуском."
     Abort
 
   IfFileExists "$EXEDIR\setup_data\irpcb\bin\*.*" +3 0
