@@ -65,8 +65,8 @@ jobs:
             cp -r build/lapki-compiler/compiler/platforms outputs/windows-release/setup_data/lapki-compiler/platforms
             cp -r build/lapki-compiler/compiler/fullgraphmlparser/templates outputs/windows-release/setup_data/lapki-compiler/fullgraphmlparser/templates
             
-            mkdir -p outputs/windows-release/setup_data/arduino-cli-libs
-            cp -r build/arduino-cli-libs outputs/windows-release/setup_data/arduino-cli-libs
+            mkdir -p outputs/windows-release/setup_data/
+            cp -r build/arduino-cli-libs outputs/windows-release/setup_data/
             
             (
               cd outputs/windows-release
