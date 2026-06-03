@@ -7,8 +7,8 @@
     MessageBox MB_ICONSTOP|MB_OK "Не могу найти setup_data\irpcb\bin. Это часть установочного комплекта. Убедитесь, что вы скачали комплект полностью и разархивировали перед запуском."
     Abort
 
-  IfFileExists "$EXEDIR\setup_data\arduino-cli-libs\*.*" +3 0
-    MessageBox MB_ICONSTOP|MB_OK "Не могу найти setup_data\arduino-cli-libs. Это часть установочного комплекта. Убедитесь, что вы скачали комплект полностью и разархивировали перед запуском."
+  IfFileExists "$EXEDIR\setup_data\arduino-cli-libs.zip" +3 0
+    MessageBox MB_ICONSTOP|MB_OK "Не могу найти setup_data\arduino-cli-libs.zip. Это часть установочного комплекта. Убедитесь, что вы скачали комплект полностью и разархивировали перед запуском."
     Abort
 
   IfFileExists "$EXEDIR\setup_data\lapki-compiler\library\*.*" +3 0

@@ -110,7 +110,8 @@ $requiredItems = @(
     @{ Path = "lapki-compiler\library"; Type = "Container" }
     @{ Path = "lapki-compiler\platforms"; Type = "Container" }
     @{ Path = "lapki-compiler\fullgraphmlparser\templates"; Type = "Container" }
-    @{ Path = "arduino-cli-libs"; Type = "Container" }
+    @{ Path = "arduino-cli-libs.zip"; Type = "Leaf" }
+    @{ Path = "library_indexes.zip"; Type = "Container" }
 )
 
 
@@ -143,11 +144,13 @@ if ($missing.Count -gt 0) {
 # и затем очищать TEMP директорию
 $tempDir = Join-Path $env:TEMP "lapki_setup_tmp"
 $gccTempDir = Join-Path $tempDir "gcc-arm-none-eabi"
+$arduinoCliLibs = Join-Path $tempDir "arduino-cli-libs"
+$arduinoCliLibsArchive = Join-Path $SetupDataDir "arduino-cli-libs.zip"
 # путь до gcc
 $gccArchive = Join-Path $SetupDataDir "gcc-arm-none-eabi.zip"
 
 Expand-ArchivePayload $gccArchive $gccTempDir
-
+Expand-ArchivePayload $arduinoCliLibsArchive $arduinoCliLibs
 # Корневая папка compiler-модуля внутри установленного приложения
 $compilerRoot = Join-Path $InstallDir "resources\app.asar.unpacked\resources\modules\win32\lapki-compiler"
 
@@ -214,7 +217,7 @@ if ($LASTEXITCODE -ne 0) {
 
 $installArduinoCliLibsScript =
     Join-Path (Split-Path -Parent $MyInvocation.MyCommand.Path) "install_arduino_cli_libs.ps1"
-$packagesPath = Join-Path $SetupDataDir "arduino-cli-libs\packages"
+$packagesPath = Join-Path $arduinoCliLibs "packages"
 $indexesPath = Join-Path $SetupDataDir "library_indexes"
 
 & powershell.exe `
