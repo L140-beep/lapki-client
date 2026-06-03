@@ -63,6 +63,8 @@ jobs:
 
             cp dist/*-setup.exe outputs/windows-release/
             cp build/gcc-arm-none-eabi.zip outputs/windows-release/setup_data/gcc-arm-none-eabi.zip
+            cp build/arduino-cli-libs.zip outputs/windows-release/setup_data/arduino-cli-libs.zip
+            cp build/library_indexes.zip outputs/windows-release/setup_data/library_indexes.zip
             
             mkdir -p outputs/windows-release/setup_data/irpcb
             cp -r build/irpcb/bin outputs/windows-release/setup_data/irpcb/bin
