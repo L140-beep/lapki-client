@@ -111,7 +111,7 @@ $requiredItems = @(
     @{ Path = "lapki-compiler\platforms"; Type = "Container" }
     @{ Path = "lapki-compiler\fullgraphmlparser\templates"; Type = "Container" }
     @{ Path = "arduino-cli-libs.zip"; Type = "Leaf" }
-    @{ Path = "library_indexes.zip"; Type = "Container" }
+    @{ Path = "library_indexes.zip"; Type = "Leaf" }
 )
 
 
