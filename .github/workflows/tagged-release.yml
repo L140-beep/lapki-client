@@ -28,6 +28,8 @@ jobs:
       - name: Download Arduino CLI
         run: |
           wget https://downloads.arduino.cc/arduino-cli/arduino-cli_latest_Windows_64bit.zip -O resources/modules/win32/arduino-cli.zip
+          unzip resources/modules/win32/arduino-cli.zip -d resources/modules/win32/arduino-cli/
+          rm -f resources/modules/win32/arduino-cli.zip
       - name: Download Arduino CLI libraries
         run: |
           wget https://seafile.polyus-nt.ru/f/b596a9c281dc423b9cec/?dl=1 -O build/arduino-cli-libs.zip
