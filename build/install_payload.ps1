@@ -194,11 +194,6 @@ foreach ($step in $copyPlan) {
         -Destination $step.Destination
 }
 
-# Очистка временной распаковки (пока только gcc)
-if (Test-Path -LiteralPath $tempDir) {
-    Remove-Item -LiteralPath $tempDir -Recurse -Force
-}
-
 # Путь к вспомогательному скрипту установки зависимостей в PATH
 $installCompilerDepsScript =
     Join-Path (Split-Path -Parent $MyInvocation.MyCommand.Path) "install_compiler_deps.ps1"
@@ -223,8 +218,13 @@ $installArduinoCliLibsScript =
 $packagesPath = Join-Path $arduinoCliLibs "packages"
 
 & powershell.exe `
--NoProfile `
--ExecutionPolicy Bypass `
--File $installArduinoCliLibsScript `
-$packagesPath `
-$libraryIndexes
+    -NoProfile `
+    -ExecutionPolicy Bypass `
+    -File $installArduinoCliLibsScript `
+    $packagesPath `
+    $libraryIndexes
+
+# Очистка временной распаковки только после использования unpacked библиотек и индексов
+if (Test-Path -LiteralPath $tempDir) {
+    Remove-Item -LiteralPath $tempDir -Recurse -Force
+}
