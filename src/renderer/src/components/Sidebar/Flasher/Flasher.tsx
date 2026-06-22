@@ -31,9 +31,12 @@ import { useTabs } from '@renderer/store/useTabs';
 import {
   AddressData,
   FirmwareTargetType,
+  FlasherMessage,
   FlashTableItem,
+  GetFirmware,
   MetaData,
   MetaDataID,
+  MSGetFirmware,
   OperationType,
 } from '@renderer/types/FlasherTypes';
 
@@ -77,7 +80,6 @@ export const FlasherTab: React.FC = () => {
     setFlashTableData,
     hasAvrdude,
     errorMessage,
-    binaryFolder,
     setBinaryFolder,
   } = useFlasher();
 
@@ -571,7 +573,7 @@ export const FlasherTab: React.FC = () => {
             // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             device: dev!, // проверка осуществляется ранее в этой функции
             verification: doVerify ?? false,
-            binaries: new Blob([binData]),
+            binaries: new Blob([new Uint8Array(binData)]),
             isFile: true,
           });
         }
@@ -744,13 +746,6 @@ export const FlasherTab: React.FC = () => {
   const operationButtons = () => {
     return (
       <div className="m-1 flex items-center gap-0 overflow-x-auto">
-        <WithHint hint={removeHint}>
-          {(hintProps) => (
-            <button {...hintProps} className="btn-error mr-2 p-2 py-1" onClick={handleRemoveDevs}>
-              <DeleteIcon className="h-8 w-8" />
-            </button>
-          )}
-        </WithHint>
         <WithHint hint={flashHint}>
           {(hintProps) => (
             <button
@@ -760,6 +755,25 @@ export const FlasherTab: React.FC = () => {
               disabled={commonOperationDisabled}
             >
               <FlashIcon className="h-8 w-8" />
+            </button>
+          )}
+        </WithHint>
+        <WithHint hint={flashResultHint} showOnDisabled={true}>
+          {(hintProps) => (
+            <button
+              {...hintProps}
+              className="btn-primary mr-2 whitespace-nowrap p-2 py-1 disabled:mt-0.5"
+              onClick={handleAddFlashResultTab}
+              disabled={flashResult.size === 0}
+            >
+              <ViewLogIcon className="h-8 w-8" />
+            </button>
+          )}
+        </WithHint>
+        <WithHint hint={removeHint}>
+          {(hintProps) => (
+            <button {...hintProps} className="btn-primary mr-2 p-2 py-1" onClick={handleRemoveDevs}>
+              <DeleteIcon className="h-8 w-8" />
             </button>
           )}
         </WithHint>
@@ -821,7 +835,7 @@ export const FlasherTab: React.FC = () => {
                   {...hintProps}
                   className="btn-primary mr-2 whitespace-nowrap p-2 py-1"
                   onClick={handleGetFirmware}
-                  disabled={binaryFolder !== null || commonOperationDisabled}
+                  disabled={commonOperationDisabled}
                 >
                   <DownloadBinIcon className="h-8 w-8" />
                 </button>
@@ -841,18 +855,6 @@ export const FlasherTab: React.FC = () => {
             </WithHint>
           </>
         )}
-        <WithHint hint={flashResultHint} showOnDisabled={true}>
-          {(hintProps) => (
-            <button
-              {...hintProps}
-              className="btn-primary mr-2 whitespace-nowrap p-2 py-1"
-              onClick={handleAddFlashResultTab}
-              disabled={flashResult.size === 0}
-            >
-              <ViewLogIcon className="h-8 w-8" />
-            </button>
-          )}
-        </WithHint>
       </div>
     );
   };
@@ -976,15 +978,18 @@ export const FlasherTab: React.FC = () => {
     if (isCanceled) {
       return;
     }
+    const uploadArray: FlasherMessage[] = [];
+    const blockSize = 1024;
     for (const item of flashTableData) {
       if (!item.isSelected) continue;
       if (item.targetType !== FirmwareTargetType.tjc_ms) {
-        const dev = devices.get(item.targetId as string);
-        ManagerMS.addLog(
-          `${
-            dev ? dev.displayName() : 'Неизвестное устройство'
-          }: операция выгрузки прошивки не поддерживается.`
-        );
+        uploadArray.push({
+          type: 'get-firmware',
+          payload: {
+            blockSize: blockSize,
+            deviceID: item.targetId as string,
+          } as GetFirmware,
+        });
         continue;
       }
       const entry = getEntryById(item.targetId as number);
@@ -999,14 +1004,23 @@ export const FlasherTab: React.FC = () => {
         );
         continue;
       }
+      uploadArray.push({
+        type: 'ms-get-firmware',
+        payload: {
+          blockSize: blockSize,
+          deviceID: deviceMs.deviceID,
+          address: entry.address,
+          RefBlChip: entry.meta ? entry.meta.RefBlChip : '',
+        } as MSGetFirmware,
+      });
       ManagerMS.getFirmwareAdd({
         addressInfo: entry,
-        blockSize: 1024,
         dev: deviceMs,
       });
     }
-    if (ManagerMS.getFirmwareStart()) {
+    if (uploadArray.length > 0) {
       setBinaryFolder(directory);
+      Flasher.sendPack(uploadArray);
     }
   };
 
@@ -1061,7 +1075,7 @@ export const FlasherTab: React.FC = () => {
         <div className="flex-1"></div>
         <button
           className={twMerge(
-            'btn-primary ml-auto mr-4 p-2 py-1',
+            'btn-primary m-2 ml-auto mr-4 p-2 py-1',
             isProMode ? '' : 'bg-bg-secondary text-border-contrast'
           )}
           style={{ marginLeft: 'auto' }}
