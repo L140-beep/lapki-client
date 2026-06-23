@@ -638,7 +638,12 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     });
 
     this.changeInitialStatePosition(
-      { smId, id: transitionFromInitialState.sourceId, startPosition: initialState.position, endPosition: position },
+      {
+        smId,
+        id: transitionFromInitialState.sourceId,
+        startPosition: initialState.position,
+        endPosition: position,
+      },
       canUndo
     );
   }
@@ -968,7 +973,11 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
   compoundPosition(smId: string, id: string) {
     const sm = this.model.data.elements.stateMachines[smId];
     const state =
-      sm.states[id] || sm.finalStates[id] || sm.choiceStates[id] || sm.initialStates[id];
+      sm.states[id] ||
+      sm.finalStates[id] ||
+      sm.choiceStates[id] ||
+      sm.initialStates[id] ||
+      sm.shallowHistory[id];
     let { x, y } = state.position;
     if (state.parentId) {
       const { x: px, y: py } = this.compoundPosition(smId, state.parentId);
@@ -1198,7 +1207,6 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
   ) {
     const stateId = this.createInitialState({ smId, targetId, position }, false);
     if (!stateId) return;
-
     this.createTransition(
       {
         smId,
@@ -1758,7 +1766,8 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
   }
 
   changeFinalStatePosition = (args: ChangePosition, canUndo = true) => {
-    if (!this.model.changeVertexPosition(args.smId, args.id, args.endPosition, 'finalStates')) return;
+    if (!this.model.changeVertexPosition(args.smId, args.id, args.endPosition, 'finalStates'))
+      return;
     const { startPosition } = args;
     if (canUndo && startPosition !== undefined) {
       this.history.do({
@@ -1770,7 +1779,8 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
   };
 
   changeChoiceStatePosition = (args: ChangePosition, canUndo = true) => {
-    if (!this.model.changeVertexPosition(args.smId, args.id, args.endPosition, 'choiceStates')) return;
+    if (!this.model.changeVertexPosition(args.smId, args.id, args.endPosition, 'choiceStates'))
+      return;
     this.emit('changeChoicePosition', args);
     const { startPosition } = args;
     if (canUndo && startPosition !== undefined) {
