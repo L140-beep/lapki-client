@@ -271,6 +271,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
     }
 
     if (sm.shallowHistory[args.sourceId]) {
+      // (L140-beep) Для локальной истории нельзя делать несколько исходящих переходов
       if (!this.getBySourceId(args.smId, args.sourceId)) {
         this.createTransition({ ...args });
       } else {
