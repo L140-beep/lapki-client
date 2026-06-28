@@ -29,6 +29,7 @@ interface ModalProps extends Omit<Props, 'className' | 'overlayClassName'> {
   extraClassName?: string;
   sideClassName?: string;
   middleClassName?: string;
+  onCancel?: () => void;
 }
 
 export const Modal: React.FC<ModalProps> = ({
@@ -51,8 +52,10 @@ export const Modal: React.FC<ModalProps> = ({
   extraClassName,
   sideClassName,
   middleClassName,
+  onCancel,
   ...props
 }) => {
+  const handleCancel = onCancel ?? props.onRequestClose;
   return (
     <ReactModal
       {...props}
@@ -102,7 +105,7 @@ export const Modal: React.FC<ModalProps> = ({
           <button
             type="button"
             className={cancelClassName ?? 'btn-secondary'}
-            onClick={props.onRequestClose}
+            onClick={handleCancel}
           >
             {cancelLabel ?? 'Закрыть'}
           </button>
