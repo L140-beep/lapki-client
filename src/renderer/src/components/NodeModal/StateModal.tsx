@@ -1,25 +1,28 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 import { ReactComponent as AddIcon } from '@renderer/assets/icons/add.svg';
 import { ReactComponent as EditIcon } from '@renderer/assets/icons/edit.svg';
 import { ReactComponent as SubtractIcon } from '@renderer/assets/icons/subtract.svg';
 import { Modal } from '@renderer/components/UI';
-import { useEditEventModal } from '@renderer/hooks';
 import { useModal } from '@renderer/hooks/useModal';
 import { serializeCondition, serializeEvent } from '@renderer/lib/data/GraphmlBuilder';
 import { CanvasController } from '@renderer/lib/data/ModelController/CanvasController';
 import { PlatformManager } from '@renderer/lib/data/PlatformManager';
 import { State } from '@renderer/lib/drawable';
 import { useModelContext } from '@renderer/store/ModelContext';
-import { Component, Condition, EventData } from '@renderer/types/diagram';
+import { Action, Component, Condition, EventData } from '@renderer/types/diagram';
 
+import { ActionsModal, ActionsModalData } from './ActionsModal/ActionsModal';
 import { ColorField, Event as EventPicto } from './components';
 import { EditEventModal } from './EditEventModal';
+import { useViewStack } from './hooks/useViewStack';
 
 interface StateModalProps {
   smId: string;
   controller: CanvasController;
 }
+
+type StateView = 'state' | 'editEvent' | 'actions';
 
 /**
  * Модальное окно редактирования состояния
@@ -33,104 +36,142 @@ export const StateModal: React.FC<StateModalProps> = ({ smId, controller }) => {
   modelController.model.useData(smId, 'elements.states');
   const platforms = controller.useData('platform') as { [id: string]: PlatformManager };
   const platform = platforms[smId];
-  const [isOpen, open, close] = useModal(false);
-  const { openEditEventModal, props, closeEditEventModal } = useEditEventModal();
-  const [state, setState] = useState<State | null>(null);
 
-  // Данные формы
+  const [isOpen, open, close] = useModal(false);
+  const [state, setState] = useState<State | null>(null);
   const [currentEventIndex, setCurrentEventIndex] = useState<number | undefined>();
   const [currentEvent, setCurrentEvent] = useState<EventData | null>(null);
   const [color, setColor] = useState<string | undefined>();
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    openEditEventModal();
+  // Данные для экрана actions
+  const [actionsIdx, setActionsIdx] = useState<number | null>(null);
+  const [actionsData, setActionsData] = useState<ActionsModalData | undefined>();
+
+  const viewStack = useViewStack<StateView>({ view: 'state', title: '' });
+
+  const editEventSubmitRef = useRef<(() => void) | null>(null);
+  const actionsSubmitRef = useRef<(() => void) | null>(null);
+
+  const updateActionRef = useRef<((action: Action, idx: number | null) => void) | null>(null);
+  const getActionsRef = useRef<(() => Action[]) | null>(null);
+
+  const stateName = state?.data.name ?? '';
+
+  const titles: Record<StateView, string> = {
+    state: `Редактор состояния: ${stateName}`,
+    editEvent: 'Редактор события',
+    actions: 'Выберите действие',
   };
 
-  // // Сброс формы после закрытия
-  const handleAfterClose = () => {
-    if (state) {
-      if (state.data.color !== color) {
-        modelController.changeState({
-          ...state.data,
-          color: color,
-          smId,
-          id: state.id,
-        });
-      }
-    }
-    setColor(undefined);
-
-    setState(null);
-    close();
-  };
-
-  // Открытие окна и подстановка начальных данных формы на событие изменения состояния
   useEffect(() => {
-    const handler = (state: State) => {
-      const { data } = state;
-
-      setColor(data.color);
-
-      setState(state);
+    const handler = (s: State) => {
+      setState(s);
+      setColor(s.data.color);
+      viewStack.reset({ view: 'state', title: `Редактор состояния: ${s.data.name}` });
       open();
     };
 
     controller.states.on('changeState', handler);
-
-    return () => {
-      controller.states.off('changeState', handler);
-    };
+    return () => controller.states.off('changeState', handler);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // костыль для того, чтобы при смене режима на текстовый парсеры работали верно
+  }, []);
+
+  const handleAfterClose = () => {
+    if (state && state.data.color !== color) {
+      modelController.changeState({ ...state.data, color, smId, id: state.id });
+    }
+    setColor(undefined);
+    setState(null);
+    setCurrentEvent(null);
+    setCurrentEventIndex(undefined);
+    viewStack.reset({ view: 'state', title: '' });
+    close();
+  };
 
   const addEvent = () => {
     if (!state) return;
-
     setCurrentEventIndex(state.data.events.length);
     setCurrentEvent({ trigger: { component: 'System', method: 'onEnter' }, do: [] });
-    openEditEventModal();
+    viewStack.push({ view: 'editEvent', title: 'Редактор события' });
   };
 
   const removeEvent = () => {
     if (!state || currentEventIndex === undefined) return;
-
-    const getEvents = () => {
-      if (state.data.events.length === 1) {
-        return [];
-      }
-      return [
-        ...state.data.events.slice(0, currentEventIndex),
-        ...state.data.events.slice(currentEventIndex + 1, state.data.events.length),
-      ];
-    };
-
-    modelController.changeState({ smId: smId, id: state.id, events: getEvents() }, true);
+    const events =
+      state.data.events.length === 1
+        ? []
+        : [
+            ...state.data.events.slice(0, currentEventIndex),
+            ...state.data.events.slice(currentEventIndex + 1),
+          ];
+    modelController.changeState({ smId, id: state.id, events }, true);
     setCurrentEventIndex(undefined);
+  };
+
+  const openEditEvent = () => {
+    if (currentEventIndex === undefined) return;
+    viewStack.push({ view: 'editEvent', title: 'Редактор события' });
+  };
+
+  // Переход на экран actions из EditEventContent
+  const handleOpenActionsView = (actionIndex: number | null) => {
+    setActionsIdx(actionIndex);
+
+    // Читаем текущие actions из EditEventContent
+    const currentActions = getActionsRef.current?.() ?? [];
+    setActionsData(
+      actionIndex !== null && currentActions[actionIndex]
+        ? { smId, action: currentActions[actionIndex], isEditingEvent: false }
+        : undefined
+    );
+
+    viewStack.push({ view: 'actions', title: 'Выберите действие' });
+  };
+
+  // Возврат из ActionsContent и запись действия в EditEventContent
+  const handleActionsSubmit = (data: Action, idx: number | null) => {
+    updateActionRef.current?.(data, idx);
+    viewStack.pop();
+  };
+
+  // Кнопка "Сохранить" или "Выбрать" делегируется дочернему экрану
+  const handleModalSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (viewStack.currentView === 'editEvent') editEventSubmitRef.current?.();
+    if (viewStack.currentView === 'actions') actionsSubmitRef.current?.();
   };
 
   const getCondition = (condition: string | Condition | undefined) => {
     if (!condition) return '';
     if (typeof condition === 'string') return `[${condition}]`;
-
     return `[${serializeCondition(condition, platform.data, components, true)}]`;
   };
 
-  const handleEventDoubleClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    openEditEventModal();
-  };
+  // Конфигурация кнопок в зависимости от текущего экрана
+  const isStateView = viewStack.currentView === 'state';
+  const modalProps = isStateView
+    ? {
+        onSubmit: undefined as React.FormEventHandler | undefined,
+        cancelLabel: 'Закрыть',
+        onCancel: undefined as (() => void) | undefined,
+      }
+    : {
+        onSubmit: handleModalSubmit,
+        submitLabel: viewStack.currentView === 'actions' ? 'Выбрать' : 'Сохранить',
+        cancelLabel: 'Отмена',
+        onCancel: viewStack.pop,
+      };
 
   return (
-    <div>
-      <Modal
-        title={`Редактор состояния: ${state?.data.name}`}
-        isOpen={isOpen}
-        onRequestClose={close}
-        submitDisabled={currentEventIndex === undefined}
-        onAfterClose={handleAfterClose}
-      >
+    <Modal
+      title={titles[viewStack.currentView]}
+      isOpen={isOpen}
+      onRequestClose={close}
+      onAfterClose={handleAfterClose}
+      {...modalProps}
+    >
+      {/* Экран списка событий состояния */}
+      <div hidden={!isStateView}>
         <div className="flex flex-col gap-3">
           <div className="flex">
             <div
@@ -149,7 +190,11 @@ export const StateModal: React.FC<StateModalProps> = ({ smId, controller }) => {
                   state.data.events.map((event, key) => (
                     <EventPicto
                       smId={smId}
-                      onDoubleClick={handleEventDoubleClick}
+                      onDoubleClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        openEditEvent();
+                      }}
                       key={key}
                       event={event.trigger}
                       isSelected={key === currentEventIndex}
@@ -183,7 +228,7 @@ export const StateModal: React.FC<StateModalProps> = ({ smId, controller }) => {
               <button
                 type="button"
                 className="btn-secondary p-1"
-                onClick={handleSubmit}
+                onClick={openEditEvent}
                 disabled={currentEventIndex === undefined}
               >
                 <EditIcon />
@@ -192,19 +237,38 @@ export const StateModal: React.FC<StateModalProps> = ({ smId, controller }) => {
           </div>
           <ColorField label="Цвет обводки:" value={color} onChange={setColor} />
         </div>
-      </Modal>
-      <EditEventModal
-        isOpen={props.isEditEventModalOpen}
-        close={() => {
-          closeEditEventModal();
-          setCurrentEventIndex(undefined);
-        }}
-        smId={smId}
-        state={state}
-        currentEventIndex={currentEventIndex}
-        event={currentEvent}
-        controller={controller}
-      />
-    </div>
+      </div>
+
+      {/*
+        Экраны 2 и 3 всегда смонтированы, скрыты через hidden
+      */}
+      <div hidden={viewStack.currentView !== 'editEvent'}>
+        <EditEventModal
+          embedded
+          smId={smId}
+          controller={controller}
+          state={state}
+          event={currentEvent}
+          currentEventIndex={currentEventIndex}
+          onSaved={() => viewStack.pop()}
+          submitRef={editEventSubmitRef}
+          onOpenActionsView={handleOpenActionsView}
+          updateActionRef={updateActionRef}
+          getActionsRef={getActionsRef}
+        />
+      </div>
+
+      <div hidden={viewStack.currentView !== 'actions'}>
+        <ActionsModal
+          embedded
+          smId={smId}
+          controller={controller}
+          initialData={actionsData}
+          idx={actionsIdx}
+          onSubmit={handleActionsSubmit}
+          submitRef={actionsSubmitRef}
+        />
+      </div>
+    </Modal>
   );
 };
