@@ -37,7 +37,6 @@ interface ActionsModalStandaloneProps extends ActionsModalBaseProps {
   submitRef?: never;
 }
 
-
 interface ActionsModalEmbeddedProps extends ActionsModalBaseProps {
   embedded: true;
   isOpen?: never;
@@ -48,9 +47,6 @@ interface ActionsModalEmbeddedProps extends ActionsModalBaseProps {
 
 type ActionsModalProps = ActionsModalStandaloneProps | ActionsModalEmbeddedProps;
 
-// Два режима:
-// - standalone (по умолчанию) - новое окно
-// - embedded - замена текущего контента
 export const ActionsModal: React.FC<ActionsModalProps> = (props) => {
   const { smId, controller, initialData, idx, onSubmit, embedded } = props;
 

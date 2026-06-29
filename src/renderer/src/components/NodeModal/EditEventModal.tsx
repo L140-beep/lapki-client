@@ -46,11 +46,6 @@ interface EditEventModalEmbeddedProps extends EditEventModalBaseProps {
 
 type EditEventModalProps = EditEventModalStandaloneProps | EditEventModalEmbeddedProps;
 
-// Редактор события
-// Два режима:
-// - standalone (по умолчанию) - новое окно
-// - embedded - замена текущего контента
-
 export const EditEventModal: React.FC<EditEventModalProps> = (props) => {
   const { smId, controller, state, event, currentEventIndex, embedded } = props;
 
