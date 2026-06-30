@@ -15,6 +15,7 @@ import { useActions } from '../hooks';
 
 type ActionsProps = ReturnType<typeof useActions> & {
   event: EventData | null | undefined;
+  disabled?: boolean;
 };
 
 /**
@@ -38,6 +39,7 @@ export const Actions: React.FC<ActionsProps> = (props) => {
     setActions,
     event,
     parse,
+    disabled,
   } = props;
   const visual = controller.useData('visual');
 
@@ -110,7 +112,7 @@ export const Actions: React.FC<ActionsProps> = (props) => {
 
       <div className="pl-4">
         <TabPanel value={0} tabValue={tabValue}>
-          <div onDoubleClick={onAddAction} className="flex gap-2">
+          <div onDoubleClick={disabled ? undefined : onAddAction} className="flex gap-2">
             <div className="flex h-44 w-full flex-col overflow-x-auto overflow-y-auto whitespace-nowrap rounded border border-border-primary bg-bg-secondary scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb">
               {actions.length === 0 && (
                 <div className="flex h-full w-full select-none flex-row items-center justify-center text-center align-middle text-text-inactive">
@@ -127,7 +129,7 @@ export const Actions: React.FC<ActionsProps> = (props) => {
                     smId={smId}
                     isSelected={selectedActionIndex === i}
                     onSelect={() => setSelectedActionIndex(i)}
-                    onChange={() => onChangeAction(data)}
+                    onChange={() => !disabled && onChangeAction(data)}
                     onDragStart={() => handleDrag(i)}
                     onDrop={() => handleDrop(i)}
                     data={{
@@ -140,7 +142,12 @@ export const Actions: React.FC<ActionsProps> = (props) => {
             </div>
 
             <div className="flex flex-col gap-2">
-              <button type="button" className="btn-secondary p-1" onClick={onAddAction}>
+              <button
+                type="button"
+                className="btn-secondary p-1"
+                onClick={onAddAction}
+                disabled={disabled}
+              >
                 <AddIcon />
               </button>
               <button
