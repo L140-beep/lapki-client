@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useMemo, useState } from 'react';
 
 import { isEqual } from 'lodash';
 import { toast } from 'sonner';
@@ -194,7 +194,7 @@ export const EditEventModal: React.FC<EditEventModalProps> = (props) => {
   };
 
   // Динамическая проверка конфликтов без нажатия кнопки сохранения
-  useEffect(() => {
+  useLayoutEffect(() => {
     const conflict = validateEventConflict();
     setError(conflict?.type === 'error' ? conflict.message : undefined);
     setWarning(conflict?.type === 'warning' ? conflict.message : undefined);
