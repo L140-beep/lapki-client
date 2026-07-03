@@ -116,9 +116,7 @@ export const StateModal: React.FC<StateModalProps> = ({ smId, controller }) => {
     modelController.changeState({ smId, id: state.id, events }, true);
     // Выбираем соседнее событие после удаления
     const newIndex =
-     
-      events.length === 0 ? undefined : Math.min(currentEventIndex, events.length - 1);
-    setCurrentEventIndex(newIndex);
+     etCurrentEventIndex(newIndex);
     setCurrentEvent(newIndex !== undefined ? events[newIndex] : null);
     setSelectedActionIndex(null);
     viewStack.reset({ view: 'editEvent', title: 'Редактор события' });
@@ -165,6 +163,7 @@ export const StateModal: React.FC<StateModalProps> = ({ smId, controller }) => {
     updateActionRef.current?.(data, idx);
     setSelectedActionIndex(null);
     viewStack.pop();
+    setTimeout(() => editEventSubmitRef.current?.(), 0);
   };
 
   const handleModalSubmit = (e: React.FormEvent) => {
@@ -173,8 +172,6 @@ export const StateModal: React.FC<StateModalProps> = ({ smId, controller }) => {
     if (viewStack.currentView === 'actions') actionsSubmitRef.current?.();
   };
 
-  const isEditingEvent = viewStack.currentView === 'editEvent';
-
   return (
     <Modal
       title={`Редактор состояния: ${stateName}`}
@@ -182,9 +179,10 @@ export const StateModal: React.FC<StateModalProps> = ({ smId, controller }) => {
       onRequestClose={close}
       onAfterClose={handleAfterClose}
       onSubmit={currentEventIndex !== undefined ? handleModalSubmit : undefined}
-      submitLabel={isEditingEvent ? 'Сохранить' : 'Выбрать'}
-      cancelLabel={viewStack.canGoBack ? 'Отмена' : 'Закрыть'}
+      submitLabel="Сохранить"
+      cancelLabel="Отмена"
       onCancel={viewStack.canGoBack ? viewStack.pop : undefined}
+      hideCancelButton={!viewStack.canGoBack}
       className="max-w-4xl"
     >
       <div className="flex gap-4">
