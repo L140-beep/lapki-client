@@ -205,7 +205,7 @@ export const actionFunctions: ActionFunctions = {
         events: stateData.events,
         color: stateData.color,
         linkByPoint: false,
-        canBeInitial: false,
+        canBeInitial: true,
       },
       false
     ),
