@@ -1054,14 +1054,7 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
   };
 
   linkState = (args: LinkStateParams, canUndo = true, absolute = false) => {
-    const {
-      smId,
-      parentId,
-      childId,
-      addOnceOff = true,
-      canBeInitial = true,
-      dragEndPos = { x: 0, y: 0 },
-    } = args;
+    const { smId, parentId, childId, addOnceOff = true, canBeInitial = true, dragEndPos } = args;
     const parent = this.model.data.elements.stateMachines[smId].states[parentId];
     const child = this.model.data.elements.stateMachines[smId].states[childId];
     if (!parent || !child) return;
@@ -1093,18 +1086,37 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
 
     if (!this.model.linkState(smId, parentId, childId)) return;
     const parentCompoundPosition = this.compoundPosition(smId, parentId);
-    this.changeStatePosition(
-      {
-        smId,
-        id: childId,
-        startPosition: child.position,
-        endPosition: {
-          x: absolute ? dragEndPos.x : dragEndPos.x - parentCompoundPosition.x,
-          y: absolute ? dragEndPos.y : Math.max(0, dragEndPos.y - parentCompoundPosition.y),
+
+    // Если пришел запрос на линковку через drag'n'drop
+    if (dragEndPos !== undefined) {
+      this.changeStatePosition(
+        {
+          smId,
+          id: childId,
+          startPosition: child.position,
+          endPosition: {
+            x: absolute ? dragEndPos.x : dragEndPos.x - parentCompoundPosition.x,
+            y: absolute ? dragEndPos.y : Math.max(0, dragEndPos.y - parentCompoundPosition.y),
+          },
         },
-      },
-      false
-    );
+        false
+      );
+    } else {
+      // Иначе - через удаление состояния
+      const childAbsolutePosition = this.compoundPosition(smId, childId);
+      this.changeStatePosition(
+        {
+          smId,
+          id: childId,
+          startPosition: child.position,
+          endPosition: {
+            x: childAbsolutePosition.x - parentCompoundPosition.x,
+            y: childAbsolutePosition.y - parentCompoundPosition.y,
+          },
+        },
+        false
+      );
+    }
     this.emit('linkState', args);
 
     // Перелинковка переходов
