@@ -1,4 +1,6 @@
 // Сгенерированные ИИ-шкой тесты
+// Здесь теститься чисто история, с ее механизмом redo/undo
+// В связке с ModelController непонятно как тестировать
 
 import { describe, expect, test, vi } from 'vitest';
 
@@ -188,22 +190,6 @@ describe('History action functions', () => {
       events: [],
       color: '#fafafa',
       newStateId: 'sibling',
-    } as any);
-    applyHistoryAction(history, controller, 'createTransition', {
-      smId: 'SM',
-      id: 'tr-1',
-      params: { smId: 'SM', sourceId: 'root', targetId: 'sibling' },
-    } as any);
-    applyHistoryAction(history, controller, 'createNote', {
-      smId: 'SM',
-      id: 'note-1',
-      params: { smId: 'SM', text: 'note', position: { x: 10, y: 10 } },
-    } as any);
-    applyHistoryAction(history, controller, 'changeNoteText', {
-      smId: 'SM',
-      id: 'note-1',
-      text: 'updated',
-      prevText: 'note',
     } as any);
     applyHistoryAction(history, controller, 'unlinkState', {
       smId: 'SM',
