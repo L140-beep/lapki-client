@@ -56,8 +56,19 @@ function createMockHistoryController() {
 
   return {
     controller,
-    getSnapshot: () => JSON.stringify(data),
+    getSnapshot: () => ({ ...data }),
   };
+}
+
+function applyHistoryAction(
+  history: History,
+  controller: any,
+  type: keyof typeof actionFunctions,
+  args: any
+) {
+  const executor = actionFunctions[type](controller, args);
+  executor.redo();
+  history.do({ type, args } as any);
 }
 
 describe('History action functions', () => {
@@ -134,96 +145,78 @@ describe('History action functions', () => {
     const { controller, getSnapshot } = createMockHistoryController();
     const history = new History(controller as any);
 
-    history.do({
-      type: 'createState',
-      args: {
-        smId: 'SM',
-        id: 'root',
-        name: 'Root',
-        parentId: undefined,
-        dimensions: { width: 120, height: 80 },
-        position: { x: 0, y: 0 },
-        events: [],
-        color: '#ffffff',
-      } as any,
-    });
-    history.do({
-      type: 'createState',
-      args: {
-        smId: 'SM',
-        id: 'child',
-        name: 'Child',
-        parentId: 'root',
-        dimensions: { width: 90, height: 70 },
-        position: { x: 40, y: 40 },
-        events: [],
-        color: '#f5f5f5',
-      } as any,
-    });
-    history.do({
-      type: 'createState',
-      args: {
-        smId: 'SM',
-        id: 'grandchild',
-        name: 'Grandchild',
-        parentId: 'child',
-        dimensions: { width: 90, height: 70 },
-        position: { x: 20, y: 20 },
-        events: [],
-        color: '#eeeeee',
-      } as any,
-    });
-    history.do({
-      type: 'createState',
-      args: {
-        smId: 'SM',
-        id: 'sibling',
-        name: 'Sibling',
-        parentId: 'root',
-        dimensions: { width: 80, height: 60 },
-        position: { x: 200, y: 0 },
-        events: [],
-        color: '#fafafa',
-      } as any,
-    });
-    history.do({
-      type: 'createTransition',
-      args: {
-        smId: 'SM',
-        id: 'tr-1',
-        params: { smId: 'SM', sourceId: 'root', targetId: 'sibling' },
-      } as any,
-    });
-    history.do({
-      type: 'createNote',
-      args: {
-        smId: 'SM',
-        id: 'note-1',
-        params: { smId: 'SM', text: 'note', position: { x: 10, y: 10 } },
-      } as any,
-    });
-    history.do({
-      type: 'changeNoteText',
-      args: { smId: 'SM', id: 'note-1', text: 'updated', prevText: 'note' } as any,
-    });
-    history.do({
-      type: 'unlinkState',
-      args: {
-        smId: 'SM',
-        parentId: 'root',
-        params: { smId: 'SM', id: 'child', canUndo: false },
-        dragEndPos: { x: 50, y: 50 },
-      } as any,
-    });
-    history.do({
-      type: 'linkState',
-      args: {
-        smId: 'SM',
-        parentId: 'sibling',
-        childId: 'child',
-        dragEndPos: { x: 70, y: 40 },
-      } as any,
-    });
+    applyHistoryAction(history, controller, 'createState', {
+      smId: 'SM',
+      id: 'root',
+      name: 'Root',
+      parentId: undefined,
+      dimensions: { width: 120, height: 80 },
+      position: { x: 0, y: 0 },
+      events: [],
+      color: '#ffffff',
+      newStateId: 'root',
+    } as any);
+    applyHistoryAction(history, controller, 'createState', {
+      smId: 'SM',
+      id: 'child',
+      name: 'Child',
+      parentId: 'root',
+      dimensions: { width: 90, height: 70 },
+      position: { x: 40, y: 40 },
+      events: [],
+      color: '#f5f5f5',
+      newStateId: 'child',
+    } as any);
+    applyHistoryAction(history, controller, 'createState', {
+      smId: 'SM',
+      id: 'grandchild',
+      name: 'Grandchild',
+      parentId: 'child',
+      dimensions: { width: 90, height: 70 },
+      position: { x: 20, y: 20 },
+      events: [],
+      color: '#eeeeee',
+      newStateId: 'grandchild',
+    } as any);
+    applyHistoryAction(history, controller, 'createState', {
+      smId: 'SM',
+      id: 'sibling',
+      name: 'Sibling',
+      parentId: 'root',
+      dimensions: { width: 80, height: 60 },
+      position: { x: 200, y: 0 },
+      events: [],
+      color: '#fafafa',
+      newStateId: 'sibling',
+    } as any);
+    applyHistoryAction(history, controller, 'createTransition', {
+      smId: 'SM',
+      id: 'tr-1',
+      params: { smId: 'SM', sourceId: 'root', targetId: 'sibling' },
+    } as any);
+    applyHistoryAction(history, controller, 'createNote', {
+      smId: 'SM',
+      id: 'note-1',
+      params: { smId: 'SM', text: 'note', position: { x: 10, y: 10 } },
+    } as any);
+    applyHistoryAction(history, controller, 'changeNoteText', {
+      smId: 'SM',
+      id: 'note-1',
+      text: 'updated',
+      prevText: 'note',
+    } as any);
+    applyHistoryAction(history, controller, 'unlinkState', {
+      smId: 'SM',
+      parentId: 'root',
+      params: { smId: 'SM', id: 'child', canUndo: false },
+      dragEndPos: { x: 50, y: 50 },
+    } as any);
+    applyHistoryAction(history, controller, 'linkState', {
+      smId: 'SM',
+      parentId: 'sibling',
+      childId: 'child',
+      dragEndPos: { x: 70, y: 40 },
+    } as any);
 
     const afterComplexSchema = getSnapshot();
 
@@ -232,56 +225,51 @@ describe('History action functions', () => {
     history.undo();
     history.redo();
 
-    expect(getSnapshot()).toBe(afterComplexSchema);
+    expect(getSnapshot()).toStrictEqual(afterComplexSchema);
   });
 
   test('history undo/redo cycle preserves a schema after deleting and restoring a nested state', () => {
     const { controller, getSnapshot } = createMockHistoryController();
     const history = new History(controller as any);
 
-    history.do({
-      type: 'createState',
-      args: {
-        smId: 'SM',
-        id: 'parent',
-        name: 'Parent',
-        parentId: undefined,
-        dimensions: { width: 120, height: 80 },
-        position: { x: 0, y: 0 },
-        events: [],
-        color: '#ffffff',
-      } as any,
-    });
-    history.do({
-      type: 'createState',
-      args: {
-        smId: 'SM',
-        id: 'child',
-        name: 'Child',
-        parentId: 'parent',
-        dimensions: { width: 90, height: 70 },
-        position: { x: 40, y: 40 },
-        events: [],
-        color: '#f5f5f5',
-      } as any,
-    });
-    history.do({
-      type: 'createState',
-      args: {
-        smId: 'SM',
-        id: 'grandchild',
-        name: 'Grandchild',
-        parentId: 'child',
-        dimensions: { width: 80, height: 60 },
-        position: { x: 20, y: 20 },
-        events: [],
-        color: '#eeeeee',
-      } as any,
-    });
-    history.do({
-      type: 'deleteState',
-      args: { smId: 'SM', id: 'child', stateData: { name: 'Child', parentId: 'parent' } } as any,
-    });
+    applyHistoryAction(history, controller, 'createState', {
+      smId: 'SM',
+      id: 'parent',
+      name: 'Parent',
+      parentId: undefined,
+      dimensions: { width: 120, height: 80 },
+      position: { x: 0, y: 0 },
+      events: [],
+      color: '#ffffff',
+      newStateId: 'parent',
+    } as any);
+    applyHistoryAction(history, controller, 'createState', {
+      smId: 'SM',
+      id: 'child',
+      name: 'Child',
+      parentId: 'parent',
+      dimensions: { width: 90, height: 70 },
+      position: { x: 40, y: 40 },
+      events: [],
+      color: '#f5f5f5',
+      newStateId: 'child',
+    } as any);
+    applyHistoryAction(history, controller, 'createState', {
+      smId: 'SM',
+      id: 'grandchild',
+      name: 'Grandchild',
+      parentId: 'child',
+      dimensions: { width: 80, height: 60 },
+      position: { x: 20, y: 20 },
+      events: [],
+      color: '#eeeeee',
+      newStateId: 'grandchild',
+    } as any);
+    applyHistoryAction(history, controller, 'deleteState', {
+      smId: 'SM',
+      id: 'child',
+      stateData: { name: 'Child', parentId: 'parent' },
+    } as any);
 
     const afterDeletion = getSnapshot();
 
@@ -290,6 +278,6 @@ describe('History action functions', () => {
     history.undo();
     history.redo();
 
-    expect(getSnapshot()).toBe(afterDeletion);
+    expect(getSnapshot()).toStrictEqual(afterDeletion);
   });
 });
