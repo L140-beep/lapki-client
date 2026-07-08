@@ -2,13 +2,68 @@
 
 import { describe, expect, test, vi } from 'vitest';
 
-import { actionFunctions } from './History';
+import { actionFunctions, History } from './History';
+
+function createMockHistoryController() {
+  const data = {
+    states: {} as Record<string, any>,
+    transitions: {} as Record<string, any>,
+    notes: {} as Record<string, any>,
+  };
+
+  const controller = {
+    createState: vi.fn((args: any) => {
+      data.states[args.id] = {
+        ...args,
+        parentId: args.parentId,
+      };
+      return args.id;
+    }),
+    deleteState: vi.fn((args: any) => {
+      delete data.states[args.id];
+    }),
+    linkState: vi.fn((args: any) => {
+      if (data.states[args.childId]) {
+        data.states[args.childId].parentId = args.parentId;
+      }
+    }),
+    unlinkState: vi.fn((args: any) => {
+      if (data.states[args.id]) {
+        delete data.states[args.id].parentId;
+      }
+    }),
+    createTransition: vi.fn((args: any) => {
+      data.transitions[args.id] = {
+        sourceId: args.sourceId,
+        targetId: args.targetId,
+      };
+    }),
+    deleteTransition: vi.fn((args: any) => {
+      delete data.transitions[args.id];
+    }),
+    createNote: vi.fn((args: any) => {
+      data.notes[args.id] = { text: args.text ?? '' };
+    }),
+    deleteNote: vi.fn((args: any) => {
+      delete data.notes[args.id];
+    }),
+    changeNoteText: vi.fn((args: any) => {
+      if (data.notes[args.id]) {
+        data.notes[args.id].text = args.text;
+      }
+    }),
+  };
+
+  return {
+    controller,
+    getSnapshot: () => JSON.stringify(data),
+  };
+}
 
 describe('History action functions', () => {
   test('unlinkState undo restores state with canBeInitial true', () => {
-    const linkState = vi.fn();
-    const unlinkState = vi.fn();
-    const modelController = { linkState, unlinkState } as any;
+    const { controller } = createMockHistoryController();
+    const modelController = controller as any;
 
     const action = actionFunctions.unlinkState(modelController, {
       smId: 'SM',
@@ -19,8 +74,8 @@ describe('History action functions', () => {
 
     action.undo();
 
-    expect(linkState).toHaveBeenCalledTimes(1);
-    expect(linkState).toHaveBeenCalledWith(
+    expect(controller.linkState).toHaveBeenCalledTimes(1);
+    expect(controller.linkState).toHaveBeenCalledWith(
       {
         smId: 'SM',
         parentId: 'PARENT',
@@ -39,12 +94,8 @@ describe('History action functions', () => {
     // вернуться вместе с возможностью заново создать начальный переход.
     // Раньше undo восстанавливал состояние с canBeInitial=false, поэтому
     // после отката начальное псевдосостояние не появлялось.
-    const createState = vi.fn();
-    const deleteState = vi.fn();
-    const modelController = {
-      createState,
-      deleteState,
-    } as any;
+    const { controller } = createMockHistoryController();
+    const modelController = controller as any;
 
     const action = actionFunctions.deleteState(modelController, {
       smId: 'SM',
@@ -61,8 +112,8 @@ describe('History action functions', () => {
 
     action.undo();
 
-    expect(createState).toHaveBeenCalledTimes(1);
-    expect(createState).toHaveBeenCalledWith(
+    expect(controller.createState).toHaveBeenCalledTimes(1);
+    expect(controller.createState).toHaveBeenCalledWith(
       {
         smId: 'SM',
         name: 'State',
@@ -77,5 +128,168 @@ describe('History action functions', () => {
       },
       false
     );
+  });
+
+  test('history undo/redo cycle preserves a nested schema with transitions and notes', () => {
+    const { controller, getSnapshot } = createMockHistoryController();
+    const history = new History(controller as any);
+
+    history.do({
+      type: 'createState',
+      args: {
+        smId: 'SM',
+        id: 'root',
+        name: 'Root',
+        parentId: undefined,
+        dimensions: { width: 120, height: 80 },
+        position: { x: 0, y: 0 },
+        events: [],
+        color: '#ffffff',
+      } as any,
+    });
+    history.do({
+      type: 'createState',
+      args: {
+        smId: 'SM',
+        id: 'child',
+        name: 'Child',
+        parentId: 'root',
+        dimensions: { width: 90, height: 70 },
+        position: { x: 40, y: 40 },
+        events: [],
+        color: '#f5f5f5',
+      } as any,
+    });
+    history.do({
+      type: 'createState',
+      args: {
+        smId: 'SM',
+        id: 'grandchild',
+        name: 'Grandchild',
+        parentId: 'child',
+        dimensions: { width: 90, height: 70 },
+        position: { x: 20, y: 20 },
+        events: [],
+        color: '#eeeeee',
+      } as any,
+    });
+    history.do({
+      type: 'createState',
+      args: {
+        smId: 'SM',
+        id: 'sibling',
+        name: 'Sibling',
+        parentId: 'root',
+        dimensions: { width: 80, height: 60 },
+        position: { x: 200, y: 0 },
+        events: [],
+        color: '#fafafa',
+      } as any,
+    });
+    history.do({
+      type: 'createTransition',
+      args: {
+        smId: 'SM',
+        id: 'tr-1',
+        params: { smId: 'SM', sourceId: 'root', targetId: 'sibling' },
+      } as any,
+    });
+    history.do({
+      type: 'createNote',
+      args: {
+        smId: 'SM',
+        id: 'note-1',
+        params: { smId: 'SM', text: 'note', position: { x: 10, y: 10 } },
+      } as any,
+    });
+    history.do({
+      type: 'changeNoteText',
+      args: { smId: 'SM', id: 'note-1', text: 'updated', prevText: 'note' } as any,
+    });
+    history.do({
+      type: 'unlinkState',
+      args: {
+        smId: 'SM',
+        parentId: 'root',
+        params: { smId: 'SM', id: 'child', canUndo: false },
+        dragEndPos: { x: 50, y: 50 },
+      } as any,
+    });
+    history.do({
+      type: 'linkState',
+      args: {
+        smId: 'SM',
+        parentId: 'sibling',
+        childId: 'child',
+        dragEndPos: { x: 70, y: 40 },
+      } as any,
+    });
+
+    const afterComplexSchema = getSnapshot();
+
+    history.undo();
+    history.redo();
+    history.undo();
+    history.redo();
+
+    expect(getSnapshot()).toBe(afterComplexSchema);
+  });
+
+  test('history undo/redo cycle preserves a schema after deleting and restoring a nested state', () => {
+    const { controller, getSnapshot } = createMockHistoryController();
+    const history = new History(controller as any);
+
+    history.do({
+      type: 'createState',
+      args: {
+        smId: 'SM',
+        id: 'parent',
+        name: 'Parent',
+        parentId: undefined,
+        dimensions: { width: 120, height: 80 },
+        position: { x: 0, y: 0 },
+        events: [],
+        color: '#ffffff',
+      } as any,
+    });
+    history.do({
+      type: 'createState',
+      args: {
+        smId: 'SM',
+        id: 'child',
+        name: 'Child',
+        parentId: 'parent',
+        dimensions: { width: 90, height: 70 },
+        position: { x: 40, y: 40 },
+        events: [],
+        color: '#f5f5f5',
+      } as any,
+    });
+    history.do({
+      type: 'createState',
+      args: {
+        smId: 'SM',
+        id: 'grandchild',
+        name: 'Grandchild',
+        parentId: 'child',
+        dimensions: { width: 80, height: 60 },
+        position: { x: 20, y: 20 },
+        events: [],
+        color: '#eeeeee',
+      } as any,
+    });
+    history.do({
+      type: 'deleteState',
+      args: { smId: 'SM', id: 'child', stateData: { name: 'Child', parentId: 'parent' } } as any,
+    });
+
+    const afterDeletion = getSnapshot();
+
+    history.undo();
+    history.redo();
+    history.undo();
+    history.redo();
+
+    expect(getSnapshot()).toBe(afterDeletion);
   });
 });
