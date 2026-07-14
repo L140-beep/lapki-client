@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
 
-import { Modal } from '@renderer/components/UI';
 import { useModal } from '@renderer/hooks/useModal';
 import { CanvasController } from '@renderer/lib/data/ModelController/CanvasController';
 import { PlatformManager } from '@renderer/lib/data/PlatformManager';
@@ -13,6 +12,8 @@ import { ColorField } from './components';
 import { EventsHierarchy } from './components/EventsHierarchy';
 import { EditEventModal } from './EditEventModal';
 import { useViewStack } from './hooks/useViewStack';
+
+import { MovingModal } from '../UI/Modal/MovingModal';
 
 interface StateModalProps {
   smId: string;
@@ -115,9 +116,7 @@ export const StateModal: React.FC<StateModalProps> = ({ smId, controller }) => {
           ];
     modelController.changeState({ smId, id: state.id, events }, true);
     // Выбираем соседнее событие после удаления
-    const newIndex =
-     etCurrentEventIndex(newIndex);
-    setCurrentEvent(newIndex !== undefined ? events[newIndex] : null);
+    const newIndex = setCurrentEvent(newIndex !== undefined ? events[newIndex] : null);
     setSelectedActionIndex(null);
     viewStack.reset({ view: 'editEvent', title: 'Редактор события' });
   };
@@ -173,7 +172,8 @@ export const StateModal: React.FC<StateModalProps> = ({ smId, controller }) => {
   };
 
   return (
-    <Modal
+    <MovingModal
+      id="shit"
       title={`Редактор состояния: ${stateName}`}
       isOpen={isOpen}
       onRequestClose={close}
@@ -183,7 +183,6 @@ export const StateModal: React.FC<StateModalProps> = ({ smId, controller }) => {
       cancelLabel="Отмена"
       onCancel={viewStack.canGoBack ? viewStack.pop : undefined}
       hideCancelButton={!viewStack.canGoBack}
-      className="max-w-4xl"
     >
       <div className="flex gap-4">
         {/* Левая панель: иерархия событий */}
@@ -201,7 +200,7 @@ export const StateModal: React.FC<StateModalProps> = ({ smId, controller }) => {
             onAddEvent={addEvent}
             onRemoveEvent={removeEvent}
           />
-          <ColorField label="Цвет:" value={color} onChange={setColor} className="mt-3" />
+          <ColorField label="Цвет:" value={color} onChange={setColor} />
         </div>
 
         {/* Правая панель: редактор */}
@@ -243,6 +242,6 @@ export const StateModal: React.FC<StateModalProps> = ({ smId, controller }) => {
           )}
         </div>
       </div>
-    </Modal>
+    </MovingModal>
   );
 };

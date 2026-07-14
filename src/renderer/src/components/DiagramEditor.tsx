@@ -12,6 +12,7 @@ import {
 } from '@renderer/components';
 import { useEditEventModal, useSettings } from '@renderer/hooks';
 import { useModal } from '@renderer/hooks/useModal';
+import { useWindowManagerStore } from '@renderer/hooks/useWindowManagerStore';
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { CanvasController } from '@renderer/lib/data/ModelController/CanvasController';
 import { EventSelection, State } from '@renderer/lib/drawable';
@@ -19,12 +20,14 @@ import { Point } from '@renderer/lib/types';
 import { useModelContext } from '@renderer/store/ModelContext';
 import { getColor } from '@renderer/theme';
 import { Event } from '@renderer/types/diagram';
+
 interface DiagramEditorProps {
   editor: CanvasEditor;
   controller: CanvasController;
 }
 
 export const DiagramEditor: React.FC<DiagramEditorProps> = (props: DiagramEditorProps) => {
+  const { addWindow, windows, removeWindow } = useWindowManagerStore();
   const editor = props.editor;
   const controller = props.controller;
   const [canvasSettings] = useSettings('canvas');
@@ -145,7 +148,7 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = (props: DiagramEditor
           />
           <StateModal smId={smId} controller={controller} />
           <TransitionModal controller={controller} smId={smId} />
-          <ActionsModal
+          {/* <ActionsModal
             idx={actionsModalParentData?.eventSelection.actionIdx ?? null}
             controller={controller}
             smId={smId}
@@ -153,7 +156,7 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = (props: DiagramEditor
             onSubmit={handleActionsModalSubmit}
             isOpen={isActionsModalOpen}
             onClose={closeActionsModal}
-          />
+          /> */}
         </>
       )}
     </>

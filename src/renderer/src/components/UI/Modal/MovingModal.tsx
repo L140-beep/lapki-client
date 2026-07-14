@@ -1,0 +1,139 @@
+import React from 'react';
+
+import { Props } from 'react-modal';
+import { twMerge } from 'tailwind-merge';
+
+import { ReactComponent as Close } from '@renderer/assets/icons/close.svg';
+
+import './style.css';
+import { Window } from './MovingWindow';
+
+import { useWindowManagerStore } from '../../../hooks/useWindowManagerStore';
+
+interface ModalProps extends Omit<Props, 'className' | 'overlayClassName'> {
+  id: string;
+  title: string;
+  cancelLabel?: string;
+  submitLabel?: string;
+  extraLabel?: string;
+  sideLabel?: string;
+  middleLabel?: string;
+  children: React.ReactNode;
+  onMiddle?: React.FormEventHandler;
+  onExtra?: React.FormEventHandler;
+  onSide?: React.FormEventHandler;
+  onSubmit?: React.FormEventHandler;
+  submitDisabled?: boolean;
+  className?: string;
+  overlayClassName?: string;
+  cancelClassName?: string;
+  submitClassName?: string;
+  extraClassName?: string;
+  sideClassName?: string;
+  middleClassName?: string;
+  hideCancelButton?: boolean;
+  onCancel?: () => void;
+}
+
+export const MovingModal: React.FC<ModalProps> = ({
+  children,
+  title,
+  onSubmit,
+  cancelLabel,
+  submitLabel,
+  extraLabel,
+  sideLabel,
+  middleLabel,
+  onMiddle,
+  onExtra,
+  onSide,
+  submitDisabled,
+  className,
+  overlayClassName,
+  cancelClassName,
+  submitClassName,
+  extraClassName,
+  sideClassName,
+  middleClassName,
+  hideCancelButton,
+  onCancel,
+  ...props
+}) => {
+  const { removeWindow } = useWindowManagerStore();
+  const handleCancel = () => {
+    onCancel ?? props.onRequestClose;
+    removeWindow(props.id);
+  };
+
+  return (
+    <Window
+      {...props}
+      id={props.id}
+      resize={false}
+      className={twMerge(
+        'rounded-lg bg-bg-primary p-6 outline-none scrollbar-thin scrollbar-track-transparent scrollbar-thumb-current'
+      )}
+      header={
+        <div className="relative mb-3 flex w-full items-center justify-between border-b border-border-primary pb-1">
+          <h1 className="text-2xl font-bold">{title}</h1>
+          <button
+            className="rounded-full p-3 transition-colors hover:bg-bg-hover active:bg-bg-active"
+            onClick={props.onRequestClose}
+          >
+            <Close width="1rem" height="1rem" />
+          </button>
+        </div>
+      }
+    >
+      <form onSubmit={onSubmit}>
+        <div className="mb-4">{children}</div>
+
+        <div className="flex items-center justify-end gap-2">
+          <button
+            type="button"
+            className={
+              sideClassName ?? 'rounded px-4 py-2 text-red-400 transition-colors hover:text-red-200'
+            }
+            onClick={onSide}
+            hidden={!sideLabel}
+          >
+            {sideLabel}
+          </button>
+          <button
+            type="button"
+            className={middleClassName ?? 'btn-secondary'}
+            onClick={onMiddle}
+            hidden={!middleLabel}
+          >
+            {middleLabel}
+          </button>
+          <div className="flex-grow"></div>
+          <button
+            type="button"
+            className={cancelClassName ?? 'btn-secondary'}
+            onClick={handleCancel}
+            hidden={hideCancelButton}
+          >
+            {cancelLabel ?? 'Закрыть'}
+          </button>
+          <button
+            type="button"
+            className={extraClassName ?? 'btn-primary'}
+            hidden={!extraLabel}
+            onClick={onExtra}
+          >
+            {extraLabel ?? ''}
+          </button>
+          <button
+            type="submit"
+            className={submitClassName ?? 'btn-primary'}
+            hidden={!onSubmit}
+            disabled={submitDisabled}
+          >
+            {submitLabel ?? 'Сохранить'}
+          </button>
+        </div>
+      </form>
+    </Window>
+  );
+};
