@@ -3,10 +3,10 @@ import { useEffect, useMemo, useState } from 'react';
 import { twMerge } from 'tailwind-merge';
 
 import { ReactComponent as ArrowIcon } from '@renderer/assets/icons/arrow-down.svg';
-import { ReactComponent as AddIcon } from '@renderer/assets/icons/new transition.svg';
 import { ComponentAddModal } from '@renderer/components/ComponentAddModal';
 import { ComponentDeleteModal } from '@renderer/components/ComponentDeleteModal';
 import { ComponentEditModal } from '@renderer/components/ComponentEditModal';
+import { AddButton } from '@renderer/components/UI/AddButton';
 import { useComponents } from '@renderer/hooks';
 import { PlatformManager } from '@renderer/lib/data/PlatformManager';
 import { useModelContext } from '@renderer/store/ModelContext';
@@ -83,16 +83,7 @@ export const StateMachineComponentList: React.FC<StateMachineComponentListProps>
           />
           <h3 className="font-semibold">Компоненты</h3>
         </button>
-        <div className="ml-auto flex">
-          <button
-            type="button"
-            className={'w-5 opacity-70 disabled:opacity-40'}
-            disabled={isDisabled}
-            onClick={() => onRequestAddComponent(smId, components)}
-          >
-            <AddIcon className="shrink-0" />
-          </button>
-        </div>
+        <AddButton disabled={isDisabled} onClick={() => onRequestAddComponent(smId, components)} />
       </div>
     );
   };

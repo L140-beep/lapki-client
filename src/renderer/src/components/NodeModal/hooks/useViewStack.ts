@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useState, useEffect } from 'react';
 
 export type ViewStackEntry<T extends string> = {
   view: T;
@@ -31,6 +31,5 @@ export const useViewStack = <T extends string>(initial: ViewStackEntry<T>) => {
     },
     [initial]
   );
-
   return { currentView, currentTitle: currentEntry.title, canGoBack, push, pop, reset };
 };

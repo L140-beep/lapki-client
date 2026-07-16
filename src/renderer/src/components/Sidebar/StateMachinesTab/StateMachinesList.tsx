@@ -6,6 +6,7 @@ import { ReactComponent as ArrowIcon } from '@renderer/assets/icons/arrow-down.s
 import { ReactComponent as AddIcon } from '@renderer/assets/icons/new transition.svg';
 import { ReactComponent as StateMachineIcon } from '@renderer/assets/icons/state_machine.svg';
 import { StateMachineEditModal } from '@renderer/components/StateMachineEditModal';
+import { AddButton } from '@renderer/components/UI/AddButton';
 import { useStateMachines } from '@renderer/hooks';
 import { getAvailablePlatforms } from '@renderer/lib/data/PlatformLoader';
 import { useModelContext } from '@renderer/store/ModelContext';
@@ -82,16 +83,7 @@ export const StateMachinesList: React.FC<StateMachinesListProps> = ({
           />
           <h3 className="font-semibold">Машины состояний</h3>
         </button>
-        <div className="ml-auto flex">
-          <button
-            type="button"
-            className={'w-5 opacity-70 disabled:opacity-40'}
-            disabled={isDisabled}
-            onClick={onRequestAddStateMachine}
-          >
-            <AddIcon className="shrink-0" />
-          </button>
-        </div>
+        <AddButton disabled={isDisabled} onClick={onRequestAddStateMachine} />
       </div>
     );
   };

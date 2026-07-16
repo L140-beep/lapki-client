@@ -69,24 +69,24 @@ export const MovingModal: React.FC<ModalProps> = ({
     <Window
       {...props}
       id={props.id}
-      resize={false}
       className={twMerge(
-        'rounded-lg bg-bg-primary p-6 outline-none scrollbar-thin scrollbar-track-transparent scrollbar-thumb-current'
+        'rounded-lg bg-bg-primary p-6 outline-none scrollbar-thin scrollbar-track-transparent scrollbar-thumb-current',
+        className
       )}
       header={
-        <div className="relative mb-3 flex w-full items-center justify-between border-b border-border-primary pb-1">
-          <h1 className="text-2xl font-bold">{title}</h1>
+        <div className="relative mb-6 flex w-full items-center justify-between border-b border-border-primary pb-3">
+          <h1 className="text-sm font-medium">{title}</h1>
           <button
-            className="rounded-full p-3 transition-colors hover:bg-bg-hover active:bg-bg-active"
+            className="rounded-full p-1 transition-colors hover:bg-bg-hover active:bg-bg-active"
             onClick={props.onRequestClose}
           >
-            <Close width="1rem" height="1rem" />
+            <Close className="h-3 w-3 fill-black text-black" />
           </button>
         </div>
       }
     >
-      <form onSubmit={onSubmit}>
-        <div className="mb-4">{children}</div>
+      <form onSubmit={onSubmit} className="flex h-full min-h-0 flex-col">
+        <div className="min-h-0 flex-1">{children}</div>
 
         <div className="flex items-center justify-end gap-2">
           <button

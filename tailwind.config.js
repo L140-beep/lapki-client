@@ -74,11 +74,11 @@ export default {
 
           '--bg-p': '#F1F1F1',
           '--bg-s': '#EDEDED',
-          '--bg-h': '#cfcfcf',
-          '--bg-a': '#c2c2c2',
+          '--bg-h': '#E6F4FF',
+          '--bg-a': '#E6F4FF',
 
           '--b-c': '#343a40',
-          '--b-p': '#c2c2c2',
+          '--b-p': '#DEDEDE',
           '--b-w': '#E4A11B',
 
           '--t-p': '#000',

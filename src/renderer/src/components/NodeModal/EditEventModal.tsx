@@ -22,7 +22,6 @@ interface EditEventModalBaseProps {
 }
 
 interface EditEventModalStandaloneProps extends EditEventModalBaseProps {
-  embedded?: false;
   isOpen: boolean;
   close: () => void;
   submitRef?: never;
@@ -34,7 +33,6 @@ interface EditEventModalStandaloneProps extends EditEventModalBaseProps {
 
 // Отображение контента без создания нового модального окна
 interface EditEventModalEmbeddedProps extends EditEventModalBaseProps {
-  embedded: true;
   isOpen?: never;
   close?: never;
   onSaved: () => void;
@@ -44,10 +42,10 @@ interface EditEventModalEmbeddedProps extends EditEventModalBaseProps {
   getActionsRef: React.MutableRefObject<(() => Action[]) | null>;
 }
 
-type EditEventModalProps = EditEventModalStandaloneProps | EditEventModalEmbeddedProps;
+type EditEventModalProps = EditEventModalEmbeddedProps;
 
 export const EditEventModal: React.FC<EditEventModalProps> = (props) => {
-  const { smId, controller, state, event, currentEventIndex, embedded } = props;
+  const { smId, controller, state, event, currentEventIndex } = props;
 
   const modelController = useModelContext();
 
@@ -58,16 +56,17 @@ export const EditEventModal: React.FC<EditEventModalProps> = (props) => {
   const [warning, setWarning] = useState<string | undefined>(undefined);
 
   useEffect(() => {
-    if (!embedded) return;
     trigger.parse(event?.trigger);
     condition.parse(event?.condition);
     actions.parse(smId, event?.do ?? undefined);
     setError(undefined);
     setWarning(undefined);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [embedded, event]);
+  }, [event]);
 
-  if (embedded) {
+  useEffect(() => {
+    if (!props.updateActionRef || !props.submitRef) return;
+    props.submitRef.current = handleSubmit;
     props.updateActionRef.current = (action: Action, idx: number | null) => {
       actions.setActions((prev) => {
         const next = [...prev];
@@ -80,7 +79,7 @@ export const EditEventModal: React.FC<EditEventModalProps> = (props) => {
       });
     };
     props.getActionsRef.current = () => actions.actions;
-  }
+  }, [actions, props.updateActionRef, props.submitRef]);
 
   const showCondition = useMemo(
     () => trigger.selectedComponent !== 'System',
@@ -268,11 +267,7 @@ export const EditEventModal: React.FC<EditEventModalProps> = (props) => {
     modelController.changeState({ smId, id: state.id, events: getEvents() });
     toast.success('Событие сохранено!');
 
-    if (embedded) {
-      props.onSaved();
-    } else {
-      props.close();
-    }
+    props.onSaved();
   };
 
   const handleAfterClose = () => {
@@ -284,48 +279,30 @@ export const EditEventModal: React.FC<EditEventModalProps> = (props) => {
   };
 
   const content = (
-    <div className="flex flex-col gap-3">
+    <div className="flex h-full min-h-0 flex-col gap-3">
       <Trigger event={event} {...trigger} />
       {showCondition && <Condition {...condition} />}
-      <Actions
-        event={event}
-        {...actions}
-        disabled={!!error}
-        {...(embedded
-          ? {
-              onAddAction: () => props.onOpenActionsView(null),
-              onChangeAction: (action) => {
-                const idx = actions.actions.findIndex(
-                  (a) =>
-                    a.component === action.component &&
-                    a.method === action.method &&
-                    JSON.stringify(a.args) === JSON.stringify(action.args)
-                );
-                props.onOpenActionsView(idx !== -1 ? idx : null);
-              },
-            }
-          : {})}
-      />
+      <div className="min-h-0 flex-1">
+        <Actions
+          event={event}
+          {...actions}
+          disabled={!!error}
+          {...{
+            onAddAction: () => props.onOpenActionsView(null),
+            onChangeAction: (action) => {
+              const idx = actions.actions.findIndex(
+                (a) =>
+                  a.component === action.component &&
+                  a.method === action.method &&
+                  JSON.stringify(a.args) === JSON.stringify(action.args)
+              );
+              props.onOpenActionsView(idx !== -1 ? idx : null);
+            },
+          }}
+        />
+      </div>
       {error && <div className="text-error">{error}</div>}
-      {!error && warning && <div className="text-orange-400">{warning}</div>}
     </div>
   );
-
-  if (embedded) {
-    // Пробрасываем handleSubmit в StateModal через ref
-    props.submitRef.current = handleSubmit;
-    return content;
-  }
-
-  return (
-    <Modal
-      title="Редактор события:"
-      onSubmit={handleSubmit}
-      isOpen={props.isOpen}
-      onRequestClose={props.close}
-      onAfterClose={handleAfterClose}
-    >
-      {content}
-    </Modal>
-  );
+  return content;
 };

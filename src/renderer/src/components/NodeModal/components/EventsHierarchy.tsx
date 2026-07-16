@@ -2,8 +2,12 @@ import React, { useState } from 'react';
 
 import { twMerge } from 'tailwind-merge';
 
-import { ReactComponent as AddIcon } from '@renderer/assets/icons/add.svg';
-import { ReactComponent as SubtractIcon } from '@renderer/assets/icons/subtract.svg';
+import { ReactComponent as ActionIcon } from '@renderer/assets/icons/action.svg';
+import { ReactComponent as CollapseIcon } from '@renderer/assets/icons/collapse.svg';
+import { ReactComponent as DeleteIcon } from '@renderer/assets/icons/delete.svg';
+import { ReactComponent as EventIcon } from '@renderer/assets/icons/event.svg';
+import { AddButton } from '@renderer/components/UI/AddButton';
+import { DeleteButton } from '@renderer/components/UI/DeleteButton';
 import { serializeCondition, serializeEvent } from '@renderer/lib/data/GraphmlBuilder';
 import { PlatformManager } from '@renderer/lib/data/PlatformManager';
 import { useModelContext } from '@renderer/store/ModelContext';
@@ -75,32 +79,18 @@ export const EventsHierarchy: React.FC<EventsHierarchyProps> = ({
   };
 
   return (
-    <div className="flex h-full flex-col">
-      {/* Кнопки управления событиями */}
-      <div className="mb-2 flex gap-1">
-        <button
-          type="button"
-          className="btn-secondary p-1"
-          onClick={onAddEvent}
-          title="Добавить событие"
-        >
-          <AddIcon />
-        </button>
-        <button
-          type="button"
-          className="btn-secondary p-1"
-          onClick={onRemoveEvent}
-          disabled={selectedEventIndex === undefined}
-          title="Удалить событие"
-        >
-          <SubtractIcon />
-        </button>
+    <div className="flex h-[290px] flex-col rounded border border-border-primary p-3">
+      <div className="flex flex-row justify-between">
+        <span className="font-medium">События и действия</span>
+        <div className="mb-2 flex gap-3">
+          <AddButton onClick={onAddEvent} />
+          <DeleteButton disabled={selectedEventIndex === undefined} onClick={onRemoveEvent} />
+        </div>
       </div>
-
       {/* Список событий с действиями */}
-      <div className="flex-1 overflow-y-auto rounded border border-border-primary bg-bg-secondary scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb">
+      <div className="flex-1 items-center overflow-y-auto scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb">
         {events.length === 0 ? (
-          <div className="flex h-full select-none items-center justify-center p-4 text-center text-sm text-text-inactive">
+          <div className="flex h-full select-none items-center justify-center p-4 text-center text-text-inactive">
             Нет событий
           </div>
         ) : (
@@ -115,42 +105,40 @@ export const EventsHierarchy: React.FC<EventsHierarchyProps> = ({
                 {/* Строка события */}
                 <div
                   className={twMerge(
-                    'flex cursor-pointer select-none items-center gap-1 px-1 py-1.5 text-sm hover:bg-bg-hover',
+                    'flex cursor-pointer select-none items-center gap-1 rounded-lg px-1 hover:bg-bg-hover',
                     isEventSelected && selectedActionIndex === null && 'bg-bg-active'
                   )}
+                  onClick={() => onSelectEvent(eventIdx)}
                 >
                   {/* Кнопка сворачивания — показывается только если есть действия */}
-                  <button
-                    type="button"
-                    className={twMerge(
-                      'flex-shrink-0 rounded p-0.5 transition-transform duration-150 hover:bg-bg-hover',
-                      !hasActions && 'invisible'
-                    )}
+                  <div
+                    className={twMerge('flex-shrink-0 rounded p-0.5', !hasActions && 'invisible')}
                     onClick={(e) => {
                       e.stopPropagation();
                       toggleCollapsed(eventIdx);
                     }}
-                    tabIndex={-1}
                   >
                     <span
-                      className={twMerge('block text-xs leading-none', !isCollapsed && 'rotate-90')}
+                      className={twMerge(
+                        'block text-xs leading-none',
+                        !isCollapsed && '-rotate-90'
+                      )}
                     >
-                      ›
+                      <CollapseIcon />
                     </span>
-                  </button>
+                  </div>
 
                   {/* Текст события */}
-                  <div
-                    className="min-w-0 flex-1 truncate"
-                    onClick={() => onSelectEvent(eventIdx)}
-                    title={getTriggerText(event) + getConditionText(event.condition)}
-                  >
-                    <span className="font-medium">{getTriggerText(event)}</span>
-                    {event.condition && (
-                      <span className="text-text-secondary">
-                        {getConditionText(event.condition)}
-                      </span>
-                    )}
+                  <div className="flex min-w-0 flex-1 flex-row gap-2 truncate">
+                    <EventIcon />
+                    <div>
+                      <span className="font-medium">{getTriggerText(event)}</span>
+                      {event.condition && (
+                        <span className="text-text-secondary">
+                          {getConditionText(event.condition)}
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
 
@@ -160,17 +148,16 @@ export const EventsHierarchy: React.FC<EventsHierarchyProps> = ({
                     <div
                       key={actionIdx}
                       className={twMerge(
-                        'cursor-pointer select-none truncate py-1 pl-7 pr-2 text-xs text-text-primary hover:bg-bg-hover',
-                        isEventSelected && selectedActionIndex === actionIdx && 'bg-bg-active'
+                        'flex cursor-pointer select-none flex-row items-center gap-1 truncate rounded-lg pl-7 pr-2 text-text-primary hover:bg-bg-hover',
+                        selectedActionIndex === actionIdx && 'bg-bg-active'
                       )}
                       onClick={() => onSelectAction(eventIdx, actionIdx)}
                       title={getActionText(action)}
                     >
-                      ↳ {getActionText(action)}
+                      <ActionIcon />
+                      {getActionText(action)}
                     </div>
                   ))}
-
-                <hr className="border-border-primary opacity-50" />
               </div>
             );
           })

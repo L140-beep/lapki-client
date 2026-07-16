@@ -68,7 +68,7 @@ export const useTrigger = (
         value: id,
         label: name,
         hint: proto?.description,
-        icon: controller.platform[smId]?.getFullComponentIcon(id, 'mr-1 h-7 w-7'),
+        icon: controller.platform[smId]?.getFullComponentIcon(id, 'mr-1 h-5 w-5'),
       };
     };
 
@@ -99,7 +99,7 @@ export const useTrigger = (
           icon: (
             <img
               src={getImg.call(controller.platform[smId], selectedComponent, name, true)}
-              className="mr-1 h-7 w-7 object-contain"
+              className="mr-1 h-5 w-5 object-contain"
             />
           ),
         };

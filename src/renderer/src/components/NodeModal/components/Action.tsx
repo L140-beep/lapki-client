@@ -74,7 +74,7 @@ export const Action: React.FC<ActionProps> = (props) => {
   return (
     <div
       className={twMerge(
-        'w-full min-w-max gap-2 p-2 scrollbar-w-full hover:bg-bg-hover',
+        'w-full min-w-max gap-2 py-1.5 pl-3 scrollbar-w-full hover:bg-bg-hover',
         isSelected && 'bg-bg-active'
       )}
       onClick={onSelect}
@@ -86,7 +86,7 @@ export const Action: React.FC<ActionProps> = (props) => {
     >
       <div className="flex w-full items-center gap-2">
         <Picto
-          leftIcon={platform ? platform.getFullComponentIcon(data.component) : 'unknown'}
+          leftIcon={platform ? platform.getFullComponentIcon(data.component, 'h-5 w-5') : 'unknown'}
           rightIcon={
             platform ? platform.getActionIconUrl(data.component, data.method, true) : 'unknown'
           }
