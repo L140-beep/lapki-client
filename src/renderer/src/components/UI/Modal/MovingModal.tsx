@@ -88,7 +88,7 @@ export const MovingModal: React.FC<ModalProps> = ({
       <form onSubmit={onSubmit} className="flex h-full min-h-0 flex-col">
         <div className="min-h-0 flex-1">{children}</div>
 
-        <div className="flex items-center justify-end gap-2">
+        <div className="flex items-center justify-end gap-2 pt-3">
           <button
             type="button"
             className={

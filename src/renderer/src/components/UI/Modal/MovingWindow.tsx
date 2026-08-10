@@ -1,12 +1,9 @@
-import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 
 import './css/moving_window.css';
 import { twMerge } from 'tailwind-merge';
 
-import {
-  type WindowAnimationType,
-  useWindowManagerStore,
-} from '../../../hooks/useWindowManagerStore';
+import { useWindowManagerStore } from '../../../hooks/useWindowManagerStore';
 
 /**
  * Props for the Window component
@@ -24,23 +21,7 @@ export type WindowProps = {
   toolbar?: React.ReactNode | string;
   /** Additional CSS classes for the window */
   className?: string;
-  /** Custom toolbar icons */
-  icons?: {
-    fullscreen?: React.ReactNode;
-    fullscreenExit?: React.ReactNode;
-    close?: React.ReactNode;
-  };
   isOpen?: boolean;
-  /** Animation type for fullscreen transitions (overrides global setting) */
-  animation?: WindowAnimationType;
-  /** Whether to allow fullscreen mode */
-  allowFullscreen?: boolean;
-  /** Callback when window is closed */
-  onClose?: () => void;
-  /** Callback when fullscreen state changes */
-  onToggleFullscreen?: (isFullscreen: boolean) => void;
-  /** Callback when window is resized */
-  onResize?: (size: { width: number; height: number }) => void;
 };
 
 export const Window = ({
@@ -48,26 +29,11 @@ export const Window = ({
   header,
   children,
   position = { x: 100, y: 100 },
-  toolbar,
   className = '',
-  animation: animationType,
-  icons,
   isOpen = false,
-  allowFullscreen = true,
-  onClose,
-  onToggleFullscreen,
-  onResize,
 }: WindowProps) => {
-  const {
-    updateWindow,
-    removeWindow,
-    activeWindowId,
-    setActiveWindow,
-    bringToFront,
-    endSplitOnDrag,
-    windows,
-    windowAnimation,
-  } = useWindowManagerStore();
+  const { updateWindow, activeWindowId, setActiveWindow, bringToFront, endSplitOnDrag, windows } =
+    useWindowManagerStore();
 
   // Get selected animation type - if provided in props, use it, otherwise use the store's value
   const windowRef = useRef<HTMLDivElement>(null);

@@ -79,7 +79,7 @@ export const EventsHierarchy: React.FC<EventsHierarchyProps> = ({
   };
 
   return (
-    <div className="flex h-[290px] flex-col rounded border border-border-primary p-3">
+    <div className="flex h-full min-h-[290px] flex-col rounded border border-border-primary p-3">
       <div className="flex flex-row justify-between">
         <span className="font-medium">События и действия</span>
         <div className="mb-2 flex gap-3">

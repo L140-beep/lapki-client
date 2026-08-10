@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 
 import { useModal } from '@renderer/hooks/useModal';
 import { CanvasController } from '@renderer/lib/data/ModelController/CanvasController';
@@ -8,9 +8,9 @@ import { useModelContext } from '@renderer/store/ModelContext';
 import { Action, Component, EventData } from '@renderer/types/diagram';
 
 import { ActionsModal, ActionsModalData } from './ActionsModal/ActionsModal';
-import { ColorField } from './components';
 import { EventsHierarchy } from './components/EventsHierarchy';
 import { EditEventModal } from './EditEventModal';
+import { useActionsModal, useEditEvent } from './hooks';
 import { useViewStack } from './hooks/useViewStack';
 
 import { MovingModal } from '../UI/Modal/MovingModal';
@@ -49,15 +49,14 @@ export const StateModal: React.FC<StateModalProps> = ({ smId, controller }) => {
 
   const viewStack = useViewStack<StateView>({ view: 'editEvent', title: 'Редактор события' });
 
-  const editEventSubmitRef = useRef<(() => void) | null>(null);
-  const actionsSubmitRef = useRef<(() => void) | null>(null);
-  const updateActionRef = useRef<((action: Action, idx: number | null) => void) | null>(null);
-  const getActionsRef = useRef<(() => Action[]) | null>(null);
+  const editEventProps = useEditEvent(smId, controller, state, currentEvent, currentEventIndex);
+  const { handleSubmit: handleEditEventSubmit, getActions, updateActions } = editEventProps;
 
   const stateName = state?.data.name ?? '';
 
   useEffect(() => {
     const handler = (s: State) => {
+      debugger;
       console.log('CHANGE STATE EVENT');
       setState(s);
       setColor(s.data.color);
@@ -102,8 +101,28 @@ export const StateModal: React.FC<StateModalProps> = ({ smId, controller }) => {
     viewStack.reset({ view: 'editEvent', title: 'Редактор события' });
   };
 
+  const nextEvent = useCallback(
+    (
+      currentEventIndex: number | undefined,
+      events: EventData[]
+    ): [number, EventData] | [undefined, null] => {
+      if (currentEventIndex === undefined) return [undefined, null];
+
+      const isZero = currentEventIndex === 0;
+      const emptyEvents = events.length === 1;
+
+      if (isZero && emptyEvents) return [undefined, null];
+      if (isZero && !emptyEvents) return [1, events[1]];
+      if (!isZero) return [currentEventIndex - 1, events[currentEventIndex - 1]];
+
+      return [undefined, null];
+    },
+    []
+  );
+
   const removeEvent = () => {
     if (!state || currentEventIndex === undefined) return;
+    const [newIndex, newEvent] = nextEvent(currentEventIndex, state.data.events);
     const events =
       state.data.events.length === 1
         ? []
@@ -113,9 +132,15 @@ export const StateModal: React.FC<StateModalProps> = ({ smId, controller }) => {
           ];
     modelController.changeState({ smId, id: state.id, events }, true);
     // Выбираем соседнее событие после удаления
-    setCurrentEvent(currentEventIndex !== undefined ? events[currentEventIndex - 1] : null);
+    setCurrentEvent(newEvent);
+    setCurrentEventIndex(newIndex);
     setSelectedActionIndex(null);
-    viewStack.reset({ view: 'editEvent', title: 'Редактор события' });
+
+    if (newIndex !== undefined) {
+      viewStack.reset({ view: 'editEvent', title: 'Редактор события' });
+    } else {
+      viewStack.reset();
+    }
   };
 
   // Клик по событию в иерархии
@@ -125,9 +150,7 @@ export const StateModal: React.FC<StateModalProps> = ({ smId, controller }) => {
     setCurrentEventIndex(eventIndex);
     setCurrentEvent(state.data.events[eventIndex]);
     setSelectedActionIndex(null);
-    console.log('before reset');
     viewStack.reset({ view: 'editEvent', title: 'Редактор события' });
-    console.log('after reset');
   };
 
   useEffect(() => {
@@ -152,11 +175,10 @@ export const StateModal: React.FC<StateModalProps> = ({ smId, controller }) => {
 
   // Переход на экран actions из EditEventContent
   const handleOpenActionsView = (actionIndex: number | null) => {
-    debugger;
     setActionsIdx(actionIndex);
     setSelectedActionIndex(actionIndex);
 
-    const currentActions = getActionsRef.current?.() ?? [];
+    const currentActions = getActions();
     setActionsData(
       actionIndex !== null && currentActions[actionIndex]
         ? { smId, action: currentActions[actionIndex], isEditingEvent: false }
@@ -165,19 +187,29 @@ export const StateModal: React.FC<StateModalProps> = ({ smId, controller }) => {
     viewStack.reset({ view: 'actions', title: 'Выберите действие' });
   };
 
-  const handleActionsSubmit = (data: Action, idx: number | null) => {
-    updateActionRef.current?.(data, idx);
-    debugger;
+  const handleActionsSubmit = (data: Action, idx: number | null | undefined) => {
+    updateActions(data, idx ?? 0);
     setSelectedActionIndex(null);
     viewStack.pop();
-    setTimeout(() => editEventSubmitRef.current?.(), 0);
+    handleEditEventSubmit();
   };
+
+  const actionsModalProps = useActionsModal(
+    smId,
+    controller,
+    actionsIdx,
+    handleActionsSubmit,
+    actionsData
+  );
+  const { handleSubmit: handleEditActionSubmit } = actionsModalProps;
 
   const handleModalSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (viewStack.currentView === 'editEvent') editEventSubmitRef.current?.();
-    if (viewStack.currentView === 'actions') actionsSubmitRef.current?.();
+    if (viewStack.currentView === 'editEvent') handleEditEventSubmit();
+    if (viewStack.currentView === 'actions') handleEditActionSubmit();
   };
+
+  console.log(viewStack.currentView, currentEventIndex, currentEventIndex === undefined);
 
   return (
     <MovingModal
@@ -191,7 +223,7 @@ export const StateModal: React.FC<StateModalProps> = ({ smId, controller }) => {
       cancelLabel="Отмена"
       onCancel={viewStack.canGoBack ? viewStack.pop : undefined}
       hideCancelButton={!viewStack.canGoBack}
-      className="h-[440px] w-[830px]"
+      className="min-h-[440px] w-[830px]"
     >
       <div className="flex h-full gap-4">
         {/* Левая панель: иерархия событий */}
@@ -212,7 +244,7 @@ export const StateModal: React.FC<StateModalProps> = ({ smId, controller }) => {
         </div>
 
         {/* Правая панель: редактор */}
-        <div className="h-[290px] min-w-0 flex-1">
+        <div className="min-h-[290px] min-w-0 flex-1">
           {currentEventIndex === undefined ? (
             <div className="flex h-full items-center justify-center text-text-inactive">
               Выберите событие или создайте новое
@@ -220,30 +252,11 @@ export const StateModal: React.FC<StateModalProps> = ({ smId, controller }) => {
           ) : (
             <div className="h-full">
               <div className="h-full" hidden={viewStack.currentView !== 'editEvent'}>
-                <EditEventModal
-                  smId={smId}
-                  controller={controller}
-                  state={state}
-                  event={currentEvent}
-                  currentEventIndex={currentEventIndex}
-                  onSaved={() => {}}
-                  submitRef={editEventSubmitRef}
-                  onOpenActionsView={handleOpenActionsView}
-                  updateActionRef={updateActionRef}
-                  getActionsRef={getActionsRef}
-                />
+                <EditEventModal onOpenActionsView={handleOpenActionsView} {...editEventProps} />
               </div>
 
-              <div hidden={viewStack.currentView !== 'actions'}>
-                <ActionsModal
-                  embedded
-                  smId={smId}
-                  controller={controller}
-                  initialData={actionsData}
-                  idx={actionsIdx}
-                  onSubmit={handleActionsSubmit}
-                  submitRef={actionsSubmitRef}
-                />
+              <div className="hidden">
+                <ActionsModal {...actionsModalProps} />
               </div>
             </div>
           )}

@@ -129,7 +129,7 @@ export const Condition: React.FC<ConditionProps> = memo(function Condition(props
   return (
     <div>
       <div className={twMerge('flex items-center gap-2', show && 'items-end')}>
-        <p className="text-lg font-bold">Если</p>
+        <p className="font-medium">Если</p>
 
         <label className={twMerge('btn border-primary px-3', show && 'btn-primary')}>
           <input

@@ -90,14 +90,15 @@ export const Actions: React.FC<ActionsProps> = (props) => {
     onReorderAction(dragIndex, index);
   };
 
-  const handleClickDelete = () => {
-    if (selectedActionIndex === null) return;
+  const handleClickDelete = (idx: number) => {
+    debugger;
+    if (idx === null) return;
 
-    onDeleteAction(selectedActionIndex);
+    onDeleteAction(idx);
   };
 
   return (
-    <div className="flex h-full min-h-0 flex-col">
+    <div className="flex h-full min-h-44 flex-col">
       <div className="mb-2 flex items-end gap-2">
         <p className="font-medium">Делай</p>
 
@@ -135,6 +136,7 @@ export const Actions: React.FC<ActionsProps> = (props) => {
                     isSelected={selectedActionIndex === i}
                     onSelect={() => setSelectedActionIndex(i)}
                     onChange={() => !disabled && onChangeAction(data)}
+                    onDelete={() => handleClickDelete(i)}
                     onDragStart={() => handleDrag(i)}
                     onDrop={() => handleDrop(i)}
                     data={{
@@ -145,25 +147,6 @@ export const Actions: React.FC<ActionsProps> = (props) => {
                 ))}
               </div>
             </div>
-
-            {/* <div className="flex flex-col gap-2">
-              <button
-                type="button"
-                className="btn-secondary p-1"
-                onClick={onAddAction}
-                disabled={disabled}
-              >
-                <AddIcon />
-              </button>
-              <button
-                type="button"
-                className="btn-secondary p-1"
-                onClick={handleClickDelete}
-                disabled={selectedActionIndex === null}
-              >
-                <SubtractIcon />
-              </button>
-            </div> */}
           </div>
         </TabPanel>
 
@@ -185,8 +168,6 @@ export const Actions: React.FC<ActionsProps> = (props) => {
           </TabPanel>
         )}
       </div>
-
-      <ActionsModal smId={smId} controller={controller} idx={selectedActionIndex} {...modal} />
     </div>
   );
 };

@@ -27,7 +27,6 @@ interface DiagramEditorProps {
 }
 
 export const DiagramEditor: React.FC<DiagramEditorProps> = (props: DiagramEditorProps) => {
-  const { addWindow, windows, removeWindow } = useWindowManagerStore();
   const editor = props.editor;
   const controller = props.controller;
   const [canvasSettings] = useSettings('canvas');
@@ -137,15 +136,6 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = (props: DiagramEditor
             Здесь находятся модалки, которые вызываются через взаимодействие с канвасом. 
             Модалки могут дублироваться по кодовой базе, если они вызываются другим способом.
           */}
-          <EditEventModal
-            close={eventModal.closeEditEventModal}
-            event={eventModal.currentEvent}
-            state={eventModal.state}
-            currentEventIndex={eventModal.currentEventIdx}
-            isOpen={eventModal.props.isEditEventModalOpen}
-            smId={smId}
-            controller={controller}
-          />
           <StateModal smId={smId} controller={controller} />
           <TransitionModal controller={controller} smId={smId} />
           {/* <ActionsModal

@@ -2,6 +2,7 @@ import React, { useMemo } from 'react';
 
 import { twMerge } from 'tailwind-merge';
 
+import { DeleteButton } from '@renderer/components/UI/DeleteButton';
 import { getActionDelimeter } from '@renderer/lib/data/GraphmlBuilder';
 import { PlatformManager } from '@renderer/lib/data/PlatformManager';
 import { useModelContext } from '@renderer/store/ModelContext';
@@ -19,6 +20,7 @@ interface ActionProps {
   onChange: () => void;
   onDragStart: () => void;
   onDrop: () => void;
+  onDelete?: () => void;
   data: ActionData & { componentName: string };
 }
 
@@ -26,7 +28,7 @@ interface ActionProps {
  * Отображает одно действие в блоке действий
  */
 export const Action: React.FC<ActionProps> = (props) => {
-  const { smId, isSelected, onSelect, onChange, onDragStart, onDrop, data } = props;
+  const { smId, isSelected, onSelect, onChange, onDragStart, onDrop, data, onDelete } = props;
 
   const modelController = useModelContext();
   const headControllerId = modelController.model.useData('', 'headControllerId');
@@ -161,6 +163,10 @@ export const Action: React.FC<ActionProps> = (props) => {
           </div>
           <div>)</div>
         </div>
+
+        {onDelete && (
+          <DeleteButton onClick={onDelete} className={twMerge('p-2', !onDelete && 'hidden')} />
+        )}
       </div>
     </div>
   );
