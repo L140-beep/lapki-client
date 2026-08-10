@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 
 import './css/moving_window.css';
 import { twMerge } from 'tailwind-merge';
@@ -71,8 +71,8 @@ export const Window = ({
 
   // Get selected animation type - if provided in props, use it, otherwise use the store's value
   const windowRef = useRef<HTMLDivElement>(null);
-  const headerRef = useRef<HTMLDivElement>(null);
 
+  const [size, setSize] = useState({ width: 0, height: 0 });
   const [windowPosition, setWindowPosition] = useState(position);
 
   // Drag state refs
@@ -88,6 +88,12 @@ export const Window = ({
     windowY: 0,
   });
 
+  useLayoutEffect(() => {
+    if (!windowRef.current || !isOpen) return;
+    const newSize = windowRef.current.getBoundingClientRect();
+    setSize(newSize);
+  }, [isOpen, id, windowRef]);
+
   // Animation frame Id for cleanup
   const animationFrameId = useRef<number | null>(null);
 
@@ -97,15 +103,19 @@ export const Window = ({
 
   // Clamp the window position to the screen boundaries
   const clampPositionToScreen = (x: number, y: number) => {
-    const windowWidth = window.innerWidth;
-    const windowHeight = window.innerHeight;
+    const el = windowRef.current;
+    if (!el) return { x, y };
 
-    // computed width
-    // // Clamp the position to the screen boundaries
-    // const clampedX = Math.max(0, Math.min(x, windowWidth - windowSize.width));
-    // const clampedY = Math.max(0, Math.min(y, windowHeight - windowSize.height));
+    const parent = (el.offsetParent as HTMLElement) ?? el.parentElement ?? document.documentElement;
+    const parentRect = parent.getBoundingClientRect();
 
-    return { x: windowWidth, y: windowHeight };
+    const maxX = Math.max(0, parentRect.width - size.width);
+    const maxY = Math.max(0, parentRect.height - size.height);
+
+    const clampedX = Math.max(0, Math.min(x, maxX));
+    const clampedY = Math.max(0, Math.min(y, maxY));
+
+    return { x: clampedX, y: clampedY };
   };
 
   // Window activation and bring to front
@@ -119,9 +129,7 @@ export const Window = ({
       bringToFront(id);
     }
   };
-  useEffect(() => {
-    console.log('state', windowPosition.x, 'dom', windowRef.current?.getBoundingClientRect().left);
-  }, [windowPosition]);
+
   // Component mount/unmount event listeners for mouse and touch events
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -145,8 +153,8 @@ export const Window = ({
           const newX = dragStartPos.current.windowX + deltaX;
           const newY = dragStartPos.current.windowY + deltaY;
 
-          // const { x: clampedX, y: clampedY } = clampPositionToScreen(newX, newY);
-          setWindowPosition({ x: newX, y: newY });
+          const { x: clampedX, y: clampedY } = clampPositionToScreen(newX, newY);
+          setWindowPosition({ x: clampedX, y: clampedY });
 
           animationFrameId.current = null;
         });
@@ -167,8 +175,8 @@ export const Window = ({
 
       const newX = touchStartPos.current.windowX + deltaX;
       const newY = touchStartPos.current.windowY + deltaY;
-      // const { x: clampedX, y: clampedY } = clampPositionToScreen(newX, newY);
-      setWindowPosition({ x: newX, y: newY });
+      const { x: clampedX, y: clampedY } = clampPositionToScreen(newX, newY);
+      setWindowPosition({ x: clampedX, y: clampedY });
     };
 
     const handleMouseUp = () => {
@@ -219,7 +227,7 @@ export const Window = ({
         cancelAnimationFrame(animationFrameId.current);
       }
     };
-  }, [id]); // windowSize dependency'lerini ekle
+  }, [id, size]); // windowSize dependency'lerini ekle
 
   useEffect(() => {
     if (!windowRef.current) return;
@@ -229,12 +237,6 @@ export const Window = ({
     windowRef.current.style.top = windowPosition.y.toString() + 'px';
     style.zIndex = zIndex.toString();
   }, [windowRef, zIndex, windowPosition]);
-
-  useEffect(() => {
-    if (!windowRef.current) return;
-
-    windowRef.current.style.display = isOpen ? 'flex' : 'none';
-  }, [isOpen, windowRef]);
 
   const handleDragStart = (e: React.MouseEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -373,12 +375,12 @@ export const Window = ({
         `react-window-manager window ${activeWindowId === id ? 'active' : ''}`,
         className
       )}
+      style={{ display: isOpen ? 'flex' : 'none' }}
       onMouseDown={handleWindowActivation}
       data-window-id={id}
     >
       {/* Header */}
       <div
-        ref={headerRef}
         onMouseDown={handleDragStart}
         onTouchStart={handleTouchStart}
         onDoubleClick={handleHeaderDoubleClick}
