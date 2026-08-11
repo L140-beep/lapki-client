@@ -56,7 +56,6 @@ export const StateModal: React.FC<StateModalProps> = ({ smId, controller }) => {
 
   useEffect(() => {
     const handler = (s: State) => {
-      debugger;
       console.log('CHANGE STATE EVENT');
       setState(s);
       setColor(s.data.color);
@@ -82,7 +81,6 @@ export const StateModal: React.FC<StateModalProps> = ({ smId, controller }) => {
     if (state && state.data.color !== color) {
       modelController.changeState({ ...state.data, color, smId, id: state.id });
     }
-    debugger;
     setColor(undefined);
     setState(null);
     setCurrentEvent(null);
@@ -160,7 +158,6 @@ export const StateModal: React.FC<StateModalProps> = ({ smId, controller }) => {
   // Клик по действию в иерархии
   const handleSelectAction = (eventIndex: number, actionIndex: number) => {
     if (!state) return;
-    debugger;
     setCurrentEventIndex(eventIndex);
     setCurrentEvent(state.data.events[eventIndex]);
     setSelectedActionIndex(actionIndex);

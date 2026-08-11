@@ -30,7 +30,7 @@ export const useCondition = (
 
   const [tabValue, setTabValue] = useState(0);
 
-  const [conditionOperator, setConditionOperator] = useState<string | null>(null);
+  const [conditionOperator, setConditionOperator] = useState<string | null>('greater');
 
   const [selectedComponentParam1, setSelectedComponentParam1] = useState<string | null>(null);
   const [selectedComponentParam2, setSelectedComponentParam2] = useState<string | null>(null);
@@ -48,23 +48,23 @@ export const useCondition = (
   const [text, setText] = useState('');
 
   const { getComponentOptions, getPropertyOptions } = useActions(smId, controller, null);
-
+  const iconClassName = 'mr-1 h-5 w-5';
   const componentOptionsParam1: SelectOption[] = useMemo(() => {
-    return getComponentOptions('variables', false);
+    return getComponentOptions('variables', false, iconClassName);
   }, [smId, controller, componentsData, controller.platform, visual]);
 
   const componentOptionsParam2: SelectOption[] = useMemo(() => {
-    return getComponentOptions('variables', false);
+    return getComponentOptions('variables', false, iconClassName);
   }, [smId, controller, componentsData, controller.platform, visual]);
 
   const methodOptionsParam1: SelectOption[] = useMemo(() => {
     if (!selectedComponentParam1) return [];
-    return getPropertyOptions(selectedComponentParam1, 'variables');
+    return getPropertyOptions(selectedComponentParam1, 'variables', iconClassName);
   }, [smId, controller, controller.platform, selectedComponentParam1, visual]);
 
   const methodOptionsParam2: SelectOption[] = useMemo(() => {
     if (!selectedComponentParam2 || !controller.platform[smId]) return [];
-    return getPropertyOptions(selectedComponentParam2, 'variables');
+    return getPropertyOptions(selectedComponentParam2, 'variables', iconClassName);
   }, [smId, controller, controller.platform, selectedComponentParam2, visual]);
 
   const checkForErrors = useCallback(() => {
@@ -136,7 +136,7 @@ export const useCondition = (
     setSelectedComponentParam1(null);
     setSelectedComponentParam2(null);
     setArgsParam1('');
-    setConditionOperator(null);
+    setConditionOperator('greater');
     setSelectedMethodParam1(null);
     setSelectedMethodParam2(null);
     setArgsParam2('');

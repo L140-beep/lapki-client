@@ -35,6 +35,7 @@ const colorNames = {
 
   'icon-active': '--i-a',
   'icon-secondary': '--i-s',
+  'switch-inactive-bg': '--sw-inactive-bg',
 } as const;
 type ColorNames = typeof colorNames;
 type ColorName = keyof ColorNames;

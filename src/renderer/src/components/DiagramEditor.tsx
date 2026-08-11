@@ -12,7 +12,6 @@ import {
 } from '@renderer/components';
 import { useEditEventModal, useSettings } from '@renderer/hooks';
 import { useModal } from '@renderer/hooks/useModal';
-import { useWindowManagerStore } from '@renderer/hooks/useWindowManagerStore';
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { CanvasController } from '@renderer/lib/data/ModelController/CanvasController';
 import { EventSelection, State } from '@renderer/lib/drawable';

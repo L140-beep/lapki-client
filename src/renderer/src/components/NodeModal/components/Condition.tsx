@@ -5,10 +5,13 @@ import throttle from 'lodash.throttle';
 import { twMerge } from 'tailwind-merge';
 
 import { AttributeConstSwitch } from '@renderer/components/AttributeConstSwitch';
-import { Select, TabPanel, Tabs, TextField } from '@renderer/components/UI';
+import { Select, SubButton, TabPanel, Tabs, TextField } from '@renderer/components/UI';
+import { AddButton } from '@renderer/components/UI/AddButton';
+import { DeleteButton } from '@renderer/components/UI/DeleteButton';
 import { useModelContext } from '@renderer/store/ModelContext';
 
 import { useCondition } from '../hooks';
+
 import '../style.css';
 
 const operand = [
@@ -128,27 +131,12 @@ export const Condition: React.FC<ConditionProps> = memo(function Condition(props
 
   return (
     <div>
-      <div className={twMerge('flex items-center gap-2', show && 'items-end')}>
+      <div className={twMerge('flex items-center justify-between', show && 'items-end')}>
         <p className="font-medium">Если</p>
-
-        <label className={twMerge('btn border-primary px-3', show && 'btn-primary')}>
-          <input
-            type="checkbox"
-            checked={show}
-            onChange={(e) => handleChangeConditionShow(e.target.checked)}
-            className="h-0 w-0 opacity-0"
-          />
-          <span>{show ? 'Убрать условие' : 'Добавить условие'}</span>
-        </label>
-        {visual && (
-          <div className={twMerge('flex flex-row', !show && 'hidden')}>
-            <AttributeConstSwitch
-              hint="Если не выполняются другие условия для данного триггера"
-              checked={isElse}
-              onCheckedChange={handleElseChange}
-            />
-            <span className="ml-2">else</span>
-          </div>
+        {!show ? (
+          <AddButton onClick={() => handleChangeConditionShow(!show)} />
+        ) : (
+          <SubButton onClick={() => handleChangeConditionShow(!show)} />
         )}
 
         {!visual && (
@@ -161,9 +149,19 @@ export const Condition: React.FC<ConditionProps> = memo(function Condition(props
         )}
       </div>
 
-      <div className={twMerge('mt-2 pl-4', !show && 'hidden')}>
+      <div className={twMerge('mt-2', !show && 'hidden')}>
         <TabPanel value={0} tabValue={tabValue}>
           <div className="flex flex-col gap-2">
+            {visual && (
+              <div className={twMerge('flex flex-row', !show && 'hidden')}>
+                <AttributeConstSwitch
+                  hint="Если не выполняются другие условия для данного триггера"
+                  checked={isElse}
+                  onCheckedChange={handleElseChange}
+                />
+                <span className="ml-2">else</span>
+              </div>
+            )}
             <div className="flex items-start">
               <div className="mr-2 mt-[6px]">
                 <AttributeConstSwitch
@@ -181,7 +179,7 @@ export const Condition: React.FC<ConditionProps> = memo(function Condition(props
               {isParamOneInput1 ? (
                 <div className="flex gap-2">
                   <Select
-                    containerClassName={twMerge('w-[290px]', isElse && 'opacity-50')}
+                    containerClassName={twMerge('w-[209px]', isElse && 'opacity-50')}
                     options={componentOptionsParam1}
                     onChange={handleComponentParam1Change}
                     value={
@@ -195,7 +193,7 @@ export const Condition: React.FC<ConditionProps> = memo(function Condition(props
                     noOptionsMessage={() => 'Нет подходящих компонентов'}
                   />
                   <Select
-                    containerClassName={twMerge('w-[290px]', isElse && 'opacity-50')}
+                    containerClassName={twMerge('w-[209px]', isElse && 'opacity-50')}
                     options={methodOptionsParam1}
                     onChange={handleMethodParam1Change}
                     value={
@@ -223,14 +221,14 @@ export const Condition: React.FC<ConditionProps> = memo(function Condition(props
             </div>
 
             <Select
-              containerClassName={twMerge('pl-[50px]', isElse && 'opacity-50')}
-              className="max-w-[220px]"
+              containerClassName={twMerge('ml-[37px] w-[61px]', isElse && 'opacity-50')}
               placeholder="Выберите оператор"
               options={operand}
               isDisabled={isElse}
               onChange={handleConditionOperatorChange}
               value={operand.find((opt) => opt.value === conditionOperator) ?? null}
               error={errors.conditionOperator || ''}
+              isSearchable={false}
             />
 
             <div className="flex items-start">
@@ -250,7 +248,7 @@ export const Condition: React.FC<ConditionProps> = memo(function Condition(props
               {isParamOneInput2 ? (
                 <div className="flex gap-2">
                   <Select
-                    containerClassName={twMerge('w-[290px]', isElse && 'opacity-50')}
+                    containerClassName={twMerge('w-[209px]', isElse && 'opacity-50')}
                     options={componentOptionsParam2}
                     onChange={handleComponentParam2Change}
                     value={
@@ -264,7 +262,7 @@ export const Condition: React.FC<ConditionProps> = memo(function Condition(props
                     noOptionsMessage={() => 'Нет подходящих компонентов'}
                   />
                   <Select
-                    containerClassName={twMerge('w-[290px]', isElse && 'opacity-50')}
+                    containerClassName={twMerge('w-[209px]', isElse && 'opacity-50')}
                     options={methodOptionsParam2}
                     onChange={handleMethodParam2Change}
                     value={
