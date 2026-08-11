@@ -6,6 +6,7 @@ import { ReactComponent as ActionIcon } from '@renderer/assets/icons/action.svg'
 import { ReactComponent as CollapseIcon } from '@renderer/assets/icons/collapse.svg';
 import { ReactComponent as DeleteIcon } from '@renderer/assets/icons/delete.svg';
 import { ReactComponent as EventIcon } from '@renderer/assets/icons/event.svg';
+import { WithHint } from '@renderer/components/UI';
 import { AddButton } from '@renderer/components/UI/AddButton';
 import { DeleteButton } from '@renderer/components/UI/DeleteButton';
 import { serializeCondition, serializeEvent } from '@renderer/lib/data/GraphmlBuilder';
@@ -103,44 +104,48 @@ export const EventsHierarchy: React.FC<EventsHierarchyProps> = ({
             return (
               <div key={eventIdx}>
                 {/* Строка события */}
-                <div
-                  className={twMerge(
-                    'flex cursor-pointer select-none items-center gap-1 rounded-lg px-1 hover:bg-bg-hover',
-                    isEventSelected && selectedActionIndex === null && 'bg-bg-active'
-                  )}
-                  onClick={() => onSelectEvent(eventIdx)}
-                >
-                  {/* Кнопка сворачивания — показывается только если есть действия */}
-                  <div
-                    className={twMerge('flex-shrink-0 rounded p-0.5', !hasActions && 'invisible')}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      toggleCollapsed(eventIdx);
-                    }}
-                  >
-                    <span
+                <WithHint hint={getTriggerText(event) + getConditionText(event.condition)}>
+                  {(hintProps) => (
+                    <div
+                      {...hintProps}
                       className={twMerge(
-                        'block text-xs leading-none',
-                        !isCollapsed && '-rotate-90'
+                        'flex cursor-pointer select-none items-center gap-1 rounded-lg px-1 hover:bg-bg-hover',
+                        isEventSelected && selectedActionIndex === null && 'bg-bg-active'
                       )}
+                      onClick={() => onSelectEvent(eventIdx)}
                     >
-                      <CollapseIcon />
-                    </span>
-                  </div>
-
-                  {/* Текст события */}
-                  <div className="flex min-w-0 flex-1 flex-row gap-2 truncate">
-                    <EventIcon />
-                    <div>
-                      <span className="font-medium">{getTriggerText(event)}</span>
-                      {event.condition && (
-                        <span className="text-text-secondary">
-                          {getConditionText(event.condition)}
+                      {/* Кнопка сворачивания — показывается только если есть действия */}
+                      <div
+                        className={twMerge(
+                          'flex-shrink-0 rounded p-0.5',
+                          !hasActions && 'invisible'
+                        )}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleCollapsed(eventIdx);
+                        }}
+                      >
+                        <span
+                          className={twMerge(
+                            'block text-xs leading-none',
+                            !isCollapsed && '-rotate-90'
+                          )}
+                        >
+                          <CollapseIcon />
                         </span>
-                      )}
+                      </div>
+
+                      {/* Текст события */}
+                      <div className="flex min-w-0 flex-1 flex-row gap-2">
+                        <EventIcon className="flex-shrink-0" />
+                        <div className="min-w-0 truncate">
+                          <span className="font-medium">{getTriggerText(event)}</span>
+                          {event.condition && <span>{getConditionText(event.condition)}</span>}
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </div>
+                  )}
+                </WithHint>
 
                 {/* Действия события */}
                 {!isCollapsed &&
