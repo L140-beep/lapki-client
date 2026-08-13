@@ -120,7 +120,7 @@ export const Actions: React.FC<ActionsProps> = (props) => {
                 <div className="flex h-full w-full select-none flex-row items-center justify-center text-center align-middle text-text-inactive">
                   <span className="mr-2">Чтобы добавить действие, нажмите</span>
                   <div>
-                    <AddIcon className="btn-secondary h-5 w-5 cursor-default border-text-inactive p-[0.5px]" />
+                    <AddIcon className="btn-secondary h-5 w-5 min-w-0 cursor-default rounded border border-text-inactive p-[0.5px] enabled:hover:opacity-80 enabled:active:opacity-60" />
                   </div>
                 </div>
               )}
