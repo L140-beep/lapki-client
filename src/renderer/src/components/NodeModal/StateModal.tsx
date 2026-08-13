@@ -167,34 +167,35 @@ export const StateModal: React.FC<StateModalProps> = ({ smId, controller }) => {
     console.log(action);
     setActionsIdx(actionIndex);
     setActionsData(action ? { smId, action, isEditingEvent: false } : undefined);
-    viewStack.reset({ view: 'actions', title: 'Выберите действие' });
+    viewStack.push({ view: 'actions', title: 'Выберите действие' });
   };
 
   // Переход на экран actions из EditEventContent
   const handleOpenActionsView = (actionIndex: number | null) => {
-    setActionsIdx(actionIndex);
-    setSelectedActionIndex(actionIndex);
-
     const currentActions = getActions();
+    setActionsIdx(actionIndex ?? currentActions.length);
+    setSelectedActionIndex(actionIndex ?? currentActions.length);
     setActionsData(
       actionIndex !== null && currentActions[actionIndex]
         ? { smId, action: currentActions[actionIndex], isEditingEvent: false }
         : undefined
     );
-    viewStack.reset({ view: 'actions', title: 'Выберите действие' });
+    viewStack.push({ view: 'actions', title: 'Выберите действие' });
   };
 
   const handleActionsSubmit = (data: Action, idx: number | null | undefined) => {
     updateActions(data, idx ?? 0);
     setSelectedActionIndex(null);
     viewStack.pop();
-    handleEditEventSubmit();
   };
 
   const actionsModalProps = useActionsModal(
     smId,
     controller,
-    actionsIdx,
+    state?.id,
+    actionsIdx !== null && currentEventIndex !== undefined
+      ? { actionIdx: actionsIdx, eventIdx: currentEventIndex }
+      : undefined,
     handleActionsSubmit,
     actionsData
   );
@@ -206,8 +207,6 @@ export const StateModal: React.FC<StateModalProps> = ({ smId, controller }) => {
     if (viewStack.currentView === 'actions') handleEditActionSubmit();
   };
 
-  console.log(viewStack.currentView, currentEventIndex, currentEventIndex === undefined);
-
   return (
     <MovingModal
       id="shit"
@@ -218,7 +217,13 @@ export const StateModal: React.FC<StateModalProps> = ({ smId, controller }) => {
       onSubmit={currentEventIndex !== undefined ? handleModalSubmit : undefined}
       submitLabel="Сохранить"
       cancelLabel="Отмена"
-      onCancel={viewStack.canGoBack ? viewStack.pop : undefined}
+      onCancel={
+        viewStack.canGoBack
+          ? () => {
+              viewStack.pop();
+            }
+          : undefined
+      }
       hideCancelButton={!viewStack.canGoBack}
       className="min-h-[440px] w-[830px]"
     >
@@ -252,7 +257,7 @@ export const StateModal: React.FC<StateModalProps> = ({ smId, controller }) => {
                 <EditEventModal onOpenActionsView={handleOpenActionsView} {...editEventProps} />
               </div>
 
-              <div className="hidden">
+              <div hidden={viewStack.currentView !== 'actions'}>
                 <ActionsModal {...actionsModalProps} />
               </div>
             </div>

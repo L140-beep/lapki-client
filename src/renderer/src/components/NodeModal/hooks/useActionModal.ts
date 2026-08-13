@@ -5,6 +5,7 @@ import { SingleValue } from 'react-select';
 import { SelectOption } from '@renderer/components/UI';
 import { CanvasController } from '@renderer/lib/data/ModelController/CanvasController';
 import { PlatformManager } from '@renderer/lib/data/PlatformManager';
+import { EventSelection } from '@renderer/lib/drawable';
 import { useModelContext } from '@renderer/store/ModelContext';
 import { ArgList, Component, Action } from '@renderer/types/diagram';
 import { ArgumentProto } from '@renderer/types/platform';
@@ -17,10 +18,12 @@ import { useActions } from '../hooks/useActions';
 export const useActionsModal = (
   smId: string,
   controller: CanvasController,
-  idx: number | null,
+  stateId?: string,
+  idx?: EventSelection,
   onSubmit?: (data: Action, idx?: number | null) => void,
   initialData?: ActionsModalData
 ) => {
+  const iconClassName = 'mr-1 h-5 w-5';
   const modelController = useModelContext();
   const model = modelController.model;
   const platforms = controller.useData('platform') as { [id: string]: PlatformManager };
@@ -39,21 +42,25 @@ export const useActionsModal = (
   const { getComponentOptions, getPropertyOptions } = useActions(smId, controller, null);
 
   const componentOptions: SelectOption[] = useMemo(() => {
-    return getComponentOptions('methods', isEditingEvent);
+    return getComponentOptions('methods', isEditingEvent, iconClassName);
   }, [smId, platforms, componentsData, isEditingEvent, visual]);
 
   const componentWithVariablesOptions: SelectOption[] = useMemo(() => {
-    return getComponentOptions('variables', isEditingEvent);
+    return getComponentOptions('variables', isEditingEvent, iconClassName);
   }, [smId, platforms, componentsData, isEditingEvent, visual]);
 
   const methodOptions: SelectOption[] = useMemo(() => {
     if (!selectedComponent) return [];
-    return getPropertyOptions(selectedComponent, isEditingEvent ? 'signals' : 'methods');
+    return getPropertyOptions(
+      selectedComponent,
+      isEditingEvent ? 'signals' : 'methods',
+      iconClassName
+    );
   }, [selectedComponent, platforms, isEditingEvent, visual]);
 
   const attributeOptionsSearch = (selectedParameterComponent: string | null) => {
     if (!selectedParameterComponent) return [];
-    return getPropertyOptions(selectedParameterComponent, 'variables');
+    return getPropertyOptions(selectedParameterComponent, 'variables', iconClassName);
   };
 
   // Функция обновления параметров при смене метода в селекте
@@ -159,9 +166,21 @@ export const useActionsModal = (
     ) {
       return;
     }
-
-    if (!selectedComponent || !selectedMethod) return;
-    onSubmit?.({ component: selectedComponent, method: selectedMethod, args: parameters }, idx);
+    if (!selectedComponent || !selectedMethod || idx === undefined || !stateId) return;
+    modelController.changeEvent({
+      smId: smId,
+      stateId: stateId,
+      event: idx,
+      newValue: {
+        component: selectedComponent,
+        method: selectedMethod,
+        args: parameters,
+      },
+    });
+    onSubmit?.(
+      { component: selectedComponent, method: selectedMethod, args: parameters },
+      idx.actionIdx
+    );
     reset();
   };
 

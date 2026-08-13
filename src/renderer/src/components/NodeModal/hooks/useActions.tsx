@@ -43,6 +43,7 @@ export const useActions = (
   };
   const handleDeleteAction = (index: number) => {
     setActions((p) => p.filter((_, i) => index !== i));
+    // TODO(L140-beep) мб удалять и из модели сразу?
   };
   const handleReorderAction = (from: number, to: number) => {
     setActions((p) => {

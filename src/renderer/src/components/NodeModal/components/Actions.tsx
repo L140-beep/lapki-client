@@ -4,8 +4,6 @@ import CodeMirror, { Transaction, EditorState, ReactCodeMirrorRef } from '@uiw/r
 import throttle from 'lodash.throttle';
 
 import { ReactComponent as AddIcon } from '@renderer/assets/icons/add.svg';
-import { ReactComponent as SubtractIcon } from '@renderer/assets/icons/subtract.svg';
-import { ActionsModal } from '@renderer/components';
 import { TabPanel, Tabs } from '@renderer/components/UI';
 import { AddButton } from '@renderer/components/UI/AddButton';
 import { EventData } from '@renderer/types/diagram';
@@ -31,7 +29,6 @@ export const Actions: React.FC<ActionsProps> = (props) => {
     onChangeAction,
     onDeleteAction,
     onReorderAction,
-    modal,
     smId,
     controller,
     text,
@@ -91,14 +88,13 @@ export const Actions: React.FC<ActionsProps> = (props) => {
   };
 
   const handleClickDelete = (idx: number) => {
-    debugger;
     if (idx === null) return;
 
     onDeleteAction(idx);
   };
 
   return (
-    <div className="flex h-full min-h-44 flex-col">
+    <div className="flex h-full max-h-56 min-h-44 flex-col">
       <div className="mb-2 flex items-end gap-2">
         <p className="font-medium">Делай</p>
 
@@ -128,7 +124,7 @@ export const Actions: React.FC<ActionsProps> = (props) => {
                   </div>
                 </div>
               )}
-              <div className="w-min min-w-full">
+              <div className="min-w-full">
                 {actions.map((data, i) => (
                   <Action
                     key={i}

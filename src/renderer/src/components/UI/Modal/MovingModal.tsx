@@ -60,9 +60,12 @@ export const MovingModal: React.FC<ModalProps> = ({
   ...props
 }) => {
   const { removeWindow } = useWindowManagerStore();
-  const handleCancel = () => {
-    onCancel ?? props.onRequestClose;
-    removeWindow(props.id);
+  const handleCancel = (e: React.MouseEvent) => {
+    // debugger;
+    if (onCancel) return onCancel();
+
+    if (props.onRequestClose) return props.onRequestClose(e);
+    // removeWindow(props.id);
   };
 
   return (
