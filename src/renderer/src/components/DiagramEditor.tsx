@@ -3,15 +3,11 @@ import { useEffect, useRef, useState } from 'react';
 import {
   NoteEdit,
   StateNameEdit,
-  ActionsModal,
-  ActionsModalData,
   StateModal,
   TransitionModal,
   StateMachineNameEdit,
-  EditEventModal,
 } from '@renderer/components';
-import { useEditEventModal, useSettings } from '@renderer/hooks';
-import { useModal } from '@renderer/hooks/useModal';
+import { useSettings } from '@renderer/hooks';
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
 import { CanvasController } from '@renderer/lib/data/ModelController/CanvasController';
 import { EventSelection, State } from '@renderer/lib/drawable';
@@ -34,15 +30,6 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = (props: DiagramEditor
   const [smId, setSmId] = useState<string>(stateMachines[0]); // TODO(L140-beep): Как понять с какой именно МС мы работаем в данный момент?
   const isMounted = controller.useData('isMounted');
   const containerRef = useRef<HTMLDivElement>(null);
-
-  const eventModal = useEditEventModal();
-  const [isActionsModalOpen, openActionsModal, closeActionsModal] = useModal(false);
-  const [actionsModalData, setActionsModalData] = useState<ActionsModalData>();
-  // Дополнительные данные о родителе события
-  const [actionsModalParentData, setActionsModalParentData] = useState<{
-    state: State;
-    eventSelection: EventSelection;
-  }>();
 
   const style = {
     backgroundColor: getColor('bg-primary'),
@@ -74,19 +61,8 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = (props: DiagramEditor
       isEditingEvent: boolean;
     }) => {
       if (controller.type === 'scheme') return;
-      const { state, eventSelection, event, isEditingEvent } = data;
-
-      if (eventSelection.actionIdx !== null) {
-        setActionsModalParentData({ state, eventSelection });
-        setActionsModalData({ smId: state.smId, action: event, isEditingEvent });
-        openActionsModal();
-      } else {
-        eventModal.setState(state);
-        eventModal.setCurrentEventIdx(eventSelection.eventIdx);
-        eventModal.setCurrentEvent(state.data.events[eventSelection.eventIdx]);
-        eventModal.openEditEventModal();
-      }
-      setSmId(state.smId);
+      // Let StateModal handle opening on changeEvent — only update current smId here
+      setSmId(data.state.smId);
     };
 
     editor.view.on('dblclick', handleDblclick);
@@ -102,25 +78,12 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = (props: DiagramEditor
     // Скорее всего, контейнер меняться уже не будет, поэтому
     // реф закомментирован, но если что, https://stackoverflow.com/a/60476525.
     // }, [ containerRef.current ]);
-  }, [editor, eventModal.openEditEventModal, openActionsModal]);
+  }, [editor]);
 
   useEffect(() => {
     if (!canvasSettings) return;
     editor.setSettings(canvasSettings);
   }, [canvasSettings, editor]);
-
-  const handleActionsModalSubmit = (data: Event) => {
-    if (!actionsModalParentData) return;
-
-    modelController.changeEvent({
-      smId: actionsModalParentData.state.smId,
-      stateId: actionsModalParentData.state.id,
-      event: actionsModalParentData.eventSelection,
-      newValue: data,
-    });
-
-    closeActionsModal();
-  };
 
   return (
     <>

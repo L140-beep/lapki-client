@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 
 import { toast } from 'sonner';
 
@@ -74,8 +74,52 @@ export const StateModal: React.FC<StateModalProps> = ({ smId, controller }) => {
       open();
     };
 
+    // Open modal when a full state is requested
     controller.states.on('changeState', handler);
-    return () => controller.states.off('changeState', handler);
+
+    // Also open modal when an event/action is requested (from canvas double-click)
+    const changeEventHandler = (data: any) => {
+      try {
+        const s: State = data.state;
+        const eventSelection = data.eventSelection;
+        const ev = data.event;
+        const isEditingEvent = data.isEditingEvent;
+
+        setState(s);
+        setColor(s.data.color);
+
+        if (typeof eventSelection?.eventIdx === 'number') {
+          const idx = eventSelection.eventIdx;
+          setCurrentEventIndex(idx);
+          setCurrentEvent(s.data.events[idx]);
+        } else {
+          setCurrentEventIndex(undefined);
+          setCurrentEvent(null);
+        }
+
+        if (typeof eventSelection?.actionIdx === 'number') {
+          const aIdx = eventSelection.actionIdx;
+          setSelectedActionIndex(aIdx);
+          setActionsIdx(aIdx);
+          setActionsData({ smId, action: ev, isEditingEvent, persistOnSave: true });
+          viewStack.reset({ view: 'actions', title: 'Выберите действие' });
+        } else {
+          setSelectedActionIndex(null);
+          viewStack.reset({ view: 'editEvent', title: 'Редактор события' });
+        }
+
+        open();
+      } catch (err) {
+        // ignore malformed payloads
+      }
+    };
+
+    controller.states.on('changeEvent', changeEventHandler);
+
+    return () => {
+      controller.states.off('changeState', handler);
+      controller.states.off('changeEvent', changeEventHandler);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
