@@ -18,8 +18,7 @@ import { useActions } from '../hooks/useActions';
 export const useActionsModal = (
   smId: string,
   controller: CanvasController,
-  stateId?: string,
-  idx?: EventSelection,
+  idx?: number | null,
   onSubmit?: (data: Action, idx?: number | null) => void,
   initialData?: ActionsModalData
 ) => {
@@ -166,21 +165,8 @@ export const useActionsModal = (
     ) {
       return;
     }
-    if (!selectedComponent || !selectedMethod || idx === undefined || !stateId) return;
-    modelController.changeEvent({
-      smId: smId,
-      stateId: stateId,
-      event: idx,
-      newValue: {
-        component: selectedComponent,
-        method: selectedMethod,
-        args: parameters,
-      },
-    });
-    onSubmit?.(
-      { component: selectedComponent, method: selectedMethod, args: parameters },
-      idx.actionIdx
-    );
+    if (!selectedComponent || !selectedMethod) return;
+    onSubmit?.({ component: selectedComponent, method: selectedMethod, args: parameters }, idx);
     reset();
   };
 

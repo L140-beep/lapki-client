@@ -11,6 +11,9 @@ export interface ActionsModalData {
   smId: string;
   action: Action;
   isEditingEvent: boolean;
+  // If true, saving the action should persist it directly into the state (model)
+  // If false/undefined, action edits are kept in the edit-event buffer until the event is saved
+  persistOnSave?: boolean;
 }
 
 type ActionsModalProps = ReturnType<typeof useActionsModal>;

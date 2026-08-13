@@ -154,7 +154,9 @@ export const EventsHierarchy: React.FC<EventsHierarchyProps> = ({
                       key={actionIdx}
                       className={twMerge(
                         'flex cursor-pointer select-none flex-row items-center gap-1 truncate rounded-lg pl-7 pr-2 text-text-primary hover:bg-bg-hover',
-                        selectedActionIndex === actionIdx && 'bg-bg-active'
+                        selectedEventIndex === eventIdx &&
+                          selectedActionIndex === actionIdx &&
+                          'bg-bg-active'
                       )}
                       onClick={() => onSelectAction(eventIdx, actionIdx)}
                       title={getActionText(action)}

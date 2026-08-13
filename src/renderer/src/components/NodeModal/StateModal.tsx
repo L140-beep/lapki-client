@@ -1,5 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 
+import { toast } from 'sonner';
+
 import { useModal } from '@renderer/hooks/useModal';
 import { CanvasController } from '@renderer/lib/data/ModelController/CanvasController';
 import { PlatformManager } from '@renderer/lib/data/PlatformManager';
@@ -166,7 +168,10 @@ export const StateModal: React.FC<StateModalProps> = ({ smId, controller }) => {
     const action = Array.isArray(actions) ? actions[actionIndex] : undefined;
     console.log(action);
     setActionsIdx(actionIndex);
-    setActionsData(action ? { smId, action, isEditingEvent: false } : undefined);
+    // Opened from hierarchy — persist on save
+    setActionsData(
+      action ? { smId, action, isEditingEvent: false, persistOnSave: true } : undefined
+    );
     viewStack.push({ view: 'actions', title: 'Выберите действие' });
   };
 
@@ -177,13 +182,41 @@ export const StateModal: React.FC<StateModalProps> = ({ smId, controller }) => {
     setSelectedActionIndex(actionIndex ?? currentActions.length);
     setActionsData(
       actionIndex !== null && currentActions[actionIndex]
-        ? { smId, action: currentActions[actionIndex], isEditingEvent: false }
+        ? { smId, action: currentActions[actionIndex], isEditingEvent: false, persistOnSave: false }
         : undefined
     );
     viewStack.push({ view: 'actions', title: 'Выберите действие' });
   };
 
   const handleActionsSubmit = (data: Action, idx: number | null | undefined) => {
+    // If this action was opened from the hierarchy, persist directly to model
+    if (
+      actionsData?.persistOnSave &&
+      state &&
+      currentEventIndex !== undefined &&
+      idx !== null &&
+      idx !== undefined
+    ) {
+      modelController.changeEvent({
+        smId,
+        stateId: state.id,
+        event: { eventIdx: currentEventIndex, actionIdx: idx },
+        newValue: data,
+      });
+
+      // Update currentEvent locally to reflect saved action and open event view
+      const ev = state.data.events[currentEventIndex];
+      const evActions = Array.isArray(ev.do) ? [...ev.do] : [];
+      evActions[idx] = data;
+      setCurrentEvent({ ...ev, do: evActions });
+      setCurrentEventIndex(currentEventIndex);
+      toast.success('Действие сохранено!');
+      setSelectedActionIndex(null);
+      viewStack.reset({ view: 'editEvent', title: 'Редактор события' });
+      return;
+    }
+
+    // Otherwise update the edit-event buffer
     updateActions(data, idx ?? 0);
     setSelectedActionIndex(null);
     viewStack.pop();
@@ -192,10 +225,7 @@ export const StateModal: React.FC<StateModalProps> = ({ smId, controller }) => {
   const actionsModalProps = useActionsModal(
     smId,
     controller,
-    state?.id,
-    actionsIdx !== null && currentEventIndex !== undefined
-      ? { actionIdx: actionsIdx, eventIdx: currentEventIndex }
-      : undefined,
+    actionsIdx,
     handleActionsSubmit,
     actionsData
   );
@@ -203,7 +233,9 @@ export const StateModal: React.FC<StateModalProps> = ({ smId, controller }) => {
 
   const handleModalSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (viewStack.currentView === 'editEvent') handleEditEventSubmit();
+    if (viewStack.currentView === 'editEvent') {
+      handleEditEventSubmit();
+    }
     if (viewStack.currentView === 'actions') handleEditActionSubmit();
   };
 
