@@ -94,7 +94,7 @@ export const Actions: React.FC<ActionsProps> = (props) => {
   };
 
   return (
-    <div className="flex h-full max-h-56 min-h-44 flex-col">
+    <div className="flex h-full min-h-44 flex-1 flex-col">
       <div className="mb-2 flex items-end gap-2">
         <p className="font-medium">Делай</p>
 
