@@ -6,6 +6,7 @@ import {
   StateModal,
   TransitionModal,
   StateMachineNameEdit,
+  DiagramTabs,
 } from '@renderer/components';
 import { useSettings } from '@renderer/hooks';
 import { CanvasEditor } from '@renderer/lib/CanvasEditor';
@@ -86,11 +87,11 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = (props: DiagramEditor
   }, [canvasSettings, editor]);
 
   return (
-    <>
+    <div className="relative h-full overflow-hidden">
       <div style={style} className="relative h-full overflow-hidden" ref={containerRef}></div>
-
       {isMounted && (
         <>
+          <DiagramTabs />
           <StateNameEdit smId={smId} controller={controller} />
           <NoteEdit smId={smId} controller={controller} />
           <StateMachineNameEdit controller={controller} />
@@ -111,6 +112,6 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = (props: DiagramEditor
           /> */}
         </>
       )}
-    </>
+    </div>
   );
 };

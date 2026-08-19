@@ -14,6 +14,7 @@ import {
   DiagramContextMenu,
   EditorSettings,
   Tooltip,
+  DiagramEditor,
 } from '@renderer/components';
 import { hideLoadingOverlay } from '@renderer/components/utils/OverlayControl';
 import { useErrorModal, useFileOperations, useSettings } from '@renderer/hooks';
@@ -27,8 +28,6 @@ import {
 } from '@renderer/lib/data/PlatformLoader';
 import { preloadPicto } from '@renderer/lib/drawable';
 import { useModelContext } from '@renderer/store/ModelContext';
-
-import { Tabs } from './Tabs';
 
 import { RestoreDataModal } from '../RestoreDataModal';
 
@@ -150,7 +149,7 @@ export const MainContainer: React.FC = () => {
   }, [autoSaveSettings, isStale, isInitialized, basename, isTempSaveStored, isSaveModalOpen]);
 
   return (
-    <div className="h-screen select-none">
+    <div className="h-screen select-none overflow-hidden">
       <div className="relative h-full w-full">
         <div className="grid h-full w-full grid-cols-[auto_1fr_auto]">
           <Sidebar callbacks={operations} openImportError={openImportError} />
@@ -164,7 +163,7 @@ export const MainContainer: React.FC = () => {
             {...getRootProps()}
           >
             <input {...getInputProps()} />
-            <Tabs />
+            <DiagramEditor controller={controller} editor={controller.app} />
           </div>
         </div>
 

@@ -1,11 +1,5 @@
 export type Language = 'xml' | 'json' | 'txt' | 'cpp';
 
-export interface EditorTab {
-  canvasId: string;
-  type: 'editor';
-  name: string;
-}
-
 export interface CodeTab {
   type: 'code' | 'transition' | 'state';
   name: string;
@@ -24,4 +18,4 @@ export interface ManagerMSTab {
   name: string;
 }
 
-export type Tab = EditorTab | CodeTab | SerialMonitorTab | ManagerMSTab;
+export type Tab = CodeTab | SerialMonitorTab | ManagerMSTab;

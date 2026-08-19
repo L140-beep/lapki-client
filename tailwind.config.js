@@ -60,6 +60,8 @@ export default {
 
           '--i-a': '#CBCACA',
           '--i-s': '#B7B6B6',
+          '--i-h': '#6DC0FF',
+          '--i-s-bg': '#2F9BEE',
           '--sw-inactive-bg': '#9D9D9D',
         },
         ':root[data-theme="light"]': {
@@ -102,6 +104,8 @@ export default {
 
           '--i-a': '#5A5959',
           '--i-s': '#878686',
+          '--i-h': '#6DC0FF',
+          '--i-s-bg': '#2F9BEE',
           '--sw-inactive-bg': '#9D9D9D',
         },
       };
