@@ -21,3 +21,4 @@ export * from './TextModeModal';
 export * from './StateMachineNameEdit';
 export * from './SelectStateMachinesModal';
 export * from './DiagramTabs';
+export * from './Header';
