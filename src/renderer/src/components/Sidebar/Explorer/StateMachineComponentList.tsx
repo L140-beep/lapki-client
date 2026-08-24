@@ -34,7 +34,6 @@ export const StateMachineComponentList: React.FC<StateMachineComponentListProps>
   const controller = modelController.controllers[headControllerId];
   const platform = controller.useData('platform') as { [id: string]: PlatformManager };
   const isInitialized = modelController.model.useData('', 'isInitialized');
-  const smName = model.useData(smId, 'elements.name');
 
   const {
     addProps,
@@ -76,12 +75,15 @@ export const StateMachineComponentList: React.FC<StateMachineComponentListProps>
 
   const header = () => {
     return (
-      <div className="flex">
-        <button className="my-3 flex items-center" onClick={() => togglePanel()}>
+      <div className="flex h-11 items-center">
+        <button className="flex items-center" onClick={() => togglePanel()}>
           <ArrowIcon
-            className={twMerge('rotate-0 transition-transform', isCollapsed() && '-rotate-90')}
+            className={twMerge(
+              'size-3 rotate-0 transition-transform',
+              isCollapsed() && '-rotate-90'
+            )}
           />
-          <h3 className="font-semibold">Компоненты</h3>
+          <h3 className="ml-1 text-xs font-medium">Компоненты</h3>
         </button>
         <AddButton disabled={isDisabled} onClick={() => onRequestAddComponent(smId, components)} />
       </div>
@@ -91,9 +93,8 @@ export const StateMachineComponentList: React.FC<StateMachineComponentListProps>
   return (
     <div key={smId} className="flex h-full flex-col">
       {header()}
-      {smName ?? smId}
       {isInitialized ? (
-        <div className="mb-2 mt-1 select-none overflow-y-auto scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb">
+        <div className="mb-2 select-none overflow-y-auto scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb">
           {headControllerId === '' ? (
             <p className="text-text-inactive">
               <i>Нет активной диаграммы</i>
@@ -110,6 +111,7 @@ export const StateMachineComponentList: React.FC<StateMachineComponentListProps>
                 <Component
                   key={key}
                   name={name ?? id}
+                  variant="compact"
                   description={
                     platform[smId] !== undefined
                       ? platform[smId].getComponent(id)?.description
@@ -117,7 +119,10 @@ export const StateMachineComponentList: React.FC<StateMachineComponentListProps>
                   }
                   icon={
                     platform[smId] !== undefined
-                      ? platform[smId].getFullComponentIcon(id)
+                      ? platform[smId].getFullComponentIcon(
+                          id,
+                          'size-[26px] [&>p]:bottom-0 [&>p]:right-0 [&>p]:text-[8px] [&>p]:leading-[9px]'
+                        )
                       : undefined
                   }
                   isSelected={key === selectedComponent}

@@ -165,7 +165,7 @@ export const MainContainer: React.FC = () => {
             {...getRootProps()}
           >
             <input {...getInputProps()} />
-            <DiagramEditor controller={controller} editor={controller.app} />
+            <DiagramEditor key={controller.id} controller={controller} editor={controller.app} />
           </div>
         </div>
 

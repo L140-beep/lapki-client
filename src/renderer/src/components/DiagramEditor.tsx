@@ -84,7 +84,7 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = (props: DiagramEditor
   useEffect(() => {
     if (!canvasSettings) return;
     editor.setSettings(canvasSettings);
-  }, [canvasSettings, editor]);
+  }, [canvasSettings, editor, controller.id]);
 
   return (
     <div className="relative h-full overflow-hidden">
