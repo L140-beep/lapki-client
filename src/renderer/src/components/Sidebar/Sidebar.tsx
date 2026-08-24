@@ -14,7 +14,7 @@ export const Sidebar: React.FC = () => {
       minWidth={200}
       maxWidth="80vw"
       onResizeStop={(_event, _direction, _element, delta) => setWidth(width + delta.width)}
-      className="z-50 overflow-hidden border-r border-border-primary bg-bg-secondary [[data-theme=light]_&]:bg-white"
+      className="z-50 overflow-hidden rounded-r-2xl border-r border-border-primary bg-bg-secondary shadow-[2px_0_4px_rgba(0,0,0,0.25)] [[data-theme=light]_&]:bg-white"
     >
       <div className="h-full w-full overflow-y-auto scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb">
         <Explorer />
