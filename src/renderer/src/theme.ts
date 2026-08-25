@@ -13,6 +13,8 @@ const colorNames = {
   'bg-secondary': '--bg-s', // сайдбар, верхняя панель
   'bg-hover': '--bg-h',
   'bg-active': '--bg-a',
+  'bg-modal': '--bg-m',
+  'bg-control': '--bg-c',
 
   'border-contrast': '--b-c',
   'border-primary': '--b-p',

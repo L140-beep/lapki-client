@@ -35,6 +35,8 @@ export default {
           '--bg-s': '#1F1F1F',
           '--bg-h': '#434343',
           '--bg-a': '#545454',
+          '--bg-m': '#333333',
+          '--bg-c': '#1F1F1F',
 
           '--b-c': '#f8f9fa',
           '--b-p': '#666666',
@@ -79,6 +81,8 @@ export default {
           '--bg-s': '#EDEDED',
           '--bg-h': '#E6F4FF',
           '--bg-a': '#E6F4FF',
+          '--bg-m': '#FFFFFF',
+          '--bg-c': '#FFFFFF',
 
           '--b-c': '#343a40',
           '--b-p': '#DEDEDE',
