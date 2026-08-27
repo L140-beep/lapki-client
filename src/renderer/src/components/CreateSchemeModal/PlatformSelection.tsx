@@ -7,6 +7,8 @@ import { Platform } from '@renderer/types/platform';
 
 import { StateMachinesStack, StateMachinesStackItem } from './StateMachinesStack';
 
+import { ScrollArea } from '../UI';
+
 interface PlatformSelectionProps {
   selectedPlatformIdx: string | null;
   setSelectedPlatformIdx: (value: string | null) => void;
@@ -113,8 +115,9 @@ export const PlatformSelection: React.FC<PlatformSelectionProps> = ({
       </div>
       <div>
         <h2 className="mb-[11px] font-medium">Платформы</h2>
-        <div
-          className="h-[220px] w-full overflow-y-auto rounded-lg border border-border-primary bg-bg-control p-[7px] scrollbar-thin scrollbar-track-transparent scrollbar-thumb-scrollbar-thumb"
+        <ScrollArea
+          className="h-[220px] w-full rounded-lg border border-border-primary bg-bg-control"
+          viewportClassName="px-[7px] scrollbar-thumb-scrollbar-thumb"
           onDragOver={(event) => event.preventDefault()}
           onDrop={() => handleDropStateMachineOnPlatforms()}
         >
@@ -122,7 +125,7 @@ export const PlatformSelection: React.FC<PlatformSelectionProps> = ({
             <div
               key={idx}
               className={twMerge(
-                'flex cursor-pointer select-none items-center rounded-lg px-3 py-1.5 leading-4 transition-colors hover:bg-bg-hover',
+                'flex cursor-pointer select-none items-center rounded-lg px-3 py-[5px] leading-4 transition-colors hover:bg-bg-hover',
                 isPlatformSelected(idx) && 'bg-bg-active'
               )}
               onDoubleClick={() => handleAddPlatform(idx)}
@@ -134,19 +137,20 @@ export const PlatformSelection: React.FC<PlatformSelectionProps> = ({
               {name}
             </div>
           ))}
-        </div>
+        </ScrollArea>
       </div>
       <div className="col-span-2">
         <h2 className="mb-[11px] font-medium">Описание</h2>
-        <div
+        <ScrollArea
           className={twMerge(
-            'h-[58px] w-full overflow-y-auto whitespace-pre-wrap leading-4 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-scrollbar-thumb',
+            'h-[60px] w-full',
             !selectedPlatform?.description && 'text-text-inactive'
           )}
+          viewportClassName="whitespace-pre-wrap leading-4 scrollbar-thumb-scrollbar-thumb"
         >
           {selectedPlatform?.description ||
             'Выберите платформу из одного из списков сверху, чтобы посмотреть описание платформы.'}
-        </div>
+        </ScrollArea>
       </div>
     </div>
   );

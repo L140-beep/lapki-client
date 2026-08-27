@@ -3,12 +3,9 @@ import React from 'react';
 import { Props } from 'react-modal';
 import { twMerge } from 'tailwind-merge';
 
-import { ReactComponent as Close } from '@renderer/assets/icons/close.svg';
-
 import './style.css';
+import { CloseButton } from './CloseButton';
 import { Window } from './MovingWindow';
-
-import { useWindowManagerStore } from '../../../hooks/useWindowManagerStore';
 
 interface ModalProps extends Omit<Props, 'className' | 'overlayClassName'> {
   id: string;
@@ -25,7 +22,6 @@ interface ModalProps extends Omit<Props, 'className' | 'overlayClassName'> {
   onSubmit?: React.FormEventHandler;
   submitDisabled?: boolean;
   className?: string;
-  overlayClassName?: string;
   cancelClassName?: string;
   submitClassName?: string;
   extraClassName?: string;
@@ -49,7 +45,6 @@ export const MovingModal: React.FC<ModalProps> = ({
   onSide,
   submitDisabled,
   className,
-  overlayClassName,
   cancelClassName,
   submitClassName,
   extraClassName,
@@ -59,7 +54,6 @@ export const MovingModal: React.FC<ModalProps> = ({
   onCancel,
   ...props
 }) => {
-  const { removeWindow } = useWindowManagerStore();
   const handleCancel = (e: React.MouseEvent) => {
     // debugger;
     if (onCancel) return onCancel();
@@ -79,12 +73,7 @@ export const MovingModal: React.FC<ModalProps> = ({
       header={
         <div className="relative mb-6 flex w-full items-center justify-between border-b border-border-primary pb-3">
           <h1 className="text-sm font-medium">{title}</h1>
-          <button
-            className="rounded-full p-1 transition-colors hover:bg-bg-hover active:bg-bg-active"
-            onClick={props.onRequestClose}
-          >
-            <Close className="h-3 w-3 fill-black text-black" />
-          </button>
+          <CloseButton onClick={props.onRequestClose} />
         </div>
       }
     >

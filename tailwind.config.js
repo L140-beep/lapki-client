@@ -35,7 +35,6 @@ export default {
           '--bg-s': '#1F1F1F',
           '--bg-h': '#434343',
           '--bg-a': '#545454',
-          '--bg-m': '#333333',
           '--bg-c': '#1F1F1F',
 
           '--b-c': '#f8f9fa',
@@ -50,8 +49,8 @@ export default {
 
           '--c-e-t': 'vs-dark',
 
-          '--s-tr': 'rgba(162,162,162, 0.5)',
-          '--s-th': 'rgba(162,162,162, 0.7)',
+          '--s-tr': '#D9D9D9',
+          '--s-th': '#9D9D9D',
 
           '--g': 'rgba(255,255,255,0.03)',
           '--d-n-bg': 'rgba(0,0,0,0.3)',
@@ -77,11 +76,10 @@ export default {
           '--m-a': '#f8f9fa',
           '--m-i': '#343a40',
 
-          '--bg-p': '#F1F1F1',
+          '--bg-p': '#FFFFFF',
           '--bg-s': '#EDEDED',
           '--bg-h': '#E6F4FF',
           '--bg-a': '#E6F4FF',
-          '--bg-m': '#FFFFFF',
           '--bg-c': '#FFFFFF',
 
           '--b-c': '#343a40',
@@ -96,8 +94,8 @@ export default {
 
           '--c-e-t': 'vs-light',
 
-          '--s-tr': 'rgba(162,162,162, 0.5)',
-          '--s-th': 'rgba(162,162,162, 0.7)',
+          '--s-tr': '#D9D9D9',
+          '--s-th': '#9D9D9D',
 
           '--g': 'rgba(0,0,0,0.08)',
           '--d-n-bg': 'rgba(255,255,255,0.5)',

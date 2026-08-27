@@ -23,7 +23,7 @@ export const Tabs: React.FC<TabsProps> = ({
           className={twMerge(
             variant === 'underline'
               ? 'border-b-2 border-transparent px-6 py-1 hover:bg-bg-hover'
-              : 'rounded-lg px-3 py-[5px] leading-4 transition-colors hover:bg-bg-hover',
+              : 'rounded-lg px-3 py-[5px] font-medium leading-4 transition-colors hover:bg-bg-hover',
             value === i && (variant === 'underline' ? 'border-primary' : 'bg-bg-active')
           )}
           onClick={() => onChange(i)}
