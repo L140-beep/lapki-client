@@ -119,6 +119,8 @@ export const Header: React.FC<HeaderProps> = ({
     'h-full rounded-lg px-3 text-xs text-text-primary transition-colors hover:bg-bg-hover focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary';
   const popoverClass =
     'absolute left-0 top-full z-[110] max-h-[calc(100vh-25px)] min-w-[260px] overflow-y-auto border border-border-primary bg-bg-secondary shadow-[0_2px_4px_rgba(0,0,0,0.2)]';
+  const settingsPopoverClass =
+    'absolute left-0 top-full z-[110] w-[160px] overflow-visible rounded-lg bg-white py-1 shadow-[0_2px_14px_rgba(0,0,0,0.25)]';
   const filePopoverClass =
     'absolute left-0 top-full z-[110] w-[144px] rounded-lg bg-white py-1 shadow-[0_2px_14px_rgba(0,0,0,0.25)]';
   const fileMenu = (variant: 'popover' | 'start-screen' = 'popover', onItemSelect?: () => void) => (
@@ -154,14 +156,13 @@ export const Header: React.FC<HeaderProps> = ({
           >
             Настройки
           </button>
-          {openMenu === 'settings' && (
-            <div className={popoverClass}>
-              <Setting
-                openCompilerSettings={openCompilerSettings}
-                openLoaderSettings={openLoaderSettings}
-              />
-            </div>
-          )}
+          <div className={`${settingsPopoverClass} ${openMenu !== 'settings' ? 'hidden' : ''}`}>
+            <Setting
+              openCompilerSettings={openCompilerSettings}
+              openLoaderSettings={openLoaderSettings}
+              onItemSelect={() => setOpenMenu(null)}
+            />
+          </div>
         </div>
 
         <button
