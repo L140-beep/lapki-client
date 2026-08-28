@@ -2,14 +2,14 @@ import { useLayoutEffect } from 'react';
 
 import { Controller, useForm } from 'react-hook-form';
 
-import { Select, Modal, TextField } from '@renderer/components/UI';
+import { MovingModal, Select, TextField } from '@renderer/components/UI';
 import { useSettings } from '@renderer/hooks';
 import { removeNonNumbers } from '@renderer/utils';
 
 const options = [
   { value: 'remote', label: 'Удалённый' },
   { value: 'local', label: 'Локальный' },
-];
+] as const;
 
 interface FlasherSelectModalProps {
   isOpen: boolean;
@@ -28,98 +28,118 @@ export const FlasherSelectModal: React.FC<FlasherSelectModalProps> = ({
   onSubmit,
   ...props
 }) => {
-  const [flasherSetting] = useSettings('flasher');
-
+  const [flasherSetting, , , getDefaultSetting] = useSettings('flasher');
   const {
-    register,
     control,
     handleSubmit: hookHandleSubmit,
-    watch,
+    register,
+    reset,
     setValue,
+    watch,
   } = useForm<FlasherSelectModalFormValues>();
-
   const isSecondaryFieldsDisabled = watch('type') === 'local';
+  const currentServerLabel = `Текущий тип сервера: ${
+    flasherSetting?.type === 'local' ? 'локальный' : 'удалённый'
+  }`;
 
   const handleSubmit = hookHandleSubmit((data) => {
     onSubmit(data);
     onClose();
   });
 
-  const currentServerLabel = `Текущий тип сервера: ${
-    flasherSetting?.type === 'local' ? 'локальный' : 'удалённый'
-  }`;
+  const handleClose = () => {
+    if (flasherSetting) reset(flasherSetting);
+
+    onClose();
+  };
+
+  const handleReset = async () => {
+    const defaultSetting = await getDefaultSetting();
+
+    reset(defaultSetting);
+  };
 
   useLayoutEffect(() => {
     if (!flasherSetting) return;
 
-    setValue('type', flasherSetting.type);
-    setValue('host', flasherSetting.host ?? '');
-    setValue('port', Number(flasherSetting.port ?? ''));
-  }, [setValue, flasherSetting]);
+    reset(flasherSetting);
+  }, [flasherSetting, reset]);
 
   return (
-    <Modal
+    <MovingModal
       {...props}
-      onRequestClose={onClose}
-      title={'Укажите адрес загрузчика'}
-      submitLabel="Подключиться"
+      id="flasher-settings"
+      onRequestClose={handleClose}
+      title="Укажите адрес загрузчика"
+      submitLabel="Сохранить"
       onSubmit={handleSubmit}
+      sideLabel="Сбросить"
+      onSide={handleReset}
+      sideClassName="btn-secondary"
+      hideCancelButton
+      className="w-[348px]"
     >
-      <div className="flex items-center">
+      <div className="flex flex-col gap-4">
         <Controller
           control={control}
           name="type"
           render={({ field: { value, onChange } }) => {
-            const handleChange = (v: any) => {
-              onChange(v.value);
+            const handleChange = (option: (typeof options)[number] | null) => {
+              if (!option) return;
 
-              if (v.value !== 'local' || !flasherSetting) return;
+              onChange(option.value);
 
-              setValue('port', flasherSetting.localPort);
+              if (option.value !== 'local' || !flasherSetting) return;
+
               setValue('host', 'localhost');
+              setValue('port', flasherSetting.localPort);
             };
 
             return (
-              <div>
-                Тип
+              <label className="flex flex-col gap-2">
+                <span>Тип</span>
                 <Select
-                  value={options.find((opt) => opt.value === value)}
+                  containerClassName="w-36"
+                  value={options.find((option) => option.value === value)}
                   onChange={handleChange}
                   options={options}
                   isSearchable={false}
                 />
-              </div>
+              </label>
             );
           }}
         />
-      </div>
-      <div className="mb-2 flex gap-2">
-        <TextField
-          maxLength={80}
-          className="disabled:opacity-50"
-          label="Хост:"
-          {...register('host')}
-          placeholder="Напишите адрес хоста"
-          disabled={isSecondaryFieldsDisabled}
-        />
-        <TextField
-          className="disabled:opacity-50"
-          label="Порт:"
-          {...register('port', { valueAsNumber: true })}
-          placeholder="Напишите порт"
-          onInput={(event) => {
-            const { target } = event;
-            if (target) {
-              (target as HTMLInputElement).value = removeNonNumbers(
-                (target as HTMLInputElement).value
-              );
-            }
-          }}
-          disabled={isSecondaryFieldsDisabled}
-        />
-      </div>
 
-      <div>{currentServerLabel}</div>
-    </Modal>
+        <div className="text-text-inactive">{currentServerLabel}</div>
+
+        <div className="flex gap-3">
+          <TextField
+            maxLength={80}
+            containerClassName="w-36 gap-2"
+            className="disabled:cursor-not-allowed disabled:bg-bg-secondary disabled:text-text-inactive disabled:opacity-70"
+            label="Хост"
+            {...register('host')}
+            placeholder="Напишите адрес хоста"
+            disabled={isSecondaryFieldsDisabled}
+          />
+          <TextField
+            containerClassName="w-36 gap-2"
+            className="disabled:cursor-not-allowed disabled:bg-bg-secondary disabled:text-text-inactive disabled:opacity-70"
+            label="Порт"
+            {...register('port', { valueAsNumber: true })}
+            placeholder="Напишите порт"
+            onInput={(event) => {
+              const { target } = event;
+              if (target) {
+                (target as HTMLInputElement).value = removeNonNumbers(
+                  (target as HTMLInputElement).value
+                );
+              }
+            }}
+            disabled={isSecondaryFieldsDisabled}
+          />
+        </div>
+      </div>
+    </MovingModal>
   );
 };
