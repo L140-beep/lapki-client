@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 
 import { twMerge } from 'tailwind-merge';
 
-import { exportCGML } from '@renderer/lib/data/GraphmlBuilder';
+import { exportStateMachineCGML } from '@renderer/lib/data/GraphmlBuilder';
 import { useModelContext } from '@renderer/store/ModelContext';
 import { StateMachine } from '@renderer/types/diagram';
 import {
@@ -21,10 +21,16 @@ import {
   resizeField,
   setFieldCell,
 } from './model';
+import {
+  SimulationMachineOption,
+  getSimulationMachineOptions,
+  isSimulationResultStale,
+  selectInitialMachineId,
+} from './selection';
 import { useInterpreter } from './useInterpreter';
 
 interface SimulatorProps {
-  smId: string;
+  initialSmId?: string;
 }
 
 type SimulationMode = 'finite' | 'endless';
@@ -36,11 +42,10 @@ interface RuntimeProps {
   active: boolean;
   result?: SimulationResult;
   error?: string;
+  stale: boolean;
   onStart: (mode: SimulationMode, timeout: number, parameters: SimulationParameters) => void;
   onCancel: () => void;
 }
-
-const supportedPlatforms = ['junior-gardener', 'junior-reader'];
 
 const fieldTools: { value: GardenerTool; label: string; swatch: string }[] = [
   { value: 0, label: 'Пусто', swatch: 'bg-bg-primary' },
@@ -104,18 +109,39 @@ const FieldInput: React.FC<React.PropsWithChildren<{ label: string; htmlFor: str
   </label>
 );
 
-const SimulatorHeader: React.FC<{ smId: string; machine: StateMachine; status: string }> = ({
-  smId,
-  machine,
-  status,
-}) => (
+const SimulatorHeader: React.FC<{
+  options: SimulationMachineOption[];
+  selectedSmId?: string;
+  machine?: StateMachine;
+  status: string;
+  active: boolean;
+  onSelect: (smId: string) => void;
+}> = ({ options, selectedSmId, machine, status, active, onSelect }) => (
   <header className="flex flex-wrap items-center gap-3 border-b border-border-primary px-5 py-3">
     <div className="min-w-0">
-      <h1 className="truncate text-lg font-semibold">{machine.name || smId}</h1>
-      <p className="text-sm text-text-inactive">
-        {machine.platform} · {Object.keys(machine.states).length} состояний ·{' '}
-        {Object.keys(machine.transitions).length} переходов
-      </p>
+      <label className="grid gap-1 text-sm" htmlFor="simulator-state-machine">
+        <span className="text-text-inactive">Машина состояний</span>
+        <select
+          id="simulator-state-machine"
+          className={twMerge(controlClassName, 'min-w-64')}
+          value={selectedSmId ?? ''}
+          disabled={active || options.length === 0}
+          onChange={(event) => onSelect(event.target.value)}
+        >
+          {options.length === 0 && <option value="">Нет поддерживаемых машин</option>}
+          {options.map(({ id, machine: optionMachine }) => (
+            <option key={id} value={id}>
+              {optionMachine.name || id} ({optionMachine.platform})
+            </option>
+          ))}
+        </select>
+      </label>
+      {machine && (
+        <p className="mt-1 text-sm text-text-inactive">
+          {Object.keys(machine.states).length} состояний · {Object.keys(machine.transitions).length}{' '}
+          переходов
+        </p>
+      )}
     </div>
     <span className="ml-auto rounded-full border border-border-primary px-3 py-1 text-xs">
       {status}
@@ -128,6 +154,7 @@ const GardenerSimulator: React.FC<RuntimeProps> = ({
   active,
   result,
   error,
+  stale,
   onStart,
   onCancel,
 }) => {
@@ -361,6 +388,7 @@ const GardenerSimulator: React.FC<RuntimeProps> = ({
           </div>
           {error && <p className="mt-3 text-sm text-error">{error}</p>}
           {result?.message && <p className="mt-3 text-sm">{result.message}</p>}
+          {stale && <p className="mt-3 text-sm text-warning">Результат устарел.</p>}
         </Section>
 
         <Section title="История выполнения" className="flex-1">
@@ -417,6 +445,7 @@ const ReaderSimulator: React.FC<RuntimeProps> = ({
   active,
   result,
   error,
+  stale,
   onStart,
   onCancel,
 }) => {
@@ -483,6 +512,7 @@ const ReaderSimulator: React.FC<RuntimeProps> = ({
           </div>
           {error && <p className="mt-3 text-sm text-error">{error}</p>}
           {result?.message && <p className="mt-3 text-sm">{result.message}</p>}
+          {stale && <p className="mt-3 text-sm text-warning">Результат устарел.</p>}
         </Section>
         <Section title="Сигналы" className="flex-1">
           <p className="text-sm text-text-inactive">
@@ -497,40 +527,107 @@ const ReaderSimulator: React.FC<RuntimeProps> = ({
   );
 };
 
-export const Simulator: React.FC<SimulatorProps> = ({ smId }) => {
+export const Simulator: React.FC<SimulatorProps> = ({ initialSmId }) => {
   const modelController = useModelContext();
   const interpreter = useInterpreter();
   const stateMachines = modelController.model.useData('', 'elements.stateMachinesId') as {
     [id: string]: StateMachine;
   };
-  const machine = stateMachines[smId];
+  const options = getSimulationMachineOptions(stateMachines);
+  const optionIds = JSON.stringify(options.map(({ id }) => id));
+  const [selectedSmId, setSelectedSmId] = useState(() =>
+    selectInitialMachineId(options, initialSmId)
+  );
+  const [lastRunXml, setLastRunXml] = useState<string>();
+  const subscriptionSmId = selectedSmId ?? '';
+  modelController.model.useData(subscriptionSmId, 'elements.states');
+  modelController.model.useData(subscriptionSmId, 'elements.transitions');
+  modelController.model.useData(subscriptionSmId, 'elements.components');
+  modelController.model.useData(subscriptionSmId, 'elements.initialStates');
+  modelController.model.useData(subscriptionSmId, 'elements.finalStates');
+  modelController.model.useData(subscriptionSmId, 'elements.choiceStates');
+  modelController.model.useData(subscriptionSmId, 'elements.shallowHistory');
+  modelController.model.useData(subscriptionSmId, 'elements.name');
+  const machine = selectedSmId ? stateMachines[selectedSmId] : undefined;
+  const currentXml =
+    machine && selectedSmId
+      ? exportStateMachineCGML(modelController.model.data.elements, selectedSmId)
+      : undefined;
+  const resultStale = isSimulationResultStale(
+    interpreter.result !== undefined,
+    lastRunXml,
+    currentXml
+  );
+
+  useEffect(() => {
+    if (!initialSmId || interpreter.active) return;
+    if (options.some(({ id }) => id === initialSmId)) {
+      setSelectedSmId(initialSmId);
+      setLastRunXml(undefined);
+      interpreter.clear();
+    }
+    // initialSmId changes only when the singleton tab is explicitly reopened.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialSmId]);
+
+  useEffect(() => {
+    if (interpreter.active || options.some(({ id }) => id === selectedSmId)) return;
+    setSelectedSmId(selectInitialMachineId(options));
+    setLastRunXml(undefined);
+    interpreter.clear();
+    // optionIds represents the supported subset; options itself is rebuilt on each render.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [interpreter.active, interpreter.clear, optionIds, selectedSmId]);
+
+  const selectMachine = (smId: string) => {
+    if (interpreter.active || smId === selectedSmId) return;
+    setSelectedSmId(smId);
+    setLastRunXml(undefined);
+    interpreter.clear();
+  };
 
   const start = (mode: SimulationMode, timeout: number, parameters: SimulationParameters) => {
+    if (!selectedSmId || !currentXml) return;
+    setLastRunXml(currentXml);
     interpreter.start({
-      xml: exportCGML(modelController.model.data.elements),
-      machineId: smId,
+      xml: currentXml,
+      machineId: selectedSmId,
       mode,
       ...(mode === 'finite' ? { timeoutSeconds: timeout } : {}),
       parameters,
     });
   };
 
-  if (!machine) {
-    return <div className="p-6 text-text-inactive">Выбранная машина больше не существует.</div>;
-  }
-
-  if (!supportedPlatforms.includes(machine.platform)) {
-    return <div className="p-6 text-text-inactive">Платформа не поддерживает симуляцию.</div>;
-  }
-
   return (
     <div className="flex h-full min-h-0 flex-col bg-bg-primary text-text-primary">
-      <SimulatorHeader smId={smId} machine={machine} status={interpreter.status} />
-      {machine.platform === 'junior-gardener' && (
-        <GardenerSimulator {...interpreter} onStart={start} onCancel={interpreter.cancel} />
+      <SimulatorHeader
+        options={options}
+        selectedSmId={selectedSmId}
+        machine={machine}
+        status={interpreter.status}
+        active={interpreter.active}
+        onSelect={selectMachine}
+      />
+      {!machine && (
+        <div className="p-6 text-text-inactive">
+          В текущем документе нет машин с поддержкой симуляции.
+        </div>
       )}
-      {machine.platform === 'junior-reader' && (
-        <ReaderSimulator {...interpreter} onStart={start} onCancel={interpreter.cancel} />
+      {machine?.platform === 'junior-gardener' && (
+        <GardenerSimulator
+          {...interpreter}
+          stale={resultStale}
+          onStart={start}
+          onCancel={interpreter.cancel}
+        />
+      )}
+      {machine?.platform === 'junior-reader' && (
+        <ReaderSimulator
+          {...interpreter}
+          stale={resultStale}
+          onStart={start}
+          onCancel={interpreter.cancel}
+        />
       )}
     </div>
   );

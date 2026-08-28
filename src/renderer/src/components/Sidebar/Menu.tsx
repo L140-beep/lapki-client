@@ -56,11 +56,10 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
   const activeStateMachineIds = activeEditorController
     ? Object.keys(activeEditorController.stateMachinesSub).filter((smId) => smId !== '')
     : [];
-  const activeSmId = activeStateMachineIds.length === 1 ? activeStateMachineIds[0] : undefined;
-  const activeStateMachine = activeSmId ? stateMachines[activeSmId] : undefined;
-  const simulationSupported =
-    activeStateMachine?.platform === 'junior-gardener' ||
-    activeStateMachine?.platform === 'junior-reader';
+  const initialSimulationSmId = activeStateMachineIds.find((smId) => {
+    const platform = stateMachines[smId]?.platform;
+    return platform === 'junior-gardener' || platform === 'junior-reader';
+  });
   const { propertiesModalProps, openPropertiesModal } = useProperties(controller);
   const [isTextModeModalOpen, openTextModeModal, closeTextModeModal] = useModal(false);
   const [isRecentModalOpen, openRecentModal, closeRecentModal] = useModal(false);
@@ -106,15 +105,12 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
     {
       text: 'Симулятор',
       onClick: () => {
-        if (!activeSmId) return;
         openOrReplaceTab(modelController, {
           type: 'simulator',
           name: 'Симулятор',
-          smId: activeSmId,
+          initialSmId: initialSimulationSmId,
         });
       },
-      disabled: !activeSmId,
-      hidden: !simulationSupported,
       className: 'border-t border-border-primary',
     },
     // {

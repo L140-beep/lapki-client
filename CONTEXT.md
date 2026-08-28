@@ -20,7 +20,15 @@ The ordered record of user-visible platform steps produced during a simulation r
 
 ### Simulator
 
-The single workspace view in which a user configures, controls, and observes simulation runs. Opening simulation for another state machine reuses this view rather than creating another simulator view.
+The single workspace view in which a user selects a supported state machine from the current document, configures it, controls it, and observes simulation runs. The view is always available, even when the current document has no supported state machines. Its state-machine selection cannot change during an active simulation run.
+
+### Simulation configuration
+
+The single current set of platform input values in the Simulator. It is not stored separately for each state machine. It remains applicable when selecting another machine on the same platform and resets to platform defaults when the selected platform changes.
+
+### Simulation result
+
+The outcome and execution history of the most recent simulation run. Selecting another state machine discards it. Editing the state-machine model after the run marks the result as stale rather than discarding it.
 
 ### Shallow history
 

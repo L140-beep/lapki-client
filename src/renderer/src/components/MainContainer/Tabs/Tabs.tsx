@@ -64,7 +64,7 @@ export const Tabs: React.FC = () => {
       case 'managerMS':
         return <FlasherTab />;
       case 'simulator':
-        return <Simulator key={item.smId} smId={item.smId} />;
+        return <Simulator initialSmId={item.initialSmId} />;
       default:
         return undefined;
     }
