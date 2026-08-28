@@ -1,18 +1,16 @@
 import React from 'react';
 
 import { useSettings } from '@renderer/hooks';
-import { useModal } from '@renderer/hooks/useModal';
 import { useModelContext } from '@renderer/store/ModelContext';
 import { useFlasher } from '@renderer/store/useFlasher';
 
 import { ClientStatus } from '../../Modules/Websocket/ClientStatus';
 import { DropdownMenu, DropdownMenuItem } from '../../UI';
 
-import { AboutTheProgramModal } from './AboutTheProgramModal';
-import { ResetSettingsModal } from './ResetSettingsModal';
-
 export interface SettingProps {
   openCompilerSettings: () => void;
+  openAboutModal: () => void;
+  openResetSettings: () => void;
   openLoaderSettings: () => void;
   openAutosaveSettings: () => void;
   openDocumentationSettings: () => void;
@@ -21,6 +19,8 @@ export interface SettingProps {
 
 export const Setting: React.FC<SettingProps> = ({
   openCompilerSettings,
+  openAboutModal,
+  openResetSettings,
   openLoaderSettings,
   openAutosaveSettings,
   openDocumentationSettings,
@@ -34,9 +34,6 @@ export const Setting: React.FC<SettingProps> = ({
   const [theme, setTheme] = useSettings('theme');
   const [canvasSettings, setCanvasSettings] = useSettings('canvas');
   const { connectionStatus, isFlashing } = useFlasher();
-
-  const [isResetWarningOpen, openResetWarning, closeResetWarning] = useModal(false);
-  const [isAboutModalOpen, openAboutModal, closeAboutModal] = useModal(false);
 
   const handleChangeTheme = (value: 'light' | 'dark') => {
     setTheme(value);
@@ -130,13 +127,10 @@ export const Setting: React.FC<SettingProps> = ({
         </DropdownMenu>
       </div>
 
-      <DropdownMenuItem onClick={() => selectAndOpen(openResetWarning)}>
+      <DropdownMenuItem onClick={() => selectAndOpen(openResetSettings)}>
         Сбросить настройки
       </DropdownMenuItem>
       <DropdownMenuItem onClick={() => selectAndOpen(openAboutModal)}>О программе</DropdownMenuItem>
-
-      <AboutTheProgramModal isOpen={isAboutModalOpen} onClose={closeAboutModal} />
-      <ResetSettingsModal isOpen={isResetWarningOpen} onClose={closeResetWarning} />
     </DropdownMenu>
   );
 };

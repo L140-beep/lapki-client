@@ -9,6 +9,7 @@ import { useManagerMS } from '@renderer/store/useManagerMS';
 import { CompilerResult } from '@renderer/types/CompilerTypes';
 
 import {
+  AboutTheProgramModal,
   Autosave,
   CompilerSelectModal,
   DocSelectModal,
@@ -16,6 +17,7 @@ import {
   FlasherSelectModalFormValues,
   History,
   MenuDropdown,
+  ResetSettingsModal,
   Setting,
 } from './components';
 
@@ -54,6 +56,8 @@ export const Header: React.FC<HeaderProps> = ({
   const rootRef = useRef<HTMLElement>(null);
   const [openMenu, setOpenMenu] = useState<HeaderMenu>(null);
   const [isCompilerOpen, openCompilerSettings, closeCompilerSettings] = useModal(false);
+  const [isAboutModalOpen, openAboutModal, closeAboutModal] = useModal(false);
+  const [isResetSettingsOpen, openResetSettings, closeResetSettings] = useModal(false);
   const [isAutosaveOpen, openAutosaveSettings, closeAutosaveSettings] = useModal(false);
   const [isDocModalOpen, openDocModal, closeDocModal] = useModal(false);
   const [flasherSetting, setFlasherSetting] = useSettings('flasher');
@@ -162,6 +166,8 @@ export const Header: React.FC<HeaderProps> = ({
             <div className={settingsPopoverClass}>
               <Setting
                 openCompilerSettings={openCompilerSettings}
+                openAboutModal={openAboutModal}
+                openResetSettings={openResetSettings}
                 openLoaderSettings={openLoaderSettings}
                 openAutosaveSettings={openAutosaveSettings}
                 openDocumentationSettings={openDocModal}
@@ -217,6 +223,8 @@ export const Header: React.FC<HeaderProps> = ({
         onClose={closeFlasherModal}
       />
       <CompilerSelectModal isOpen={isCompilerOpen} onClose={closeCompilerSettings} />
+      <AboutTheProgramModal isOpen={isAboutModalOpen} onClose={closeAboutModal} />
+      <ResetSettingsModal isOpen={isResetSettingsOpen} onClose={closeResetSettings} />
       <DocSelectModal isOpen={isDocModalOpen} onClose={closeDocModal} />
       <Autosave isOpen={isAutosaveOpen} onClose={closeAutosaveSettings} />
     </>
