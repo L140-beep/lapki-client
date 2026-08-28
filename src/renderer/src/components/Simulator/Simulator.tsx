@@ -22,6 +22,8 @@ import {
   resizeField,
   setFieldCell,
 } from './model';
+import { countUnicodeCharacters, limitUnicodeCharacters } from './readerModel';
+import { ReaderResult } from './ReaderResult';
 import {
   SimulationMachineOption,
   getSimulationMachineOptions,
@@ -516,6 +518,7 @@ const ReaderSimulator: React.FC<RuntimeProps> = ({
   onCancel,
 }) => {
   const [message, setMessage] = useState('');
+  const [lastRunMessage, setLastRunMessage] = useState('');
   const [mode, setMode] = useState<SimulationMode>('finite');
   const [timeout, setTimeoutValue] = useState(10);
 
@@ -523,18 +526,17 @@ const ReaderSimulator: React.FC<RuntimeProps> = ({
     <div className="grid min-h-0 flex-1 gap-4 overflow-auto p-4 lg:grid-cols-[minmax(24rem,2fr)_minmax(18rem,1fr)]">
       <Section title="Входная строка" className="flex min-h-[24rem] flex-col">
         <textarea
+          aria-label="Входная строка"
           className={twMerge(
             controlClassName,
             'min-h-52 max-w-none flex-1 resize-none font-Fira-Mono'
           )}
           value={message}
-          maxLength={10_000}
           placeholder="Введите строку для обработки"
-          onChange={(event) => setMessage(event.target.value)}
+          onChange={(event) => setMessage(limitUnicodeCharacters(event.target.value, 10_000))}
         />
-        <div className="mt-2 flex justify-between text-xs text-text-inactive">
-          <span>Текущая позиция: —</span>
-          <span>{message.length} / 10 000</span>
+        <div className="mt-2 flex justify-end text-xs text-text-inactive">
+          <span>{countUnicodeCharacters(message)} / 10 000</span>
         </div>
       </Section>
       <div className="flex flex-col gap-4">
@@ -568,7 +570,10 @@ const ReaderSimulator: React.FC<RuntimeProps> = ({
             <button
               className={buttonClassName}
               disabled={!ready || active}
-              onClick={() => onStart(mode, timeout, { message })}
+              onClick={() => {
+                setLastRunMessage(message);
+                onStart(mode, timeout, { message });
+              }}
             >
               Запустить
             </button>
@@ -577,16 +582,9 @@ const ReaderSimulator: React.FC<RuntimeProps> = ({
             </button>
           </div>
           {error && <p className="mt-3 text-sm text-error">{error}</p>}
-          {result?.message && <p className="mt-3 text-sm">{result.message}</p>}
-          {stale && <p className="mt-3 text-sm text-warning">Результат устарел.</p>}
         </Section>
-        <Section title="Сигналы" className="flex-1">
-          <p className="text-sm text-text-inactive">
-            Системные события: {result?.result?.signals.join(', ') || '—'}
-          </p>
-          <p className="mt-2 text-sm text-text-inactive">
-            Вызванные сигналы: {result?.result?.calledSignals.join(', ') || '—'}
-          </p>
+        <Section title="Результат" className="flex-1">
+          <ReaderResult result={result} input={lastRunMessage} stale={stale} />
         </Section>
       </div>
     </div>
