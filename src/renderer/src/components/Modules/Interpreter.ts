@@ -12,6 +12,7 @@ import { ClientWS } from './Websocket/ClientWS';
 
 export class InterpreterClient extends ClientWS {
   static ready = false;
+  static activeRunId: string | undefined;
 
   static async connect(host: string, port: number, autoReconnect = true) {
     this.ready = false;
@@ -29,11 +30,13 @@ export class InterpreterClient extends ClientWS {
 
   static closeHandler(host: string, port: number, event: Websocket.CloseEvent): void {
     this.ready = false;
+    this.activeRunId = undefined;
     super.closeHandler(host, port, event);
   }
 
   static errorHandler(error: unknown): void {
     this.ready = false;
+    this.activeRunId = undefined;
     super.errorHandler(error);
   }
 
@@ -45,6 +48,15 @@ export class InterpreterClient extends ClientWS {
       if (envelope.type === 'connection.ready') {
         this.ready = true;
         this.onStatusChange(ClientStatus.CONNECTED);
+      }
+      if (
+        envelope.runId === this.activeRunId &&
+        (envelope.type === 'run.completed' ||
+          envelope.type === 'run.cancelled' ||
+          envelope.type === 'run.failed' ||
+          envelope.type === 'error')
+      ) {
+        this.activeRunId = undefined;
       }
       this.emitMessage(envelope);
     } catch (error) {
@@ -62,7 +74,9 @@ export class InterpreterClient extends ClientWS {
       runId,
       payload,
     };
-    return this.sendJson(envelope) ? runId : undefined;
+    if (!this.sendJson(envelope)) return;
+    this.activeRunId = runId;
+    return runId;
   }
 
   static cancel(runId: string): boolean {

@@ -15,7 +15,7 @@ export const useInterpreter = () => {
   const [status, setStatus] = useState(
     InterpreterClient.ready ? ClientStatus.CONNECTED : ClientStatus.NO_CONNECTION
   );
-  const [activeRunId, setActiveRunId] = useState<string>();
+  const [activeRunId, setActiveRunId] = useState(InterpreterClient.activeRunId);
   const [result, setResult] = useState<SimulationResult>();
   const [error, setError] = useState<string>();
 
@@ -31,13 +31,13 @@ export const useInterpreter = () => {
     );
     setStatus(InterpreterClient.ready ? ClientStatus.CONNECTED : ClientStatus.NO_CONNECTION);
 
-    return InterpreterClient.subscribeMessages<InterpreterEnvelope>((message) => {
+    const unsubscribe = InterpreterClient.subscribeMessages<InterpreterEnvelope>((message) => {
       if (message.type === 'run.started') return;
       if (message.type === 'run.cancel.accepted') return;
       if (message.type === 'error') {
         const payload = message.payload as { message?: string };
         setError(payload.message ?? 'Интерпретатор вернул ошибку');
-        setActiveRunId(undefined);
+        setActiveRunId(InterpreterClient.activeRunId);
         return;
       }
       if (
@@ -46,9 +46,15 @@ export const useInterpreter = () => {
         message.type === 'run.failed'
       ) {
         setResult(message.payload as SimulationResult);
-        setActiveRunId(undefined);
+        setActiveRunId(InterpreterClient.activeRunId);
       }
     });
+    return () => {
+      unsubscribe();
+      if (InterpreterClient.activeRunId) {
+        InterpreterClient.cancel(InterpreterClient.activeRunId);
+      }
+    };
   }, []);
 
   useEffect(() => {
@@ -68,6 +74,11 @@ export const useInterpreter = () => {
     if (activeRunId) InterpreterClient.cancel(activeRunId);
   }, [activeRunId]);
 
+  const clear = useCallback(() => {
+    setResult(undefined);
+    setError(undefined);
+  }, []);
+
   return {
     status,
     ready: status === ClientStatus.CONNECTED && InterpreterClient.ready,
@@ -76,5 +87,6 @@ export const useInterpreter = () => {
     error,
     start,
     cancel,
+    clear,
   };
 };

@@ -28,6 +28,7 @@ describe('InterpreterClient', () => {
   afterEach(() => {
     InterpreterClient.connection = undefined;
     InterpreterClient.ready = false;
+    InterpreterClient.activeRunId = undefined;
   });
 
   it('uses the interpreter websocket endpoint', () => {
@@ -61,5 +62,22 @@ describe('InterpreterClient', () => {
       payload,
     });
     expect(envelope.requestId).toBeTruthy();
+    expect(InterpreterClient.activeRunId).toBe(runId);
+  });
+
+  it('releases the active run after a terminal response', () => {
+    InterpreterClient.activeRunId = 'run-1';
+
+    InterpreterClient.messageHandler({
+      data: JSON.stringify({
+        protocolVersion: 1,
+        type: 'run.cancelled',
+        requestId: 'request-1',
+        runId: 'run-1',
+        payload: { status: 'cancelled' },
+      }),
+    } as Websocket.MessageEvent);
+
+    expect(InterpreterClient.activeRunId).toBeUndefined();
   });
 });
