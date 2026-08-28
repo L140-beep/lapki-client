@@ -7,6 +7,7 @@ import { useModal } from '@renderer/hooks/useModal';
 import { useProperties } from '@renderer/hooks/useProperties';
 import { useModelContext } from '@renderer/store/ModelContext';
 import { useTabs } from '@renderer/store/useTabs';
+import { StateMachine } from '@renderer/types/diagram';
 import { noTextMode, noSchemeScreen } from '@renderer/version';
 
 import { OpenRecentModal } from '../OpenRecentModal';
@@ -34,8 +35,9 @@ export interface MenuProps {
 }
 
 export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
-  const [openTab, activeTabName, tabs] = useTabs((state) => [
+  const [openTab, openOrReplaceTab, activeTabName, tabs] = useTabs((state) => [
     state.openTab,
+    state.openOrReplaceTab,
     state.activeTab,
     state.items,
   ]);
@@ -46,6 +48,19 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
   const controller = modelController.controllers[headControllerId];
   const isStale = modelController.model.useData('', 'isStale');
   const isInitialized = modelController.model.useData('', 'isInitialized');
+  const stateMachines = modelController.model.useData('', 'elements.stateMachinesId') as {
+    [id: string]: StateMachine;
+  };
+  const activeEditorController =
+    activeTab?.type === 'editor' ? modelController.controllers[activeTab.canvasId] : undefined;
+  const activeStateMachineIds = activeEditorController
+    ? Object.keys(activeEditorController.stateMachinesSub).filter((smId) => smId !== '')
+    : [];
+  const activeSmId = activeStateMachineIds.length === 1 ? activeStateMachineIds[0] : undefined;
+  const activeStateMachine = activeSmId ? stateMachines[activeSmId] : undefined;
+  const simulationSupported =
+    activeStateMachine?.platform === 'junior-gardener' ||
+    activeStateMachine?.platform === 'junior-reader';
   const { propertiesModalProps, openPropertiesModal } = useProperties(controller);
   const [isTextModeModalOpen, openTextModeModal, closeTextModeModal] = useModal(false);
   const [isRecentModalOpen, openRecentModal, closeRecentModal] = useModal(false);
@@ -87,6 +102,20 @@ export const Menu: React.FC<MenuProps> = (props: MenuProps) => {
       text: 'Свойства',
       onClick: openPropertiesModal,
       disabled: !isInitialized,
+    },
+    {
+      text: 'Симулятор',
+      onClick: () => {
+        if (!activeSmId) return;
+        openOrReplaceTab(modelController, {
+          type: 'simulator',
+          name: 'Симулятор',
+          smId: activeSmId,
+        });
+      },
+      disabled: !activeSmId,
+      hidden: !simulationSupported,
+      className: 'border-t border-border-primary',
     },
     // {
     //   text: 'Открыть редактор',

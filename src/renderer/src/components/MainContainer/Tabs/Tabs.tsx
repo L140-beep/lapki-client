@@ -2,7 +2,7 @@ import { useState } from 'react';
 
 import { twMerge } from 'tailwind-merge';
 
-import { CodeEditor, DiagramEditor } from '@renderer/components';
+import { CodeEditor, DiagramEditor, Simulator } from '@renderer/components';
 import { FlasherTab } from '@renderer/components/Sidebar/Flasher/Flasher';
 import { SerialMonitorTab } from '@renderer/components/Sidebar/Flasher/SerialMonitor';
 import { useModelContext } from '@renderer/store/ModelContext';
@@ -63,6 +63,8 @@ export const Tabs: React.FC = () => {
         return <SerialMonitorTab isTabOpen={item.isOpen} />;
       case 'managerMS':
         return <FlasherTab />;
+      case 'simulator':
+        return <Simulator key={item.smId} smId={item.smId} />;
       default:
         return undefined;
     }

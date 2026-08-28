@@ -8,6 +8,7 @@ interface TabsState {
   activeTab: string | null;
   setActiveTab: (modelController: ModelController, tabName: string) => void;
   openTab: (modelController: ModelController, tab: Tab) => void;
+  openOrReplaceTab: (modelController: ModelController, tab: Tab) => void;
   closeTab: (tabName: string, modelController: ModelController) => void;
   swapTabs: (a: string, b: string) => void;
   clearTabs: () => void;
@@ -48,6 +49,18 @@ export const useTabs = create<TabsState>((set) => ({
         items: [...items, tab],
         activeTab: tab.name,
       };
+    }),
+  openOrReplaceTab: (modelController, tab) =>
+    set(({ items }) => {
+      changeHeadController(tab, modelController);
+      const existingIndex = items.findIndex(({ name }) => name === tab.name);
+      if (existingIndex === -1) {
+        return { items: [...items, tab], activeTab: tab.name };
+      }
+
+      const updatedItems = [...items];
+      updatedItems[existingIndex] = tab;
+      return { items: updatedItems, activeTab: tab.name };
     }),
   // Передаем ModelController, чтобы он сам разобрался с тем, какой Controller в итоге будет главный
   closeTab: (tabName, modelController: ModelController) =>

@@ -47,6 +47,7 @@ export const Tab: React.FC<TabProps> = (props) => {
     state: <StateIcon className="text-[#737373]" width={20} height={20} />, // текущая иконка слишком большая, поэтому размеры указаны поменьше
     serialMonitor: <MonitorIcon className="text-[#737373]" width={25} height={25} />,
     managerMS: <FlasherIcon className="text-[#737373]" width={25} height={25} />,
+    simulator: <StateIcon className="text-[#737373]" width={20} height={20} />,
   };
   const [dragOver, setDragOver] = useState(false);
 

@@ -13,6 +13,7 @@ export * from './ComponentDeleteModal';
 export * from './EditorSettings';
 export * from './UpdateModal';
 export * from './DiagramContextMenu';
+export * from './Simulator';
 export * from './PropertiesModal';
 export * from './NodeModal';
 export * from './NoteEdit';
