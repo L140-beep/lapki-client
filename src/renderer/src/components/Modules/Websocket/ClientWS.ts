@@ -80,7 +80,7 @@ export abstract class ClientWS {
       return this.connection;
     }
     /*
-      перед отключением нужно глобально поменять значения хоста и порта, 
+      перед отключением нужно глобально поменять значения хоста и порта,
       чтобы клиент не пытался подключиться обратно
     */
     this.host = host;
@@ -105,6 +105,10 @@ export abstract class ClientWS {
 
     ws.onmessage = (msg: Websocket.MessageEvent) => {
       this.messageHandler(msg);
+    };
+
+    ws.onerror = (event) => {
+      this.errorHandler(event);
     };
 
     ws.onclose = async (event) => {

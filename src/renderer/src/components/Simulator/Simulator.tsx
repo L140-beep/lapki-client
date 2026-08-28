@@ -1,9 +1,15 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import { twMerge } from 'tailwind-merge';
 
+import { exportCGML } from '@renderer/lib/data/GraphmlBuilder';
 import { useModelContext } from '@renderer/store/ModelContext';
 import { StateMachine } from '@renderer/types/diagram';
+import {
+  GardenerParameters,
+  ReaderParameters,
+  SimulationResult,
+} from '@renderer/types/InterpreterTypes';
 
 import {
   GardenerCell,
@@ -15,6 +21,7 @@ import {
   resizeField,
   setFieldCell,
 } from './model';
+import { useInterpreter } from './useInterpreter';
 
 interface SimulatorProps {
   smId: string;
@@ -22,6 +29,16 @@ interface SimulatorProps {
 
 type SimulationMode = 'finite' | 'endless';
 type GardenerTool = GardenerCell | 'position';
+type SimulationParameters = GardenerParameters | ReaderParameters;
+
+interface RuntimeProps {
+  ready: boolean;
+  active: boolean;
+  result?: SimulationResult;
+  error?: string;
+  onStart: (mode: SimulationMode, timeout: number, parameters: SimulationParameters) => void;
+  onCancel: () => void;
+}
 
 const supportedPlatforms = ['junior-gardener', 'junior-reader'];
 
@@ -87,7 +104,11 @@ const FieldInput: React.FC<React.PropsWithChildren<{ label: string; htmlFor: str
   </label>
 );
 
-const SimulatorHeader: React.FC<{ smId: string; machine: StateMachine }> = ({ smId, machine }) => (
+const SimulatorHeader: React.FC<{ smId: string; machine: StateMachine; status: string }> = ({
+  smId,
+  machine,
+  status,
+}) => (
   <header className="flex flex-wrap items-center gap-3 border-b border-border-primary px-5 py-3">
     <div className="min-w-0">
       <h1 className="truncate text-lg font-semibold">{machine.name || smId}</h1>
@@ -96,13 +117,20 @@ const SimulatorHeader: React.FC<{ smId: string; machine: StateMachine }> = ({ sm
         {Object.keys(machine.transitions).length} переходов
       </p>
     </div>
-    <span className="ml-auto rounded-full border border-warning px-3 py-1 text-xs text-warning">
-      Интерпретатор не подключён
+    <span className="ml-auto rounded-full border border-border-primary px-3 py-1 text-xs">
+      {status}
     </span>
   </header>
 );
 
-const GardenerSimulator: React.FC = () => {
+const GardenerSimulator: React.FC<RuntimeProps> = ({
+  ready,
+  active,
+  result,
+  error,
+  onStart,
+  onCancel,
+}) => {
   const [width, setWidth] = useState(10);
   const [height, setHeight] = useState(8);
   const [field, setField] = useState(() => createField(width, height));
@@ -111,6 +139,12 @@ const GardenerSimulator: React.FC = () => {
   const [selectedTool, setSelectedTool] = useState<GardenerTool>(0);
   const [mode, setMode] = useState<SimulationMode>('finite');
   const [timeout, setTimeoutValue] = useState(10);
+  const [historyIndex, setHistoryIndex] = useState(0);
+  const steps = result?.steps ?? [];
+
+  useEffect(() => {
+    setHistoryIndex(Math.max(0, steps.length - 1));
+  }, [steps.length]);
 
   const updateWidth = (value: number) => {
     const nextWidth = Math.max(MIN_FIELD_SIZE, Math.min(MAX_FIELD_SIZE, value));
@@ -306,28 +340,89 @@ const GardenerSimulator: React.FC = () => {
             />
           </FieldInput>
           <div className="mt-4 grid grid-cols-2 gap-2">
-            <button className={buttonClassName} disabled>
+            <button
+              className={buttonClassName}
+              disabled={!ready || active}
+              onClick={() =>
+                onStart(mode, timeout, {
+                  width,
+                  height,
+                  field,
+                  position,
+                  orientation: orientation.toUpperCase() as Uppercase<GardenerOrientation>,
+                })
+              }
+            >
               Запустить
             </button>
-            <button className={buttonClassName} disabled>
+            <button className={buttonClassName} disabled={!active} onClick={onCancel}>
               Отменить
             </button>
           </div>
+          {error && <p className="mt-3 text-sm text-error">{error}</p>}
+          {result?.message && <p className="mt-3 text-sm">{result.message}</p>}
         </Section>
 
         <Section title="История выполнения" className="flex-1">
-          <div className="rounded border border-dashed border-border-primary p-4 text-center text-sm text-text-inactive">
-            После подключения интерпретатора здесь появятся шаги, управление воспроизведением и
-            предупреждение о лимите в 5 000 записей.
-          </div>
+          {steps.length === 0 ? (
+            <div className="rounded border border-dashed border-border-primary p-4 text-center text-sm text-text-inactive">
+              История появится после запуска.
+            </div>
+          ) : (
+            <div className="grid gap-3 text-sm">
+              <input
+                aria-label="Шаг истории"
+                type="range"
+                min={0}
+                max={steps.length - 1}
+                value={historyIndex}
+                onChange={(event) => setHistoryIndex(Number(event.target.value))}
+              />
+              <div className="flex items-center justify-between gap-2">
+                <button
+                  className={buttonClassName}
+                  disabled={historyIndex === 0}
+                  onClick={() => setHistoryIndex((current) => current - 1)}
+                >
+                  Назад
+                </button>
+                <span>
+                  Шаг {historyIndex + 1} / {steps.length}
+                </span>
+                <button
+                  className={buttonClassName}
+                  disabled={historyIndex === steps.length - 1}
+                  onClick={() => setHistoryIndex((current) => current + 1)}
+                >
+                  Вперёд
+                </button>
+              </div>
+              <p className="text-text-inactive">
+                Позиция: {steps[historyIndex].position.x}, {steps[historyIndex].position.y} ·{' '}
+                {steps[historyIndex].orientation}
+              </p>
+              {result?.warnings?.includes('EXECUTION_HISTORY_TRUNCATED') && (
+                <p className="text-warning">Показаны первые 5 000 шагов.</p>
+              )}
+            </div>
+          )}
         </Section>
       </div>
     </div>
   );
 };
 
-const ReaderSimulator: React.FC = () => {
+const ReaderSimulator: React.FC<RuntimeProps> = ({
+  ready,
+  active,
+  result,
+  error,
+  onStart,
+  onCancel,
+}) => {
   const [message, setMessage] = useState('');
+  const [mode, setMode] = useState<SimulationMode>('finite');
+  const [timeout, setTimeoutValue] = useState(10);
 
   return (
     <div className="grid min-h-0 flex-1 gap-4 overflow-auto p-4 lg:grid-cols-[minmax(24rem,2fr)_minmax(18rem,1fr)]">
@@ -349,19 +444,52 @@ const ReaderSimulator: React.FC = () => {
       </Section>
       <div className="flex flex-col gap-4">
         <Section title="Запуск">
+          <FieldInput label="Режим" htmlFor="reader-simulator-mode">
+            <select
+              id="reader-simulator-mode"
+              className={controlClassName}
+              value={mode}
+              onChange={(event) => setMode(event.target.value as SimulationMode)}
+            >
+              <option value="finite">Обычный</option>
+              <option value="endless">Бесконечный</option>
+            </select>
+          </FieldInput>
+          <FieldInput label="Таймаут, секунд" htmlFor="reader-simulator-timeout">
+            <input
+              id="reader-simulator-timeout"
+              className={controlClassName}
+              type="number"
+              min={1}
+              max={30}
+              value={timeout}
+              disabled={mode === 'endless'}
+              onChange={(event) =>
+                setTimeoutValue(Math.max(1, Math.min(30, Number(event.target.value))))
+              }
+            />
+          </FieldInput>
           <div className="grid grid-cols-2 gap-2">
-            <button className={buttonClassName} disabled>
+            <button
+              className={buttonClassName}
+              disabled={!ready || active}
+              onClick={() => onStart(mode, timeout, { message })}
+            >
               Запустить
             </button>
-            <button className={buttonClassName} disabled>
+            <button className={buttonClassName} disabled={!active} onClick={onCancel}>
               Отменить
             </button>
           </div>
+          {error && <p className="mt-3 text-sm text-error">{error}</p>}
+          {result?.message && <p className="mt-3 text-sm">{result.message}</p>}
         </Section>
         <Section title="Сигналы" className="flex-1">
           <p className="text-sm text-text-inactive">
-            Системные события и вызванные импульсы будут отображаться раздельно после подключения
-            интерпретатора.
+            Системные события: {result?.result?.signals.join(', ') || '—'}
+          </p>
+          <p className="mt-2 text-sm text-text-inactive">
+            Вызванные сигналы: {result?.result?.calledSignals.join(', ') || '—'}
           </p>
         </Section>
       </div>
@@ -371,16 +499,21 @@ const ReaderSimulator: React.FC = () => {
 
 export const Simulator: React.FC<SimulatorProps> = ({ smId }) => {
   const modelController = useModelContext();
+  const interpreter = useInterpreter();
   const stateMachines = modelController.model.useData('', 'elements.stateMachinesId') as {
     [id: string]: StateMachine;
   };
   const machine = stateMachines[smId];
-  const content = useMemo(() => {
-    if (!machine) return null;
-    if (machine.platform === 'junior-gardener') return <GardenerSimulator />;
-    if (machine.platform === 'junior-reader') return <ReaderSimulator />;
-    return null;
-  }, [machine]);
+
+  const start = (mode: SimulationMode, timeout: number, parameters: SimulationParameters) => {
+    interpreter.start({
+      xml: exportCGML(modelController.model.data.elements),
+      machineId: smId,
+      mode,
+      ...(mode === 'finite' ? { timeoutSeconds: timeout } : {}),
+      parameters,
+    });
+  };
 
   if (!machine) {
     return <div className="p-6 text-text-inactive">Выбранная машина больше не существует.</div>;
@@ -392,8 +525,13 @@ export const Simulator: React.FC<SimulatorProps> = ({ smId }) => {
 
   return (
     <div className="flex h-full min-h-0 flex-col bg-bg-primary text-text-primary">
-      <SimulatorHeader smId={smId} machine={machine} />
-      {content}
+      <SimulatorHeader smId={smId} machine={machine} status={interpreter.status} />
+      {machine.platform === 'junior-gardener' && (
+        <GardenerSimulator {...interpreter} onStart={start} onCancel={interpreter.cancel} />
+      )}
+      {machine.platform === 'junior-reader' && (
+        <ReaderSimulator {...interpreter} onStart={start} onCancel={interpreter.cancel} />
+      )}
     </div>
   );
 };

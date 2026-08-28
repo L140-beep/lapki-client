@@ -31,9 +31,7 @@ describe('InterpreterClient', () => {
   });
 
   it('uses the interpreter websocket endpoint', () => {
-    expect(InterpreterClient.makeAddress('127.0.0.1', 49152)).toBe(
-      'ws://127.0.0.1:49152/ws'
-    );
+    expect(InterpreterClient.makeAddress('127.0.0.1', 49152)).toBe('ws://127.0.0.1:49152/ws');
   });
 
   it('sends a correlated versioned start request only after readiness', () => {
