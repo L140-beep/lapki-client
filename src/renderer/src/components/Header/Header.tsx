@@ -1,12 +1,14 @@
 import React, { Dispatch, useEffect, useRef, useState } from 'react';
 
 import { useSettings } from '@renderer/hooks';
-import { useFlasherHooks } from '@renderer/hooks/useFlasherHooks';
 import { useFileMenu } from '@renderer/hooks/useFileMenu';
+import { useFlasherHooks } from '@renderer/hooks/useFlasherHooks';
 import { useModal } from '@renderer/hooks/useModal';
 import { useDoc } from '@renderer/store/useDoc';
 import { useManagerMS } from '@renderer/store/useManagerMS';
 import { CompilerResult } from '@renderer/types/CompilerTypes';
+
+import { MenuDropdown } from './MenuDropdown';
 
 import { Flasher } from '../Modules/Flasher';
 import { CompilerSelectModal } from '../serverSelect/CompilerSelectModal';
@@ -17,8 +19,6 @@ import {
 import { CompilerTab } from '../Sidebar/Compiler';
 import { History } from '../Sidebar/History';
 import { Setting } from '../Sidebar/Setting';
-
-import { MenuDropdown } from './MenuDropdown';
 
 export interface HeaderCallbacks {
   onRequestNewFile: () => void;
@@ -156,13 +156,15 @@ export const Header: React.FC<HeaderProps> = ({
           >
             Настройки
           </button>
-          <div className={`${settingsPopoverClass} ${openMenu !== 'settings' ? 'hidden' : ''}`}>
-            <Setting
-              openCompilerSettings={openCompilerSettings}
-              openLoaderSettings={openLoaderSettings}
-              onItemSelect={() => setOpenMenu(null)}
-            />
-          </div>
+          {openMenu === 'settings' && (
+            <div className={settingsPopoverClass}>
+              <Setting
+                openCompilerSettings={openCompilerSettings}
+                openLoaderSettings={openLoaderSettings}
+                onItemSelect={() => setOpenMenu(null)}
+              />
+            </div>
+          )}
         </div>
 
         <button
