@@ -108,6 +108,10 @@ export abstract class ClientWS {
       this.messageHandler(msg);
     };
 
+    ws.onerror = (event) => {
+      this.errorHandler(event);
+    };
+
     ws.onclose = async (event) => {
       this.closeHandler(host, port, event);
     };
