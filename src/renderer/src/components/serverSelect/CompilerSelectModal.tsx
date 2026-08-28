@@ -2,7 +2,7 @@ import { useLayoutEffect, useMemo, useState } from 'react';
 
 import { Controller, useForm } from 'react-hook-form';
 
-import { Modal, Select, TextField } from '@renderer/components/UI';
+import { MovingModal, Select, TextField } from '@renderer/components/UI';
 import { useSettings } from '@renderer/hooks';
 import { getUserOS, removeNonNumbers } from '@renderer/utils';
 
@@ -19,16 +19,9 @@ const options = [
 ];
 
 export const CompilerSelectModal: React.FC<CompilerSelectModalProps> = ({ onClose, ...props }) => {
-  const [compilerSetting, setCompilerSetting, resetSetting] = useSettings('compiler');
+  const [compilerSetting, setCompilerSetting, , getDefaultSetting] = useSettings('compiler');
 
-  const {
-    control,
-    handleSubmit: hookHandleSubmit,
-    reset,
-    register,
-    watch,
-    setValue,
-  } = useForm<FormValues>();
+  const { control, handleSubmit: hookHandleSubmit, reset, register, watch } = useForm<FormValues>();
   const isSecondaryFieldsDisabled = watch('type') === 'local';
   const [warning, setWarning] = useState<string | null>(null);
   const currentServerLabel = `Текущий тип сервера: ${
@@ -37,15 +30,23 @@ export const CompilerSelectModal: React.FC<CompilerSelectModalProps> = ({ onClos
   const userOS = useMemo(() => {
     return getUserOS();
   }, []);
-  const handleSubmit = hookHandleSubmit((data) => {
-    setCompilerSetting({ ...compilerSetting, ...data });
+  const handleSubmit = hookHandleSubmit(async (data) => {
+    if (!compilerSetting) return;
+
+    await setCompilerSetting({ ...compilerSetting, ...data });
     onClose();
   });
 
-  const handleAfterClose = () => {
-    if (!compilerSetting) return;
+  const handleClose = () => {
+    if (compilerSetting) reset(compilerSetting);
 
-    reset(compilerSetting);
+    onClose();
+  };
+
+  const handleReset = async () => {
+    const defaultSetting = await getDefaultSetting();
+
+    reset(defaultSetting);
   };
 
   useLayoutEffect(() => {
@@ -61,89 +62,83 @@ export const CompilerSelectModal: React.FC<CompilerSelectModalProps> = ({ onClos
   useLayoutEffect(() => {
     if (!compilerSetting || compilerSetting.localPort === undefined) return;
 
-    setValue('type', compilerSetting.type);
-    if (compilerSetting.type === 'remote') {
-      setValue('remoteHost', compilerSetting.remoteHost ?? '');
-      setValue('remotePort', Number(compilerSetting.remotePort));
-    } else {
-      setValue('localHost', compilerSetting.localHost);
-      setValue('localPort', compilerSetting.localPort);
-    }
-  }, [setValue, compilerSetting]);
+    reset(compilerSetting);
+  }, [reset, compilerSetting]);
 
   return (
-    <Modal
+    <MovingModal
       {...props}
-      onRequestClose={onClose}
+      id="compiler-settings"
+      onRequestClose={handleClose}
       title={'Укажите адрес компилятора'}
-      submitLabel="Подключиться"
+      submitLabel="Сохранить"
       onSubmit={handleSubmit}
-      onAfterClose={handleAfterClose}
+      sideLabel="Сбросить"
+      onSide={handleReset}
+      sideClassName="btn-secondary"
+      hideCancelButton
+      className="w-[348px]"
     >
-      <div className="flex items-center">
+      <div className="flex flex-col gap-4">
         <Controller
           control={control}
           name="type"
           render={({ field: { value, onChange } }) => {
-            const handleChange = (v: any) => {
-              onChange(v.value);
+            const handleChange = (option: (typeof options)[number] | null) => {
+              if (!option) return;
 
-              if (!compilerSetting) return;
-              if (v.value === 'local') {
-                setValue('localPort', compilerSetting.localPort);
-                setValue('localHost', 'localhost');
-              } else {
-                setValue('remotePort', compilerSetting.remotePort);
-                setValue('remoteHost', compilerSetting.remoteHost);
-              }
+              onChange(option.value);
             };
 
             return (
-              <div>
-                Тип
+              <label className="flex flex-col gap-2">
+                <span>Тип</span>
                 <Select
+                  containerClassName="w-36"
                   value={options.find((opt) => opt.value === value)}
                   onChange={handleChange}
                   options={options}
                   isSearchable={false}
                 />
-              </div>
+              </label>
             );
           }}
         />
+
+        <div className="text-text-inactive">{currentServerLabel}</div>
+
+        <div className="flex gap-3">
+          <TextField
+            maxLength={80}
+            containerClassName="w-36 gap-2"
+            className="disabled:cursor-not-allowed disabled:bg-bg-secondary disabled:text-text-inactive disabled:opacity-70"
+            label="Хост"
+            {...register(watch('type') === 'local' ? 'localHost' : 'remoteHost')}
+            placeholder="Напишите адрес хоста"
+            disabled={isSecondaryFieldsDisabled}
+          />
+          <TextField
+            containerClassName="w-36 gap-2"
+            className="disabled:cursor-not-allowed disabled:bg-bg-secondary disabled:text-text-inactive disabled:opacity-70"
+            label="Порт"
+            {...register(watch('type') === 'local' ? 'localPort' : 'remotePort', {
+              valueAsNumber: true,
+            })}
+            placeholder="Напишите порт"
+            onInput={(event) => {
+              const { target } = event;
+              if (target) {
+                (target as HTMLInputElement).value = removeNonNumbers(
+                  (target as HTMLInputElement).value
+                );
+              }
+            }}
+            disabled={isSecondaryFieldsDisabled}
+          />
+        </div>
+
+        {warning && <div className="text-warning">{warning}</div>}
       </div>
-      <div className="mb-2 flex gap-2">
-        <TextField
-          maxLength={80}
-          className="disabled:opacity-50"
-          label="Хост:"
-          {...register(watch('type') === 'local' ? 'localHost' : 'remoteHost')}
-          placeholder="Напишите адрес хоста"
-          disabled={isSecondaryFieldsDisabled}
-        />
-        <TextField
-          className="disabled:opacity-50"
-          label="Порт:"
-          {...register(watch('type') === 'local' ? 'localPort' : 'remotePort', {
-            valueAsNumber: true,
-          })}
-          placeholder="Напишите порт"
-          onInput={(event) => {
-            const { target } = event;
-            if (target) {
-              (target as HTMLInputElement).value = removeNonNumbers(
-                (target as HTMLInputElement).value
-              );
-            }
-          }}
-          disabled={isSecondaryFieldsDisabled}
-        />
-      </div>
-      <div>{currentServerLabel}</div>
-      <button type="button" className="btn-secondary mt-4" onClick={resetSetting}>
-        Сбросить настройки
-      </button>
-      {warning && <div className="mt-2 text-warning">{warning}</div>}
-    </Modal>
+    </MovingModal>
   );
 };
