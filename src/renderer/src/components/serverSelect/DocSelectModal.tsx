@@ -1,10 +1,8 @@
 import { useLayoutEffect } from 'react';
 
 import { Controller, useForm } from 'react-hook-form';
-import { SingleValue } from 'react-select';
-import { twMerge } from 'tailwind-merge';
 
-import { Modal, Select, TextField, WithHint } from '@renderer/components/UI';
+import { MovingModal, Select, TextField } from '@renderer/components/UI';
 import { useSettings } from '@renderer/hooks';
 
 type FormValues = Main['settings']['doc'];
@@ -14,37 +12,62 @@ interface DocSelectModalProps {
   onClose: () => void;
 }
 
-type optionType = {
+type OptionType = {
   value: FormValues['type'];
   label: string;
 };
 
-const options: optionType[] = [
+const options: OptionType[] = [
   { value: 'remote', label: 'Удалённый' },
   { value: 'local', label: 'Локальный' },
 ];
 
 export const DocSelectModal: React.FC<DocSelectModalProps> = ({ onClose, ...props }) => {
   const [docSetting, setDocSetting] = useSettings('doc');
-
   const {
-    register,
+    control,
     handleSubmit: hookHandleSubmit,
     reset,
-    control,
+    register,
     setValue,
     watch,
   } = useForm<FormValues>();
+
+  const isLocal = watch('type') === 'local';
+  const currentServerLabel = `Текущий тип сервера: ${
+    docSetting?.type === 'local' ? 'локальный' : 'удалённый'
+  }`;
 
   const handleSubmit = hookHandleSubmit((data) => {
     setDocSetting(data);
     onClose();
   });
 
-  const handleAfterClose = () => {
-    if (!docSetting) return;
+  const resetLocalHost = () => {
+    window.electron.ipcRenderer.invoke('getLocalDocServer').then((address) => {
+      setValue('localHost', address);
+    });
+  };
 
-    reset(docSetting);
+  const resetRemoteHost = () => {
+    window.electron.ipcRenderer.invoke('getRemoteDocServer').then((address) => {
+      setValue('remoteHost', address);
+    });
+  };
+
+  const handleClose = () => {
+    if (docSetting) reset(docSetting);
+
+    onClose();
+  };
+
+  const handleReset = () => {
+    if (isLocal) {
+      resetLocalHost();
+      return;
+    }
+
+    resetRemoteHost();
   };
 
   useLayoutEffect(() => {
@@ -53,58 +76,31 @@ export const DocSelectModal: React.FC<DocSelectModalProps> = ({ onClose, ...prop
     reset(docSetting);
   }, [reset, docSetting]);
 
-  const isLocal = watch('type') === 'local';
-
-  const currentServerLabel = `Текущий тип сервера: ${
-    docSetting?.type === 'local' ? 'локальный' : 'удалённый'
-  }`;
-
-  const resetLocalHost = () => {
-    window.electron.ipcRenderer.invoke('getLocalDocServer').then((addr) => {
-      setValue('localHost', addr);
-    });
-  };
-
-  const resetRemoteHost = () => {
-    window.electron.ipcRenderer.invoke('getRemoteDocServer').then((addr) => {
-      setValue('remoteHost', addr);
-    });
-  };
-
-  const addressInput = (key: keyof FormValues, hidden: boolean, disabled: boolean) => {
-    return (
-      <TextField
-        className="mb-2 w-[600px] max-w-full disabled:opacity-50"
-        maxLength={80}
-        {...register(key, { required: true })}
-        label="Адрес"
-        placeholder="Напишите адрес"
-        hidden={hidden}
-        disabled={disabled}
-      />
-    );
-  };
-
   return (
-    <Modal
+    <MovingModal
       {...props}
-      onRequestClose={onClose}
+      id="documentation-settings"
+      onRequestClose={handleClose}
       title="Укажите адрес документации"
-      submitLabel="Подключиться"
+      submitLabel="Сохранить"
       onSubmit={handleSubmit}
-      onAfterClose={handleAfterClose}
+      sideLabel="Сбросить"
+      onSide={handleReset}
+      sideClassName="btn-secondary"
+      hideCancelButton
+      className="w-[348px]"
     >
-      <div className="flex items-center">
+      <div className="flex flex-col gap-4">
         <Controller
           control={control}
           name="type"
           render={({ field: { value, onChange } }) => {
-            const handleChange = (v: SingleValue<optionType>) => {
-              if (!v) return;
+            const handleChange = (option: OptionType | null) => {
+              if (!option) return;
 
-              onChange(v.value);
+              onChange(option.value);
 
-              if (v.value === 'local') {
+              if (option.value === 'local') {
                 resetLocalHost();
               } else if (!docSetting?.remoteHost) {
                 resetRemoteHost();
@@ -112,48 +108,32 @@ export const DocSelectModal: React.FC<DocSelectModalProps> = ({ onClose, ...prop
             };
 
             return (
-              <div>
-                Тип
+              <label className="flex flex-col gap-2">
+                <span>Тип</span>
                 <Select
-                  value={options.find((opt) => opt.value === value)}
+                  containerClassName="w-36"
+                  value={options.find((option) => option.value === value)}
                   onChange={handleChange}
                   options={options}
                   isSearchable={false}
                 />
-              </div>
+              </label>
             );
           }}
         />
+
+        <div className="text-text-inactive">{currentServerLabel}</div>
+
+        <TextField
+          containerClassName="gap-2"
+          className="disabled:cursor-not-allowed disabled:bg-bg-secondary disabled:text-text-inactive disabled:opacity-70"
+          maxLength={80}
+          {...register(isLocal ? 'localHost' : 'remoteHost', { required: true })}
+          label="Адрес"
+          placeholder="Напишите адрес"
+          disabled={isLocal}
+        />
       </div>
-
-      <div className="flex items-center gap-1">
-        {addressInput('localHost', !isLocal, true)}
-        {addressInput('remoteHost', isLocal, false)}
-
-        <WithHint hint={'Вернуть значение адреса удалённой документации по-умолчанию'}>
-          {(props) => {
-            return (
-              <button
-                type="button"
-                className={twMerge(
-                  'text-icon-secondary disabled:text-text-disabled',
-                  !isLocal && 'hover:text-icon-active'
-                )}
-                {...props}
-                onClick={(e) => {
-                  e.preventDefault();
-                  resetRemoteHost();
-                }}
-                disabled={isLocal}
-              >
-                ↺
-              </button>
-            );
-          }}
-        </WithHint>
-      </div>
-
-      <div>{currentServerLabel}</div>
-    </Modal>
+    </MovingModal>
   );
 };

@@ -5,6 +5,10 @@ import { twMerge } from 'tailwind-merge';
 
 import { useWindowManagerStore } from '../../../hooks/useWindowManagerStore';
 
+// The regular modal overlay uses Tailwind's z-50 layer. Keep the focused moving
+// window immediately below it so a modal always remains interactive.
+const ACTIVE_WINDOW_Z_INDEX = 49;
+
 /**
  * Props for the Window component
  */
@@ -65,7 +69,7 @@ export const Window = ({
 
   // Get the current window's zIndex
   const currentWindow = windows.find((w) => w.id === id);
-  const zIndex = currentWindow?.zIndex || 1;
+  const zIndex = activeWindowId === id ? ACTIVE_WINDOW_Z_INDEX : currentWindow?.zIndex || 1;
 
   // Clamp the window position to the screen boundaries
   const clampPositionToScreen = (x: number, y: number) => {

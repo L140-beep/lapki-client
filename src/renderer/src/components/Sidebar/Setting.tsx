@@ -64,12 +64,12 @@ export const Setting: React.FC<SettingProps> = ({
   };
 
   const itemClassName =
-    'flex w-full items-center px-3 py-1.5 text-left text-xs text-[#181818] outline-none hover:bg-[#e6f4ff] focus-visible:bg-[#e6f4ff] disabled:cursor-not-allowed disabled:opacity-50';
+    'flex w-full items-center px-3 py-1.5 text-left text-xs outline-none hover:bg-[#e6f4ff] focus-visible:bg-[#e6f4ff] disabled:cursor-not-allowed disabled:opacity-50';
   const submenuClassName =
     'invisible pointer-events-none absolute left-full top-0 z-[120] w-[92px] overflow-hidden rounded-lg bg-white py-1 opacity-0 shadow-[0_2px_14px_rgba(0,0,0,0.25)] transition-opacity group-hover:visible group-hover:pointer-events-auto group-hover:opacity-100 group-focus-within:visible group-focus-within:pointer-events-auto group-focus-within:opacity-100';
 
   return (
-    <section className="text-[#181818]">
+    <section className="text-text-primary">
       <div className="group relative">
         <button type="button" className={`${itemClassName} justify-between`} aria-haspopup="menu">
           Тема
