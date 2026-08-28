@@ -50,13 +50,7 @@ export const useFileMenu = ({
   compilerStatus,
   setOpenData,
 }: UseFileMenuArgs) => {
-  const [openTab, activeTabName, tabs] = useTabs((state) => [
-    state.openTab,
-    state.activeTab,
-    state.items,
-  ]);
   const [nextTab, prevTab] = useTabs((state) => [state.nextTab, state.prevTab]);
-  const activeTab = tabs.find((tab) => tab.name === activeTabName);
   const modelController = useModelContext();
   const headControllerId = modelController.model.useData('', 'headControllerId');
   const controller = modelController.controllers[headControllerId];
@@ -147,11 +141,7 @@ export const useFileMenu = ({
         if (!schemeEditorId) return;
         const schemeController = modelController.controllers[schemeEditorId];
         if (!schemeController) return;
-        openTab(modelController, {
-          type: 'editor',
-          canvasId: schemeEditorId,
-          name: 'Схемоэкран',
-        });
+        modelController.changeHeadControllerId(schemeEditorId);
       },
       disabled: !isInitialized,
       hidden: noSchemeScreen || controller.type === 'scheme',
@@ -165,7 +155,6 @@ export const useFileMenu = ({
         !visual ||
         !isInitialized ||
         controller.type === 'scheme' ||
-        (activeTab && activeTab.type !== 'editor') ||
         Object.values(controller.platform).find((platform) =>
           platform.data.id.startsWith('BearlogaDefend')
         ) !== undefined,

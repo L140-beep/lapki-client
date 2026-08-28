@@ -9,7 +9,6 @@ import { AddButton } from '@renderer/components/UI/AddButton';
 import { useStateMachines } from '@renderer/hooks';
 import { getAvailablePlatforms } from '@renderer/lib/data/PlatformLoader';
 import { useModelContext } from '@renderer/store/ModelContext';
-import { useTabs } from '@renderer/store/useTabs';
 import { StateMachine } from '@renderer/types/diagram';
 
 import { StateMachineDeleteModal } from './StateMachineDeleteModal';

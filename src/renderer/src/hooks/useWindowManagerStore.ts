@@ -211,7 +211,7 @@ export const useWindowManagerStore = create<WindowManagerState>((set) => ({
       };
     }),
 
-  endSplitOnDrag: (draggedWindowId) => {
+  endSplitOnDrag: (_draggedWindowId) => {
     // Simplified implementation
     // console.log('End split on drag:', draggedWindowId);
   },
