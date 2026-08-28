@@ -18,6 +18,7 @@ import {
   MIN_FIELD_SIZE,
   clampPosition,
   createField,
+  nextPlaybackIndex,
   resizeField,
   setFieldCell,
 } from './model';
@@ -84,6 +85,8 @@ const controlClassName =
 
 const buttonClassName =
   'rounded px-3 py-2 font-medium transition-colors enabled:bg-primary enabled:text-text-secondary enabled:hover:bg-primaryHover disabled:cursor-not-allowed disabled:bg-bg-active disabled:text-text-disabled';
+
+const PLAYBACK_INTERVAL_MS = 500;
 
 const Section: React.FC<React.PropsWithChildren<{ title: string; className?: string }>> = ({
   title,
@@ -167,11 +170,45 @@ const GardenerSimulator: React.FC<RuntimeProps> = ({
   const [mode, setMode] = useState<SimulationMode>('finite');
   const [timeout, setTimeoutValue] = useState(10);
   const [historyIndex, setHistoryIndex] = useState(0);
-  const steps = result?.steps ?? [];
+  const [reviewingHistory, setReviewingHistory] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const resultSteps = result?.steps;
+  const steps = resultSteps ?? [];
+  const historyStep = reviewingHistory ? steps[historyIndex] : undefined;
+  const displayedField = historyStep?.field ?? field;
+  const displayedPosition = historyStep?.position ?? position;
+  const displayedOrientation = historyStep?.orientation ?? orientation;
 
   useEffect(() => {
     setHistoryIndex(Math.max(0, steps.length - 1));
-  }, [steps.length]);
+    setReviewingHistory(steps.length > 0);
+    setIsPlaying(false);
+  }, [resultSteps, steps.length]);
+
+  useEffect(() => {
+    if (!isPlaying) return;
+    if (historyIndex >= steps.length - 1) {
+      setIsPlaying(false);
+      return;
+    }
+    const timer = window.setTimeout(() => {
+      setHistoryIndex((current) => nextPlaybackIndex(current, steps.length));
+    }, PLAYBACK_INTERVAL_MS);
+    return () => window.clearTimeout(timer);
+  }, [historyIndex, isPlaying, steps.length]);
+
+  const selectHistoryStep = (index: number) => {
+    setIsPlaying(false);
+    setReviewingHistory(true);
+    setHistoryIndex(index);
+  };
+
+  const togglePlayback = () => {
+    if (steps.length === 0) return;
+    setReviewingHistory(true);
+    if (!isPlaying && historyIndex === steps.length - 1) setHistoryIndex(0);
+    setIsPlaying((current) => !current);
+  };
 
   const updateWidth = (value: number) => {
     const nextWidth = Math.max(MIN_FIELD_SIZE, Math.min(MAX_FIELD_SIZE, value));
@@ -209,6 +246,7 @@ const GardenerSimulator: React.FC<RuntimeProps> = ({
                 min={MIN_FIELD_SIZE}
                 max={MAX_FIELD_SIZE}
                 value={width}
+                disabled={reviewingHistory}
                 onChange={(event) => updateWidth(Number(event.target.value))}
               />
             </FieldInput>
@@ -220,6 +258,7 @@ const GardenerSimulator: React.FC<RuntimeProps> = ({
                 min={MIN_FIELD_SIZE}
                 max={MAX_FIELD_SIZE}
                 value={height}
+                disabled={reviewingHistory}
                 onChange={(event) => updateHeight(Number(event.target.value))}
               />
             </FieldInput>
@@ -231,6 +270,7 @@ const GardenerSimulator: React.FC<RuntimeProps> = ({
                 min={0}
                 max={width - 1}
                 value={position.x}
+                disabled={reviewingHistory}
                 onChange={(event) =>
                   setPosition((current) =>
                     clampPosition({ ...current, x: Number(event.target.value) }, width, height)
@@ -246,6 +286,7 @@ const GardenerSimulator: React.FC<RuntimeProps> = ({
                 min={0}
                 max={height - 1}
                 value={position.y}
+                disabled={reviewingHistory}
                 onChange={(event) =>
                   setPosition((current) =>
                     clampPosition({ ...current, y: Number(event.target.value) }, width, height)
@@ -259,6 +300,7 @@ const GardenerSimulator: React.FC<RuntimeProps> = ({
               id="simulator-orientation"
               className={controlClassName}
               value={orientation}
+              disabled={reviewingHistory}
               onChange={(event) => setOrientation(event.target.value as GardenerOrientation)}
             >
               <option value="north">Север</option>
@@ -275,6 +317,7 @@ const GardenerSimulator: React.FC<RuntimeProps> = ({
               <button
                 key={tool.label}
                 type="button"
+                disabled={reviewingHistory}
                 className={twMerge(
                   'flex items-center gap-2 rounded border border-border-primary px-2 py-2 text-left text-sm hover:bg-bg-hover',
                   selectedTool === tool.value && 'border-primary bg-bg-active'
@@ -289,6 +332,7 @@ const GardenerSimulator: React.FC<RuntimeProps> = ({
           <button
             type="button"
             className="mt-3 w-full rounded border border-border-primary px-3 py-2 text-sm hover:bg-bg-hover"
+            disabled={reviewingHistory}
             onClick={() => setField(createField(width, height))}
           >
             Очистить поле
@@ -302,9 +346,9 @@ const GardenerSimulator: React.FC<RuntimeProps> = ({
             className="grid gap-1"
             style={{ gridTemplateColumns: `repeat(${width}, minmax(1.75rem, 2.5rem))` }}
           >
-            {field.flatMap((row, y) =>
+            {displayedField.flatMap((row, y) =>
               row.map((cell, x) => {
-                const hasGardener = position.x === x && position.y === y;
+                const hasGardener = displayedPosition.x === x && displayedPosition.y === y;
                 return (
                   <button
                     key={`${x}:${y}`}
@@ -313,8 +357,10 @@ const GardenerSimulator: React.FC<RuntimeProps> = ({
                     aria-label={`Клетка ${x}, ${y}: ${cellLabels[cell]}`}
                     className={twMerge(
                       'relative aspect-square min-h-7 rounded-sm border border-border-primary transition hover:border-primary',
-                      cellStyles[cell]
+                      cellStyles[cell],
+                      reviewingHistory && 'cursor-default'
                     )}
+                    disabled={reviewingHistory}
                     onClick={() => handleCellClick(x, y)}
                   >
                     {hasGardener && (
@@ -322,7 +368,7 @@ const GardenerSimulator: React.FC<RuntimeProps> = ({
                         aria-label="Стартовая позиция Садовника"
                         className={twMerge(
                           'absolute inset-0 flex items-center justify-center text-xl text-text-primary drop-shadow transition-transform',
-                          orientationRotation[orientation]
+                          orientationRotation[displayedOrientation]
                         )}
                       >
                         ▲
@@ -335,7 +381,9 @@ const GardenerSimulator: React.FC<RuntimeProps> = ({
           </div>
         </div>
         <p className="mt-3 text-sm text-text-inactive">
-          Выберите инструмент и нажмите на клетку. Значок «Старт» переносит начальную позицию.
+          {reviewingHistory
+            ? `Просмотр шага ${historyIndex + 1} из ${steps.length}.`
+            : 'Выберите инструмент и нажмите на клетку. Значок «Старт» переносит начальную позицию.'}
         </p>
       </Section>
 
@@ -404,13 +452,30 @@ const GardenerSimulator: React.FC<RuntimeProps> = ({
                 min={0}
                 max={steps.length - 1}
                 value={historyIndex}
-                onChange={(event) => setHistoryIndex(Number(event.target.value))}
+                onChange={(event) => selectHistoryStep(Number(event.target.value))}
               />
+              <div className="grid grid-cols-2 gap-2">
+                <button type="button" className={buttonClassName} onClick={togglePlayback}>
+                  {isPlaying ? 'Пауза' : 'Воспроизвести'}
+                </button>
+                <button
+                  type="button"
+                  className={buttonClassName}
+                  disabled={!reviewingHistory}
+                  onClick={() => {
+                    setIsPlaying(false);
+                    setReviewingHistory(false);
+                  }}
+                >
+                  К настройке
+                </button>
+              </div>
               <div className="flex items-center justify-between gap-2">
                 <button
+                  type="button"
                   className={buttonClassName}
                   disabled={historyIndex === 0}
-                  onClick={() => setHistoryIndex((current) => current - 1)}
+                  onClick={() => selectHistoryStep(historyIndex - 1)}
                 >
                   Назад
                 </button>
@@ -418,9 +483,10 @@ const GardenerSimulator: React.FC<RuntimeProps> = ({
                   Шаг {historyIndex + 1} / {steps.length}
                 </span>
                 <button
+                  type="button"
                   className={buttonClassName}
                   disabled={historyIndex === steps.length - 1}
-                  onClick={() => setHistoryIndex((current) => current + 1)}
+                  onClick={() => selectHistoryStep(historyIndex + 1)}
                 >
                   Вперёд
                 </button>

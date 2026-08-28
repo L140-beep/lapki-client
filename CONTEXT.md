@@ -18,6 +18,10 @@ A simulation run that has no required final state and does not complete merely b
 
 The ordered record of user-visible platform steps produced during a simulation run for playback. It is distinct from the interpreter's internal event queue and need not contain every internal state transition.
 
+### Execution playback
+
+The local presentation of a simulation result's execution history. Reviewing a Gardener step replaces the displayed field with that snapshot and temporarily disables environment editing. Play and pause control only this presentation and do not start, stop, or cancel a simulation run.
+
 ### Simulator
 
 The single workspace view in which a user selects a supported state machine from the current document, configures it, controls it, and observes simulation runs. The view is always available, even when the current document has no supported state machines. Its state-machine selection cannot change during an active simulation run.

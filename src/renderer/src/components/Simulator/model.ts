@@ -39,3 +39,6 @@ export const clampPosition = (
   x: Math.max(0, Math.min(width - 1, position.x)),
   y: Math.max(0, Math.min(height - 1, position.y)),
 });
+
+export const nextPlaybackIndex = (currentIndex: number, stepCount: number): number =>
+  stepCount === 0 ? 0 : Math.min(currentIndex + 1, stepCount - 1);

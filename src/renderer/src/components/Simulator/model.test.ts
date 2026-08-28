@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { clampPosition, createField, resizeField, setFieldCell } from './model';
+import { clampPosition, createField, nextPlaybackIndex, resizeField, setFieldCell } from './model';
 
 describe('simulator field model', () => {
   it('creates independent empty rows', () => {
@@ -35,5 +35,11 @@ describe('simulator field model', () => {
 
   it('keeps the gardener inside a resized field', () => {
     expect(clampPosition({ x: 10, y: -2 }, 4, 3)).toEqual({ x: 3, y: 0 });
+  });
+
+  it('advances playback without leaving the available history', () => {
+    expect(nextPlaybackIndex(0, 3)).toBe(1);
+    expect(nextPlaybackIndex(2, 3)).toBe(2);
+    expect(nextPlaybackIndex(0, 0)).toBe(0);
   });
 });
