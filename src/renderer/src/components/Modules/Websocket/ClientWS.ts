@@ -17,6 +17,32 @@ export abstract class ClientWS {
   // секунд до переподключения, null - означает, что отчёт до переподключения не ведётся
   static setSecondsUntilReconnect: (newSeconds: number | null) => void;
 
+  private static messageListeners: Set<(message: unknown) => void> = new Set();
+
+  private static getMessageListeners(): Set<(message: unknown) => void> {
+    if (!Object.prototype.hasOwnProperty.call(this, 'messageListeners')) {
+      this.messageListeners = new Set();
+    }
+    return this.messageListeners;
+  }
+
+  static subscribeMessages<T>(listener: (message: T) => void): () => void {
+    const listeners = this.getMessageListeners();
+    const untypedListener = listener as (message: unknown) => void;
+    listeners.add(untypedListener);
+    return () => listeners.delete(untypedListener);
+  }
+
+  protected static emitMessage(message: unknown): void {
+    this.getMessageListeners().forEach((listener) => listener(message));
+  }
+
+  static sendJson(message: unknown): boolean {
+    if (!this.connection || this.connection.readyState !== Websocket.OPEN) return false;
+    this.connection.send(JSON.stringify(message));
+    return true;
+  }
+
   static bind(
     onStatusChange: (newConnectionStatus: string) => void,
     setSecondsUntilReconnect: (newSeconds: number | null) => void
@@ -96,8 +122,7 @@ export abstract class ClientWS {
 
   // обработка входящих через вебсоект сообщений
   static messageHandler(msg: Websocket.MessageEvent) {
-    console.log(msg);
-    return;
+    this.emitMessage(msg);
   }
 
   static closeHandler(host: string, port: number, event: Websocket.CloseEvent) {
