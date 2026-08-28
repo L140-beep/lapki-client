@@ -2,6 +2,7 @@ import React, { Dispatch, useEffect, useRef, useState } from 'react';
 
 import { useSettings } from '@renderer/hooks';
 import { useFlasherHooks } from '@renderer/hooks/useFlasherHooks';
+import { useFileMenu } from '@renderer/hooks/useFileMenu';
 import { useModal } from '@renderer/hooks/useModal';
 import { useDoc } from '@renderer/store/useDoc';
 import { useManagerMS } from '@renderer/store/useManagerMS';
@@ -15,8 +16,9 @@ import {
 } from '../serverSelect/FlasherSelectModal';
 import { CompilerTab } from '../Sidebar/Compiler';
 import { History } from '../Sidebar/History';
-import { Menu } from '../Sidebar/Menu';
 import { Setting } from '../Sidebar/Setting';
+
+import { MenuDropdown } from './MenuDropdown';
 
 export interface HeaderCallbacks {
   onRequestNewFile: () => void;
@@ -31,6 +33,7 @@ export interface HeaderCallbacks {
 interface HeaderProps {
   callbacks: HeaderCallbacks;
   openImportError: (error: string) => void;
+  renderStartScreen?: (fileMenu: React.ReactNode) => React.ReactNode;
 }
 
 type HeaderMenu = 'files' | 'settings' | 'history' | null;
@@ -44,6 +47,7 @@ export const Header: React.FC<HeaderProps> = ({
     onRequestImportFile,
   },
   openImportError,
+  renderStartScreen,
 }) => {
   const rootRef = useRef<HTMLElement>(null);
   const [openMenu, setOpenMenu] = useState<HeaderMenu>(null);
@@ -60,6 +64,15 @@ export const Header: React.FC<HeaderProps> = ({
     state.onDocumentationToggle,
     state.isOpen,
   ]);
+  const { items: fileMenuItems, modals: fileMenuModals } = useFileMenu({
+    onRequestNewFile,
+    onRequestOpenFile,
+    onRequestSaveFile,
+    onRequestSaveAsFile,
+    onRequestImport: onRequestImportFile,
+    compilerStatus,
+    setOpenData,
+  });
 
   useFlasherHooks();
 
@@ -103,9 +116,14 @@ export const Header: React.FC<HeaderProps> = ({
   };
 
   const menuButtonClass =
-    'h-full px-3 text-xs text-text-primary transition-colors hover:bg-bg-hover focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary';
+    'h-full rounded-lg px-3 text-xs text-text-primary transition-colors hover:bg-bg-hover focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary';
   const popoverClass =
     'absolute left-0 top-full z-[110] max-h-[calc(100vh-25px)] min-w-[260px] overflow-y-auto border border-border-primary bg-bg-secondary shadow-[0_2px_4px_rgba(0,0,0,0.2)]';
+  const filePopoverClass =
+    'absolute left-0 top-full z-[110] w-[144px] rounded-lg bg-white py-1 shadow-[0_2px_14px_rgba(0,0,0,0.25)]';
+  const fileMenu = (variant: 'popover' | 'start-screen' = 'popover', onItemSelect?: () => void) => (
+    <MenuDropdown variant={variant} onItemSelect={onItemSelect} items={fileMenuItems} />
+  );
 
   return (
     <>
@@ -120,21 +138,11 @@ export const Header: React.FC<HeaderProps> = ({
             aria-expanded={openMenu === 'files'}
             onClick={() => toggleMenu('files')}
           >
-            Файлы
+            Файл
           </button>
-          {openMenu === 'files' && (
-            <div className={popoverClass}>
-              <Menu
-                onRequestNewFile={onRequestNewFile}
-                onRequestOpenFile={onRequestOpenFile}
-                onRequestSaveFile={onRequestSaveFile}
-                onRequestSaveAsFile={onRequestSaveAsFile}
-                onRequestImport={onRequestImportFile}
-                compilerStatus={compilerStatus}
-                setOpenData={setOpenData}
-              />
-            </div>
-          )}
+          <div className={`${filePopoverClass} ${openMenu !== 'files' ? 'hidden' : ''}`}>
+            {fileMenu('popover', () => setOpenMenu(null))}
+          </div>
         </div>
 
         <div className="relative h-full">
@@ -181,6 +189,10 @@ export const Header: React.FC<HeaderProps> = ({
           )}
         </div>
       </header>
+
+      {renderStartScreen?.(fileMenu('start-screen'))}
+
+      {fileMenuModals}
 
       <div className="hidden">
         <CompilerTab
