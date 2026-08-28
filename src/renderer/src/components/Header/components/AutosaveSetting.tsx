@@ -6,7 +6,7 @@ import { ReactComponent as QuestionMark } from '@renderer/assets/icons/question-
 import { useSettings } from '@renderer/hooks';
 import { removeNonNumbers } from '@renderer/utils';
 
-import { Modal, Switch, TextInput, WithHint } from '../UI';
+import { MovingModal, Switch, TextInput, WithHint } from '../../UI';
 
 export interface AutosaveFormValues {
   interval: number;
@@ -71,15 +71,16 @@ export const Autosave: React.FC<AutosaveProps> = ({ isOpen, onClose, ...props })
   if (settings === null) return null;
 
   return (
-    <Modal
+    <MovingModal
       {...props}
+      id="autosave-settings"
       title="Настройки автосохранения"
       isOpen={isOpen}
       onRequestClose={onClose}
       onSubmit={handleSubmit}
       submitLabel="Сохранить"
       hideCancelButton
-      className="top-1/2 max-w-[348px] -translate-y-1/2"
+      className="w-[348px]"
     >
       <div className="flex flex-col gap-4 text-xs">
         <div className="flex items-center gap-3">
@@ -132,6 +133,6 @@ export const Autosave: React.FC<AutosaveProps> = ({ isOpen, onClose, ...props })
         {errors.interval && <p className="text-error">{errors.interval.message}</p>}
         {errors.disabled && <p className="text-warning">{errors.disabled.message}</p>}
       </div>
-    </Modal>
+    </MovingModal>
   );
 };

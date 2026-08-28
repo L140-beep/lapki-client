@@ -2,9 +2,10 @@ import { useLayoutEffect } from 'react';
 
 import { Controller, useForm } from 'react-hook-form';
 
-import { MovingModal, Select, TextField } from '@renderer/components/UI';
 import { useSettings } from '@renderer/hooks';
 import { removeNonNumbers } from '@renderer/utils';
+
+import { MovingModal, Select, TextField } from '../../UI';
 
 const options = [
   { value: 'remote', label: 'Удалённый' },
@@ -75,7 +76,6 @@ export const FlasherSelectModal: React.FC<FlasherSelectModalProps> = ({
       onSubmit={handleSubmit}
       sideLabel="Сбросить"
       onSide={handleReset}
-      sideClassName="btn-secondary"
       hideCancelButton
       className="w-[348px]"
     >

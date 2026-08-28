@@ -4,7 +4,7 @@ import { twMerge } from 'tailwind-merge';
 
 import { FileMenuItem, FileMenuItemId } from '@renderer/hooks/useFileMenu';
 
-import { Badge, WithHint } from '../UI';
+import { Badge, DropdownMenu, DropdownMenuItem, WithHint } from '../../UI';
 
 const compactMenuItemIds = new Set<FileMenuItemId>([
   'new',
@@ -30,17 +30,17 @@ export const MenuDropdown: React.FC<MenuDropdownProps> = ({
   const isCompact = variant === 'popover' || variant === 'start-screen';
 
   return (
-    <section className="flex flex-col">
+    <DropdownMenu variant={variant === 'popover' ? 'popover' : 'inline'} className="flex flex-col">
       {items.map(
         ({ id, text, onClick, disabled = false, hidden = false, className, badge, hint }) => {
           const isHidden = hidden || (isCompact && !compactMenuItemIds.has(id));
           const button = (
-            <button
+            <DropdownMenuItem
               key={id}
               className={twMerge(
                 isCompact
-                  ? 'h-[25px] w-full rounded-lg px-3 text-left text-xs leading-none transition-colors enabled:hover:bg-[#e4f2ff] enabled:active:bg-bg-active disabled:text-text-disabled'
-                  : 'px-2 py-2 text-left indent-4 text-base transition-colors enabled:hover:bg-bg-hover enabled:active:bg-bg-active disabled:text-text-disabled',
+                  ? 'h-[25px] py-0 leading-none enabled:hover:bg-[#e4f2ff]'
+                  : 'px-2 py-2 indent-4 text-base enabled:hover:bg-bg-hover',
                 className
               )}
               onClick={() => {
@@ -51,7 +51,7 @@ export const MenuDropdown: React.FC<MenuDropdownProps> = ({
               hidden={isHidden}
             >
               <Badge show={badge ?? false}>{text}</Badge>
-            </button>
+            </DropdownMenuItem>
           );
 
           return hint ? (
@@ -63,6 +63,6 @@ export const MenuDropdown: React.FC<MenuDropdownProps> = ({
           );
         }
       )}
-    </section>
+    </DropdownMenu>
   );
 };

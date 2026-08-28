@@ -1,6 +1,5 @@
 import React from 'react';
 
-import { Modal } from '@renderer/components/UI';
 import {
   releaseName,
   appVersion,
@@ -10,6 +9,8 @@ import {
   showDevInfo,
   appName,
 } from '@renderer/version';
+
+import { Modal } from '../../UI';
 
 interface AboutTheProgramModalProps {
   isOpen: boolean;

@@ -5,22 +5,25 @@ import { useModal } from '@renderer/hooks/useModal';
 import { useModelContext } from '@renderer/store/ModelContext';
 import { useFlasher } from '@renderer/store/useFlasher';
 
-import { Autosave } from './AutosaveSetting';
+import { ClientStatus } from '../../Modules/Websocket/ClientStatus';
+import { DropdownMenu, DropdownMenuItem } from '../../UI';
 
-import { AboutTheProgramModal } from '../AboutTheProgramModal';
-import { ClientStatus } from '../Modules/Websocket/ClientStatus';
-import { ResetSettingsModal } from '../ResetSettingsModal';
-import { DocSelectModal } from '../serverSelect/DocSelectModal';
+import { AboutTheProgramModal } from './AboutTheProgramModal';
+import { ResetSettingsModal } from './ResetSettingsModal';
 
 export interface SettingProps {
   openCompilerSettings: () => void;
   openLoaderSettings: () => void;
+  openAutosaveSettings: () => void;
+  openDocumentationSettings: () => void;
   onItemSelect?: () => void;
 }
 
 export const Setting: React.FC<SettingProps> = ({
   openCompilerSettings,
   openLoaderSettings,
+  openAutosaveSettings,
+  openDocumentationSettings,
   onItemSelect,
 }) => {
   const modelController = useModelContext();
@@ -32,10 +35,8 @@ export const Setting: React.FC<SettingProps> = ({
   const [canvasSettings, setCanvasSettings] = useSettings('canvas');
   const { connectionStatus, isFlashing } = useFlasher();
 
-  const [isDocModalOpen, openDocModal, closeDocModal] = useModal(false);
   const [isResetWarningOpen, openResetWarning, closeResetWarning] = useModal(false);
   const [isAboutModalOpen, openAboutModal, closeAboutModal] = useModal(false);
-  const [isAutosaveModalOpen, openAutosaveModal, closeAutosaveModal] = useModal(false);
 
   const handleChangeTheme = (value: 'light' | 'dark') => {
     setTheme(value);
@@ -63,105 +64,79 @@ export const Setting: React.FC<SettingProps> = ({
     open();
   };
 
-  const itemClassName =
-    'flex w-full items-center px-3 py-1.5 text-left text-xs outline-none hover:bg-[#e6f4ff] focus-visible:bg-[#e6f4ff] disabled:cursor-not-allowed disabled:opacity-50';
-  const submenuClassName =
-    'invisible pointer-events-none absolute left-full top-0 z-[120] w-[92px] overflow-hidden rounded-lg bg-white py-1 opacity-0 shadow-[0_2px_14px_rgba(0,0,0,0.25)] transition-opacity group-hover:visible group-hover:pointer-events-auto group-hover:opacity-100 group-focus-within:visible group-focus-within:pointer-events-auto group-focus-within:opacity-100';
-
   return (
-    <section className="text-text-primary">
+    <DropdownMenu>
       <div className="group relative">
-        <button type="button" className={`${itemClassName} justify-between`} aria-haspopup="menu">
+        <DropdownMenuItem className="justify-between" aria-haspopup="menu">
           Тема
           <span aria-hidden="true">›</span>
-        </button>
-        <div className={submenuClassName} role="menu">
+        </DropdownMenuItem>
+        <DropdownMenu className="dropdown-submenu">
           {(['light', 'dark'] as const).map((value) => (
-            <button
+            <DropdownMenuItem
               key={value}
-              type="button"
               role="menuitemradio"
               aria-checked={theme === value}
-              className={`${itemClassName} justify-between`}
+              className="justify-between"
               onClick={() => handleChangeTheme(value)}
             >
               {value === 'light' ? 'Светлая' : 'Тёмная'}
               {theme === value && <span aria-hidden="true">✓</span>}
-            </button>
+            </DropdownMenuItem>
           ))}
-        </div>
+        </DropdownMenu>
       </div>
 
-      <button
-        type="button"
-        className={itemClassName}
-        onClick={() => selectAndOpen(openCompilerSettings)}
-      >
+      <DropdownMenuItem onClick={() => selectAndOpen(openCompilerSettings)}>
         Компилятор
-      </button>
-      <button
-        type="button"
-        className={itemClassName}
+      </DropdownMenuItem>
+      <DropdownMenuItem
         onClick={() => selectAndOpen(openLoaderSettings)}
         disabled={connectionStatus === ClientStatus.CONNECTING || isFlashing}
       >
         Загрузчик
-      </button>
-      <button type="button" className={itemClassName} onClick={() => selectAndOpen(openDocModal)}>
+      </DropdownMenuItem>
+      <DropdownMenuItem onClick={() => selectAndOpen(openDocumentationSettings)}>
         Документация
-      </button>
-      <button
-        type="button"
-        className={itemClassName}
-        onClick={() => selectAndOpen(openAutosaveModal)}
-      >
+      </DropdownMenuItem>
+      <DropdownMenuItem onClick={() => selectAndOpen(openAutosaveSettings)}>
         Автосохранение
-      </button>
+      </DropdownMenuItem>
 
       <div className="group relative">
-        <button type="button" className={`${itemClassName} justify-between`} aria-haspopup="menu">
+        <DropdownMenuItem className="justify-between" aria-haspopup="menu">
           Анимации на холсте
           <span aria-hidden="true">›</span>
-        </button>
-        <div className={submenuClassName} role="menu">
-          <button
-            type="button"
+        </DropdownMenuItem>
+        <DropdownMenu className="dropdown-submenu">
+          <DropdownMenuItem
             role="menuitemradio"
             aria-checked={canvasSettings?.animations === true}
-            className={`${itemClassName} justify-between`}
+            className="justify-between"
             onClick={() => handleChangeCanvasAnimations(true)}
           >
             Вкл
             {canvasSettings?.animations && <span aria-hidden="true">✓</span>}
-          </button>
-          <button
-            type="button"
+          </DropdownMenuItem>
+          <DropdownMenuItem
             role="menuitemradio"
             aria-checked={canvasSettings?.animations === false}
-            className={`${itemClassName} justify-between`}
+            className="justify-between"
             onClick={() => handleChangeCanvasAnimations(false)}
           >
             Выкл
             {canvasSettings && !canvasSettings.animations && <span aria-hidden="true">✓</span>}
-          </button>
-        </div>
+          </DropdownMenuItem>
+        </DropdownMenu>
       </div>
 
-      <button
-        type="button"
-        className={itemClassName}
-        onClick={() => selectAndOpen(openResetWarning)}
-      >
+      <DropdownMenuItem onClick={() => selectAndOpen(openResetWarning)}>
         Сбросить настройки
-      </button>
-      <button type="button" className={itemClassName} onClick={() => selectAndOpen(openAboutModal)}>
-        О программе
-      </button>
+      </DropdownMenuItem>
+      <DropdownMenuItem onClick={() => selectAndOpen(openAboutModal)}>О программе</DropdownMenuItem>
 
-      <DocSelectModal isOpen={isDocModalOpen} onClose={closeDocModal} />
       <AboutTheProgramModal isOpen={isAboutModalOpen} onClose={closeAboutModal} />
       <ResetSettingsModal isOpen={isResetWarningOpen} onClose={closeResetWarning} />
-      <Autosave isOpen={isAutosaveModalOpen} onClose={closeAutosaveModal} />
-    </section>
+    </DropdownMenu>
   );
 };

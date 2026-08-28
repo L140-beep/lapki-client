@@ -83,9 +83,7 @@ export const MovingModal: React.FC<ModalProps> = ({
         <div className="flex items-center justify-end gap-2 pt-3">
           <button
             type="button"
-            className={
-              sideClassName ?? 'rounded px-4 py-2 text-red-400 transition-colors hover:text-red-200'
-            }
+            className={sideClassName ?? 'btn-secondary border border-primary text-primary font-medium'}
             onClick={onSide}
             hidden={!sideLabel}
           >

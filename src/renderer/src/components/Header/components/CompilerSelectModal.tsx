@@ -2,9 +2,10 @@ import { useLayoutEffect, useMemo, useState } from 'react';
 
 import { Controller, useForm } from 'react-hook-form';
 
-import { MovingModal, Select, TextField } from '@renderer/components/UI';
 import { useSettings } from '@renderer/hooks';
 import { getUserOS, removeNonNumbers } from '@renderer/utils';
+
+import { MovingModal, Select, TextField } from '../../UI';
 
 type FormValues = Main['settings']['compiler'];
 
@@ -75,7 +76,6 @@ export const CompilerSelectModal: React.FC<CompilerSelectModalProps> = ({ onClos
       onSubmit={handleSubmit}
       sideLabel="Сбросить"
       onSide={handleReset}
-      sideClassName="btn-secondary"
       hideCancelButton
       className="w-[348px]"
     >
