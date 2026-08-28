@@ -78,6 +78,7 @@ function createWindow(): BrowserWindow {
   ipcMain.on('closed', async (_) => {
     await ModuleManager.stopModule('lapki-compiler');
     await ModuleManager.stopModule('lapki-flasher');
+    await ModuleManager.stopModule('sm-interpreter');
     app.exit(0);
   });
 
@@ -125,12 +126,16 @@ const startFlasher = async () => {
 const startCompiler = async () => {
   await ModuleManager.startLocalModule('lapki-compiler');
 };
+const startInterpreter = async () => {
+  await ModuleManager.startLocalModule('sm-interpreter');
+};
 
 const startModules = async () => {
   // Делаем в одной функции и последовательно
   // иначе будет найден одинаковый порт
   await startFlasher();
   await startCompiler();
+  await startInterpreter();
   await startDocServer();
 };
 
@@ -155,6 +160,9 @@ app.whenReady().then(() => {
     }
     if (module === 'lapki-compiler') {
       settingsChangeSend(mainWindow.webContents, 'compiler', settings.getSync('compiler'));
+    }
+    if (module === 'sm-interpreter') {
+      settingsChangeSend(mainWindow.webContents, 'interpreter', settings.getSync('interpreter'));
     }
   });
 
@@ -216,5 +224,6 @@ app.on('window-all-closed', async () => {
   // явно останавливаем загрузчик, так как в некоторых случаях он остаётся висеть
   await ModuleManager.stopModule('lapki-flasher');
   await ModuleManager.stopModule('lapki-compiler');
+  await ModuleManager.stopModule('sm-interpreter');
   app.quit();
 });
