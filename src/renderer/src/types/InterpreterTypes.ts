@@ -53,7 +53,7 @@ export type GardenerStep = {
 };
 
 export type SimulationResult = {
-  status: 'success' | 'cancelled' | 'crash' | 'error';
+  status: 'success' | 'timeout' | 'cancelled' | 'crash' | 'error';
   message?: string;
   steps?: GardenerStep[];
   warnings?: string[];
