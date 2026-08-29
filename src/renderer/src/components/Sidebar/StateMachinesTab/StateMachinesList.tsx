@@ -129,6 +129,7 @@ export const StateMachinesList: React.FC<StateMachinesListProps> = ({
       )}
 
       <StateMachineEditModal
+        variant="edit"
         form={editProps.editForm}
         isOpen={editProps.isOpen}
         onClose={editProps.onClose}
@@ -142,6 +143,7 @@ export const StateMachinesList: React.FC<StateMachinesListProps> = ({
         duplicateStateMachine={onDuplicateStateMachine}
       />
       <StateMachineEditModal
+        variant="create"
         form={addProps.addForm}
         isOpen={addProps.isOpen}
         onClose={addProps.onClose}

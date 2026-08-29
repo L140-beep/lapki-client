@@ -7,6 +7,7 @@ import { ComponentAddModal } from '@renderer/components/ComponentAddModal';
 import { ComponentDeleteModal } from '@renderer/components/ComponentDeleteModal';
 import { ComponentEditModal } from '@renderer/components/ComponentEditModal';
 import { AddButton } from '@renderer/components/UI/AddButton';
+import { ScrollArea } from '@renderer/components/UI/ScrollArea';
 import { useComponents } from '@renderer/hooks';
 import { PlatformManager } from '@renderer/lib/data/PlatformManager';
 import { useModelContext } from '@renderer/store/ModelContext';
@@ -94,7 +95,7 @@ export const StateMachineComponentList: React.FC<StateMachineComponentListProps>
     <div key={smId} className="flex h-full flex-col">
       {header()}
       {isInitialized ? (
-        <div className="mb-2 select-none overflow-y-auto scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb">
+        <ScrollArea className="mb-2 flex-1" viewportClassName="select-none">
           {headControllerId === '' ? (
             <p className="text-text-inactive">
               <i>Нет активной диаграммы</i>
@@ -137,7 +138,7 @@ export const StateMachineComponentList: React.FC<StateMachineComponentListProps>
               );
             })
           )}
-        </div>
+        </ScrollArea>
       ) : (
         <div className="px-4">Недоступно до открытия документа</div>
       )}

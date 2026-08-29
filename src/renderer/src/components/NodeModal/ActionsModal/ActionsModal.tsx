@@ -37,11 +37,11 @@ export const ActionsModal: React.FC<ActionsModalProps> = (props) => {
     attributeOptionsSearch,
   } = props;
   return (
-    <div>
-      <div className="mb-2 flex items-end gap-2">
+    <div className="flex h-full min-h-0 flex-col">
+      <div className="mb-2 flex shrink-0 items-end gap-2">
         <p className="font-medium">Выберите действие</p>
       </div>
-      <div className="mb-4 grid grid-cols-2 items-center gap-3">
+      <div className="mb-4 grid shrink-0 grid-cols-2 items-center gap-3">
         <Select
           className="w-full"
           options={componentOptions}

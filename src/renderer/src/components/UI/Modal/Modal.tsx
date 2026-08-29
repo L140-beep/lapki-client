@@ -9,7 +9,7 @@ import { CloseButton } from './CloseButton';
 ReactModal.setAppElement('#root');
 
 interface ModalProps extends Omit<Props, 'className' | 'overlayClassName'> {
-  title: string;
+  title: React.ReactNode;
   cancelLabel?: string;
   submitLabel?: string;
   extraLabel?: string;

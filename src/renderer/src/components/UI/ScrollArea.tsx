@@ -14,7 +14,7 @@ export const ScrollArea = forwardRef<HTMLDivElement, ScrollAreaProps>(
   ({ children, className, viewportClassName, ...props }, ref) => (
     <div
       {...props}
-      className={twMerge('flex min-h-0 min-w-0 flex-col overflow-hidden py-2', className)}
+      className={twMerge('flex min-h-0 min-w-0 flex-col overflow-hidden py-[5px]', className)}
     >
       <div
         ref={ref}

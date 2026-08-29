@@ -333,7 +333,7 @@ export const StateModal: React.FC<StateModalProps> = ({ smId, controller }) => {
                 <EditEventModal onOpenActionsView={handleOpenActionsView} {...editEventProps} />
               </div>
 
-              <div hidden={viewStack.currentView !== 'actions'}>
+              <div className="h-full min-h-0" hidden={viewStack.currentView !== 'actions'}>
                 <ActionsModal {...actionsModalProps} />
               </div>
             </div>
