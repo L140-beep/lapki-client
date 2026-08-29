@@ -24,10 +24,4 @@ export interface ManagerMSTab {
   name: string;
 }
 
-export interface SimulatorTab {
-  type: 'simulator';
-  name: string;
-  initialSmId?: string;
-}
-
-export type Tab = EditorTab | CodeTab | SerialMonitorTab | ManagerMSTab | SimulatorTab;
+export type Tab = EditorTab | CodeTab | SerialMonitorTab | ManagerMSTab;

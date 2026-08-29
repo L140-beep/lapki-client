@@ -13,6 +13,8 @@ const colorNames = {
   'bg-secondary': '--bg-s', // сайдбар, верхняя панель
   'bg-hover': '--bg-h',
   'bg-active': '--bg-a',
+  'bg-modal': '--bg-m',
+  'bg-control': '--bg-c',
 
   'border-contrast': '--b-c',
   'border-primary': '--b-p',
@@ -35,6 +37,9 @@ const colorNames = {
 
   'icon-active': '--i-a',
   'icon-secondary': '--i-s',
+  'icon-hover': '--i-h',
+  'icon-selected-bg': '--i-s-bg',
+  'switch-inactive-bg': '--sw-inactive-bg',
 } as const;
 type ColorNames = typeof colorNames;
 type ColorName = keyof ColorNames;

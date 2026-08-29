@@ -52,7 +52,7 @@ export const PlatformSelection: React.FC<PlatformSelectionProps> = ({
       return selectedStateMachines[selectedStateMachineIndex].platform;
     }
     return null;
-  }, [selectedPlatformIdx, selectedStateMachineIndex]);
+  }, [selectedPlatformIdx, selectedStateMachineIndex, selectedStateMachines]);
 
   const handleAddPlatform = (platformIdx: string) => {
     const platform = getPlatform(platformIdx);
@@ -81,12 +81,13 @@ export const PlatformSelection: React.FC<PlatformSelectionProps> = ({
   };
 
   return (
-    <div className="grid grid-cols-2 gap-4">
-      <div onDrop={() => handleDropPlatformOnStateMachines()}>
-        <h2>
-          <b>Выбрано</b>
-        </h2>
-        <div className="h-[30vh] rounded-md bg-bg-secondary">
+    <div className="grid grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] gap-x-6 gap-y-[22px]">
+      <div
+        onDragOver={(event) => event.preventDefault()}
+        onDrop={() => handleDropPlatformOnStateMachines()}
+      >
+        <h2 className="mb-[11px] font-medium">Выбрано</h2>
+        <div className="h-[220px] rounded-lg border border-border-primary bg-bg-control">
           {selectedStateMachines.length > 0 ? (
             <StateMachinesStack
               selectedStateMachines={selectedStateMachines}
@@ -97,14 +98,13 @@ export const PlatformSelection: React.FC<PlatformSelectionProps> = ({
               onDelete={handleOnDeletePlatform}
             />
           ) : (
-            <div className="ml-2 p-2 leading-tight opacity-70">
-              <p className="mb-1">
+            <div className="p-2 leading-[15px] text-text-inactive">
+              <p>
                 Чтобы добавить платформу для документа, выберите её из списка справа и перетащите её
                 сюда, либо дважды нажмите на неё левой кнопкой мыши.
               </p>
-              <hr className="h-[1px] w-auto border-bg-hover opacity-70 " />
-              <p className="mt-1">
-                Чтобы убрать платформу из этого списка, нажмите на крестик, который появится
+              <p className="mt-7">
+                Чтобы убрать платформу из этого списка, нажмите на корзину, которая появится
                 напротив неё, либо перетащите её обратно.
               </p>
             </div>
@@ -112,38 +112,36 @@ export const PlatformSelection: React.FC<PlatformSelectionProps> = ({
         </div>
       </div>
       <div>
-        <h2>
-          <b>Платформы</b>
-        </h2>
+        <h2 className="mb-[11px] font-medium">Платформы</h2>
         <div
-          className="max-h-[30vh] w-full overflow-y-auto rounded-md bg-bg-secondary scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb"
+          className="h-[220px] w-full overflow-y-auto rounded-lg border border-border-primary bg-bg-control p-[7px] scrollbar-thin scrollbar-track-transparent scrollbar-thumb-scrollbar-thumb"
+          onDragOver={(event) => event.preventDefault()}
           onDrop={() => handleDropStateMachineOnPlatforms()}
         >
           {platforms.map(({ idx, name }) => (
-            <div key={idx} className={twMerge(isPlatformSelected(idx) && 'bg-bg-active')}>
-              <div
-                className="ml-2 mr-2 flex cursor-pointer select-none items-center p-2 transition-colors duration-75"
-                onDoubleClick={() => handleAddPlatform(idx)}
-                onClick={() => handleClickPlatform(idx)}
-                draggable
-                onDragStart={() => setDraggedPlatformIdx(idx)}
-                onDragEnd={() => setDraggedPlatformIdx(null)}
-              >
-                {name}
-              </div>
-              <hr className="ml-2 mr-2 h-[1px] w-auto border-bg-hover opacity-70 " />
+            <div
+              key={idx}
+              className={twMerge(
+                'flex cursor-pointer select-none items-center rounded-lg px-3 py-1.5 leading-4 transition-colors hover:bg-bg-hover',
+                isPlatformSelected(idx) && 'bg-bg-active'
+              )}
+              onDoubleClick={() => handleAddPlatform(idx)}
+              onClick={() => handleClickPlatform(idx)}
+              draggable
+              onDragStart={() => setDraggedPlatformIdx(idx)}
+              onDragEnd={() => setDraggedPlatformIdx(null)}
+            >
+              {name}
             </div>
           ))}
         </div>
       </div>
       <div className="col-span-2">
-        <h2>
-          <b>{selectedPlatform?.name ?? 'Подсказка'}</b>
-        </h2>
+        <h2 className="mb-[11px] font-medium">Описание</h2>
         <div
           className={twMerge(
-            'h-[10vh] w-full overflow-y-auto whitespace-pre-wrap leading-tight scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb',
-            selectedPlatform?.description ?? 'opacity-70'
+            'h-[58px] w-full overflow-y-auto whitespace-pre-wrap leading-4 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-scrollbar-thumb',
+            !selectedPlatform?.description && 'text-text-inactive'
           )}
         >
           {selectedPlatform?.description ||

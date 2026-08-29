@@ -69,6 +69,11 @@ export function Select<
         menuPosition="fixed"
         styles={{
           menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+          control: (base) => ({
+            ...base,
+            minHeight: '32px',
+            height: '32px',
+          }),
         }}
         className={twMerge(className, !!error && 'error')}
         classNamePrefix="CustomSelect"

@@ -8,7 +8,6 @@ import { Compiler } from '@renderer/components/Modules/Compiler';
 import { importGraphml } from '@renderer/lib/data/GraphmlParser';
 import { useModelContext } from '@renderer/store/ModelContext';
 import { useFlasher } from '@renderer/store/useFlasher';
-import { SidebarIndex, useSidebar } from '@renderer/store/useSidebar';
 import { useTabs } from '@renderer/store/useTabs';
 import { Elements } from '@renderer/types/diagram';
 import { isLeft, isRight, unwrapEither } from '@renderer/types/Either';
@@ -24,17 +23,12 @@ interface useFileOperationsArgs {
 
 export const useFileOperations = (args: useFileOperationsArgs) => {
   const { openLoadError, openSaveError, openCreateSchemeModal, openImportError } = args;
-  const { changeTab } = useSidebar();
   const { flashTableData, setFlashTableData } = useFlasher();
   const modelController = useModelContext();
   const model = modelController.model;
   const name = modelController.model.useData('', 'name') as string | null;
   const isStale = modelController.model.useData('', 'isStale');
-  const [clearTabs, openTab, setActiveTab] = useTabs((state) => [
-    state.clearTabs,
-    state.openTab,
-    state.setActiveTab,
-  ]);
+  const [clearTabs] = useTabs((state) => [state.setActiveTab]);
 
   const [data, setData] = useState<SaveModalData | null>(null);
   const [isOpen, setIsOpen] = useState(false);
@@ -60,7 +54,6 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
 
   // Открыть вкладки на каждый контроллер
   const openTabs = (openAll?: boolean) => {
-    changeTab(SidebarIndex.Explorer);
     let firstTabName = '';
     for (const controllerId in modelController.controllers) {
       if (controllerId === '') continue;
@@ -70,20 +63,20 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
       const smId = stateMachines[0] ?? controllerId;
       const tabName = modelController.model.data.elements.stateMachines[smId].name ?? smId;
       // ID контроллера равен ID канваса.
-      openTab(modelController, {
-        type: 'editor',
-        name: tabName,
-        canvasId: controllerId,
-      });
+      // openTab(modelController, {
+      //   type: 'editor',
+      //   name: tabName,
+      //   canvasId: controllerId,
+      // });
       // (chekoopa) ОБСУДИТЬ! Кажется, разумнее сейчас оставить открытие только первой машины состояний.
       // И в будущем сделать открытие всех машин опцией. Но это в будущем.
       // (Roundabout1) Сейчас все вкладки открываются только при создании документа
       if (!openAll) break;
       if (!firstTabName) firstTabName = tabName;
     }
-    if (firstTabName) {
-      setActiveTab(modelController, firstTabName);
-    }
+    // if (firstTabName) {
+    // setActiveTab(firstTabName);
+    // }
   };
 
   /*Открытие файла*/
@@ -114,7 +107,6 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
     }
 
     if (result && isRight(result)) {
-      clearTabs();
       openTabs();
     }
   };
@@ -122,7 +114,6 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
   const handleOpenFromTemplate = async (type: string, name: string) => {
     await modelController.files.createFromTemplate(type, name, openImportError);
     resetModulesData();
-    clearTabs();
     openTabs();
   };
 
@@ -145,7 +136,6 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
   const performNewFile = (stateMachines: StateMachinesStackItem[]) => {
     resetModulesData();
     modelController.files.newFile(stateMachines);
-    clearTabs();
     openTabs(true);
   };
 
@@ -208,7 +198,6 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
       const result = await modelController.files.import(setOpenData);
       if (result) {
         resetModulesData();
-        clearTabs();
         openTabs();
       }
     }
@@ -221,7 +210,6 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
     const result = modelController.files.initImportData(importData, openData);
     if (result) {
       resetModulesData();
-      clearTabs();
       openTabs();
     }
   };

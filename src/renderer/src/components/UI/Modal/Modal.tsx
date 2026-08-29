@@ -29,6 +29,15 @@ interface ModalProps extends Omit<Props, 'className' | 'overlayClassName'> {
   extraClassName?: string;
   sideClassName?: string;
   middleClassName?: string;
+  headerClassName?: string;
+  titleClassName?: string;
+  closeClassName?: string;
+  closeIconClassName?: string;
+  formClassName?: string;
+  contentClassName?: string;
+  actionsClassName?: string;
+  hideCancelButton?: boolean;
+  onCancel?: () => void;
 }
 
 export const Modal: React.FC<ModalProps> = ({
@@ -51,8 +60,18 @@ export const Modal: React.FC<ModalProps> = ({
   extraClassName,
   sideClassName,
   middleClassName,
+  headerClassName,
+  titleClassName,
+  closeClassName,
+  closeIconClassName,
+  formClassName,
+  contentClassName,
+  actionsClassName,
+  hideCancelButton,
+  onCancel,
   ...props
 }) => {
+  const handleCancel = onCancel ?? props.onRequestClose;
   return (
     <ReactModal
       {...props}
@@ -66,20 +85,29 @@ export const Modal: React.FC<ModalProps> = ({
       )}
       closeTimeoutMS={100}
     >
-      <div className="relative mb-3 flex items-center justify-between border-b border-border-primary pb-1">
-        <h1 className="text-2xl font-bold">{title}</h1>
+      <div
+        className={twMerge(
+          'relative mb-3 flex items-center justify-between border-b border-border-primary pb-1',
+          headerClassName
+        )}
+      >
+        <h1 className={twMerge('text-2xl font-bold', titleClassName)}>{title}</h1>
         <button
-          className="rounded-full p-3 transition-colors hover:bg-bg-hover active:bg-bg-active"
+          type="button"
+          className={twMerge(
+            'rounded-full p-3 transition-colors hover:bg-bg-hover active:bg-bg-active',
+            closeClassName
+          )}
           onClick={props.onRequestClose}
         >
-          <Close width="1rem" height="1rem" />
+          <Close className={twMerge('h-4 w-4', closeIconClassName)} />
         </button>
       </div>
 
-      <form onSubmit={onSubmit}>
-        <div className="mb-4">{children}</div>
+      <form className={formClassName} onSubmit={onSubmit}>
+        <div className={twMerge('mb-4', contentClassName)}>{children}</div>
 
-        <div className="flex items-center justify-end gap-2">
+        <div className={twMerge('flex items-center justify-end gap-2', actionsClassName)}>
           <button
             type="button"
             className={
@@ -102,7 +130,8 @@ export const Modal: React.FC<ModalProps> = ({
           <button
             type="button"
             className={cancelClassName ?? 'btn-secondary'}
-            onClick={props.onRequestClose}
+            onClick={handleCancel}
+            hidden={hideCancelButton}
           >
             {cancelLabel ?? 'Закрыть'}
           </button>

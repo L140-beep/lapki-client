@@ -14,6 +14,8 @@ import {
   DiagramContextMenu,
   EditorSettings,
   Tooltip,
+  DiagramEditor,
+  Header,
 } from '@renderer/components';
 import { hideLoadingOverlay } from '@renderer/components/utils/OverlayControl';
 import { useErrorModal, useFileOperations, useSettings } from '@renderer/hooks';
@@ -27,8 +29,6 @@ import {
 } from '@renderer/lib/data/PlatformLoader';
 import { preloadPicto } from '@renderer/lib/drawable';
 import { useModelContext } from '@renderer/store/ModelContext';
-
-import { Tabs } from './Tabs';
 
 import { RestoreDataModal } from '../RestoreDataModal';
 
@@ -150,10 +150,11 @@ export const MainContainer: React.FC = () => {
   }, [autoSaveSettings, isStale, isInitialized, basename, isTempSaveStored, isSaveModalOpen]);
 
   return (
-    <div className="h-screen select-none">
-      <div className="relative h-full w-full">
-        <div className="grid h-full w-full grid-cols-[auto_1fr_auto]">
-          <Sidebar callbacks={operations} openImportError={openImportError} />
+    <div className="h-screen select-none overflow-hidden">
+      <div className="relative flex h-full w-full flex-col">
+        <Header callbacks={operations} openImportError={openImportError} />
+        <div className="grid min-h-0 w-full flex-1 grid-cols-[auto_1fr_auto]">
+          <Sidebar />
 
           <div
             className={twMerge(
@@ -164,17 +165,17 @@ export const MainContainer: React.FC = () => {
             {...getRootProps()}
           >
             <input {...getInputProps()} />
-            <Tabs />
+            <DiagramEditor key={controller.id} controller={controller} editor={controller.app} />
           </div>
         </div>
 
-        <div className="fixed right-0 top-0 z-[90] h-screen">
+        <div className="fixed right-0 top-[25px] z-[90] h-[calc(100vh-25px)]">
           <Documentation onWidthChange={setDocWidth} width={docWidth} />
         </div>
         <div
           className={twMerge(
-            'absolute h-full top-0',
-            !!isMounted && 'top-[44.19px] h-[calc(100vh-44.19px)]'
+            'absolute top-[25px] h-[calc(100%_-_25px)]',
+            isMounted && 'top-[69.19px] h-[calc(100%_-_69.19px)]'
           )}
           style={{ right: `${docWidth}px` }}
         >

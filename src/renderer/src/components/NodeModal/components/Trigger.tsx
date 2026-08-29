@@ -79,7 +79,7 @@ export const Trigger: React.FC<TriggerProps> = memo(function Trigger(props) {
   return (
     <div>
       <div className="mb-2 flex items-end gap-2">
-        <p className="text-lg font-bold">Когда</p>
+        <p className="font-medium">Когда</p>
 
         {!visual && (
           <Tabs
@@ -91,7 +91,7 @@ export const Trigger: React.FC<TriggerProps> = memo(function Trigger(props) {
         )}
       </div>
 
-      <div className="pl-4">
+      <div>
         <TabPanel value={0} tabValue={tabValue}>
           <div className="flex w-full gap-2">
             <Select

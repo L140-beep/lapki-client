@@ -35,6 +35,8 @@ export default {
           '--bg-s': '#1F1F1F',
           '--bg-h': '#434343',
           '--bg-a': '#545454',
+          '--bg-m': '#333333',
+          '--bg-c': '#1F1F1F',
 
           '--b-c': '#f8f9fa',
           '--b-p': '#666666',
@@ -60,6 +62,9 @@ export default {
 
           '--i-a': '#CBCACA',
           '--i-s': '#B7B6B6',
+          '--i-h': '#6DC0FF',
+          '--i-s-bg': '#2F9BEE',
+          '--sw-inactive-bg': '#9D9D9D',
         },
         ':root[data-theme="light"]': {
           '--p': '#186AA9',
@@ -74,11 +79,13 @@ export default {
 
           '--bg-p': '#F1F1F1',
           '--bg-s': '#EDEDED',
-          '--bg-h': '#cfcfcf',
-          '--bg-a': '#c2c2c2',
+          '--bg-h': '#E6F4FF',
+          '--bg-a': '#E6F4FF',
+          '--bg-m': '#FFFFFF',
+          '--bg-c': '#FFFFFF',
 
           '--b-c': '#343a40',
-          '--b-p': '#c2c2c2',
+          '--b-p': '#DEDEDE',
           '--b-w': '#E4A11B',
 
           '--t-p': '#000',
@@ -101,6 +108,9 @@ export default {
 
           '--i-a': '#5A5959',
           '--i-s': '#878686',
+          '--i-h': '#6DC0FF',
+          '--i-s-bg': '#2F9BEE',
+          '--sw-inactive-bg': '#9D9D9D',
         },
       };
 

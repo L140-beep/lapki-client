@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 import { ReactComponent as QuestionMark } from '@renderer/assets/icons/question-mark.svg';
 import { AttributeConstSwitch } from '@renderer/components/AttributeConstSwitch';
@@ -77,6 +77,24 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
 
   const [isChecked, setIsChecked] = useState<Map<string, boolean>>(new Map());
 
+  // Initialize `isChecked` from `parameters` and `protoParameters`.
+  // Do this in an effect (not during render) to avoid mutating state while rendering
+  // which could flip the switch back immediately.
+  useEffect(() => {
+    const map = new Map<string, boolean>();
+    protoParameters.forEach((p) => {
+      const val = parameters[p.name]?.value;
+      if (typeof val === 'string') {
+        map.set(p.name, !!getComponentAttribute(val, controller.platform[smId]));
+      } else if (isVariable(val)) {
+        map.set(p.name, true);
+      } else {
+        map.set(p.name, false);
+      }
+    });
+    setIsChecked(map);
+  }, [protoParameters, parameters, smId]);
+
   const onChange = (parameter: string, row: number, col: number, value: number) => {
     (parameters[parameter].value as number[][])[row][col] = value;
     setParameters({
@@ -103,7 +121,11 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
   }
 
   return (
-    <div className="flex max-h-[50vh] flex-col gap-2 overflow-y-auto scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb">
+    <div
+      className={
+        'flex max-h-[50vh] flex-col gap-2 overflow-y-auto scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb'
+      }
+    >
       <h3 className="mb-1 text-xl">Параметры</h3>
       {protoParameters.map((proto, idx) => {
         const { name, description = '', type = '', range } = proto;
@@ -187,14 +209,11 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
           }
         }
         const platform = controller.platform[smId];
-        let currentChecked = isChecked.get(name);
+        const currentChecked = isChecked.get(name) ?? false;
         let selectedParameterMethod: string | null = null;
         let selectedParameterComponent: string | null = null;
         if (typeof value === 'string') {
           const componentAttribute = getComponentAttribute(value, platform);
-          if (isChecked.get(name) === undefined) {
-            setCheckedTo(name, componentAttribute != null);
-          }
           selectedParameterComponent =
             currentChecked && componentAttribute ? componentAttribute[0] : null;
           selectedParameterMethod =
@@ -202,18 +221,24 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
         } else if (isVariable(value)) {
           selectedParameterComponent = value.component;
           selectedParameterMethod = value.method;
-          isChecked.set(name, true);
-          currentChecked = true;
+          // rely on initialized state from useEffect; do not mutate during render
         }
         const attributeOptions = attributeOptionsSearch(selectedParameterComponent);
         return (
-          <div className="flex space-x-2" key={name}>
-            <div className="mt-[4px]">
+          // Clamp row height and hide overflow so visual outlines or internal focus
+          // states (like react-select indicators) cannot increase the row height
+          // and cause a scrollbar to appear.
+          <div className={'flex min-h-[32px] items-center space-x-2 overflow-hidden'} key={name}>
+            <div className="self-center">
               <AttributeConstSwitch
                 checked={currentChecked}
-                onCheckedChange={() => {
-                  setCheckedTo(name, !currentChecked);
-                  handleInputChange(name, idx, '');
+                onCheckedChange={(newChecked: boolean) => {
+                  setCheckedTo(name, newChecked);
+                  if (newChecked) {
+                    handleInputChange(name, idx, { component: '', method: '' });
+                  } else {
+                    handleInputChange(name, idx, '');
+                  }
                 }}
                 hint={
                   currentChecked
@@ -222,66 +247,61 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
                 }
               />
             </div>
+            {/* Use ComponentFormFieldLabel here as well so the label column
+                  size matches the unchecked rows. childrenDivClassname="w-full min-w-0"
+                  ensures the right-side content can shrink and won't push layout. */}
             {currentChecked ? (
-              <div>
-                <div className="flex">
-                  <label className="grid grid-cols-[max-content,1fr] items-center justify-start gap-2">
-                    <div className="flex min-w-28 items-center gap-1">
-                      <span className="whitespace-pre">{label}</span>
-                      {hint && (
-                        <WithHint hint={hint}>
-                          {(props) => (
-                            <div className="shrink-0" {...props}>
-                              <QuestionMark className="h-5 w-5" />
-                            </div>
-                          )}
-                        </WithHint>
-                      )}
-                    </div>
-                  </label>
-                  <div className="flex w-full">
-                    <Select
-                      containerClassName="w-[250px]"
-                      options={componentOptions}
-                      onChange={(opt) =>
-                        handleComponentAttributeChange(name, idx, opt?.value ?? '', '')
-                      }
-                      value={
-                        componentOptions.find((o) => o.value === selectedParameterComponent) ?? null
-                      }
-                      isSearchable={false}
-                      noOptionsMessage={() => 'Нет подходящих компонентов'}
-                      placeholder="Выберите компонент..."
-                    />
-                    <Select
-                      containerClassName="w-[250px]"
-                      options={attributeOptions}
-                      onChange={(opt) =>
-                        handleComponentAttributeChange(
-                          name,
-                          idx,
-                          selectedParameterComponent ?? '',
-                          opt?.value ?? ''
-                        )
-                      }
-                      value={
-                        attributeOptions.find((o) => o.value === selectedParameterMethod) ?? null
-                      }
-                      isSearchable={false}
-                      noOptionsMessage={() => 'Нет подходящих атрибутов'}
-                      placeholder="Выберите атрибут..."
-                    />
-                  </div>
+              <ComponentFormFieldLabel
+                as="div"
+                label={label}
+                labelClassName="whitespace-pre"
+                childrenDivClassname="w-full min-w-0"
+                hint={hint}
+                error={error}
+              >
+                <div className="flex w-full gap-3">
+                  {/* Use `flex-1 min-w-0` so Select can shrink inside a flex row without forcing a wrap.
+                      `h-8 box-border` keeps the control height fixed to prevent layout jumps. */}
+                  <Select
+                    containerClassName={'flex-1 min-w-0 h-8 box-border'}
+                    options={componentOptions}
+                    onChange={(opt) =>
+                      handleComponentAttributeChange(name, idx, opt?.value ?? '', '')
+                    }
+                    value={
+                      componentOptions.find((o) => o.value === selectedParameterComponent) ?? null
+                    }
+                    isSearchable={false}
+                    noOptionsMessage={() => 'Нет подходящих компонентов'}
+                    placeholder="Выберите компонент..."
+                  />
+                  <Select
+                    containerClassName={'flex-1 min-w-0 h-8 box-border'}
+                    options={attributeOptions}
+                    onChange={(opt) =>
+                      handleComponentAttributeChange(
+                        name,
+                        idx,
+                        selectedParameterComponent ?? '',
+                        opt?.value ?? ''
+                      )
+                    }
+                    value={
+                      attributeOptions.find((o) => o.value === selectedParameterMethod) ?? null
+                    }
+                    isSearchable={false}
+                    noOptionsMessage={() => 'Нет подходящих атрибутов'}
+                    placeholder="Выберите атрибут..."
+                  />
                 </div>
-                <p className="pl-[120px] text-sm text-error">{error}</p>
-              </div>
+              </ComponentFormFieldLabel>
             ) : (
               <ComponentFormFieldLabel
                 key={name}
                 label={label}
-                labelClassName="whitespace-pre"
                 hint={hint}
                 error={error}
+                childrenDivClassname="w-full min-w-0"
                 value={value as string}
                 name={name}
                 placeholder="Введите значение..."

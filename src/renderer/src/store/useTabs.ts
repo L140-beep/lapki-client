@@ -8,7 +8,6 @@ interface TabsState {
   activeTab: string | null;
   setActiveTab: (modelController: ModelController, tabName: string) => void;
   openTab: (modelController: ModelController, tab: Tab) => void;
-  openOrReplaceTab: (modelController: ModelController, tab: Tab) => void;
   closeTab: (tabName: string, modelController: ModelController) => void;
   swapTabs: (a: string, b: string) => void;
   clearTabs: () => void;
@@ -17,12 +16,8 @@ interface TabsState {
   prevTab: (modelController: ModelController) => void;
 }
 
-const changeHeadController = (newActiveTab: Tab, modelController: ModelController) => {
-  if (newActiveTab.type === 'editor') {
-    modelController.changeHeadControllerId(newActiveTab.canvasId);
-  } else {
-    modelController.changeHeadControllerId('');
-  }
+const changeHeadController = (tab: Tab, modelController: ModelController) => {
+  modelController.changeHeadControllerId(tab.type === 'editor' ? tab.canvasId : '');
 };
 
 export const useTabs = create<TabsState>((set) => ({
@@ -33,37 +28,16 @@ export const useTabs = create<TabsState>((set) => ({
       const tab = items.find(({ name }) => name === activeTab);
       if (!tab) return {};
       changeHeadController(tab, modelController);
-      return { activeTab: activeTab };
+      return { activeTab };
     });
   },
   openTab: (modelController, tab) =>
     set(({ items }) => {
       changeHeadController(tab, modelController);
-
-      // Если пытаемся открыть одну и ту же вкладку
-      if (items.find(({ name }) => name === tab.name)) {
-        return { activeTab: tab.name };
-      }
-
-      return {
-        items: [...items, tab],
-        activeTab: tab.name,
-      };
+      if (items.some(({ name }) => name === tab.name)) return { activeTab: tab.name };
+      return { items: [...items, tab], activeTab: tab.name };
     }),
-  openOrReplaceTab: (modelController, tab) =>
-    set(({ items }) => {
-      changeHeadController(tab, modelController);
-      const existingIndex = items.findIndex(({ name }) => name === tab.name);
-      if (existingIndex === -1) {
-        return { items: [...items, tab], activeTab: tab.name };
-      }
-
-      const updatedItems = [...items];
-      updatedItems[existingIndex] = tab;
-      return { items: updatedItems, activeTab: tab.name };
-    }),
-  // Передаем ModelController, чтобы он сам разобрался с тем, какой Controller в итоге будет главный
-  closeTab: (tabName, modelController: ModelController) =>
+  closeTab: (tabName, modelController) =>
     set(({ items, activeTab }) => {
       const closedTabIndex = items.findIndex((tab) => tab.name === tabName);
       const activeTabIndex = items.findIndex((tab) => tab.name === activeTab);
@@ -71,121 +45,55 @@ export const useTabs = create<TabsState>((set) => ({
 
       if (newItems.length === 0) {
         modelController.changeHeadControllerId('');
-        return {
-          items: newItems,
-          activeTab: null,
-        };
+        return { items: newItems, activeTab: null };
       }
 
-      let newActiveTabName = activeTab;
-
-      // Если закрываемая вкладка была текущей то открываем вкладку которая была перед ней
+      let nextActiveTabName = activeTab;
       if (closedTabIndex === activeTabIndex) {
-        if (closedTabIndex === items.length - 1) {
-          newActiveTabName = newItems[newItems.length - 1].name;
-        } else {
-          newActiveTabName = newItems[closedTabIndex].name;
-        }
+        nextActiveTabName =
+          closedTabIndex === items.length - 1
+            ? newItems[newItems.length - 1].name
+            : newItems[closedTabIndex].name;
       }
 
-      if (newActiveTabName) {
-        const newActiveTab = items[items.findIndex((tab) => tab.name === newActiveTabName)];
-        changeHeadController(newActiveTab, modelController);
-      }
-
-      return {
-        items: newItems,
-        activeTab: newActiveTabName,
-      };
+      const nextActiveTab = newItems.find(({ name }) => name === nextActiveTabName);
+      if (nextActiveTab) changeHeadController(nextActiveTab, modelController);
+      return { items: newItems, activeTab: nextActiveTabName };
     }),
   swapTabs: (a, b) =>
     set(({ items }) => {
       const data = [...items];
-
-      const aIndex = items.findIndex(({ name }) => name === a);
-      const bIndex = items.findIndex(({ name }) => name === b);
-
+      const aIndex = data.findIndex(({ name }) => name === a);
+      const bIndex = data.findIndex(({ name }) => name === b);
+      if (aIndex === -1 || bIndex === -1) return {};
       data.splice(bIndex, 0, data.splice(aIndex, 1)[0]);
-
-      return {
-        items: data,
-      };
+      return { items: data };
     }),
-  clearTabs: () =>
-    set(() => {
-      return {
-        items: [],
-        activeTab: null,
-      };
-    }),
+  clearTabs: () => set({ items: [], activeTab: null }),
   renameTab: (oldName, newName) =>
     set(({ items, activeTab }) => {
+      const index = items.findIndex(({ name }) => name === oldName);
+      if (index === -1) return {};
       const newItems = [...items];
-      const index = newItems.findIndex(({ name }) => name === oldName);
-      let newActiveTab = activeTab;
-      if (index !== -1) {
-        newItems[index].name = newName;
-
-        newActiveTab = oldName == activeTab ? newName : activeTab;
-      }
-
-      return {
-        items: newItems,
-        activeTab: newActiveTab,
-      };
+      newItems[index] = { ...newItems[index], name: newName };
+      return { items: newItems, activeTab: activeTab === oldName ? newName : activeTab };
     }),
-  nextTab: (modelController: ModelController) => {
+  nextTab: (modelController) =>
     set(({ items, activeTab }) => {
-      if (!activeTab)
-        return {
-          items,
-          activeTab,
-        };
-      const newItems = [...items];
-      let index = newItems.findIndex(({ name }) => name === activeTab);
-      let newActiveTab = activeTab;
-      if (index !== -1) {
-        if (index === items.length - 1) {
-          index = 0;
-        } else {
-          index += 1;
-        }
-        const newActiveTabItem = items[index];
-        newActiveTab = items[index].name;
-        changeHeadController(newActiveTabItem, modelController);
-      }
-
-      return {
-        items: newItems,
-        activeTab: newActiveTab,
-      };
-    });
-  },
-  prevTab: (modelController: ModelController) => {
+      if (!activeTab || items.length === 0) return {};
+      const index = items.findIndex(({ name }) => name === activeTab);
+      if (index === -1) return {};
+      const tab = items[(index + 1) % items.length];
+      changeHeadController(tab, modelController);
+      return { activeTab: tab.name };
+    }),
+  prevTab: (modelController) =>
     set(({ items, activeTab }) => {
-      if (!activeTab)
-        return {
-          items,
-          activeTab,
-        };
-      const newItems = [...items];
-      let index = newItems.findIndex(({ name }) => name === activeTab);
-      let newActiveTab = activeTab;
-      if (index !== -1) {
-        if (index === 0) {
-          index = items.length - 1;
-        } else {
-          index -= 1;
-        }
-        const newActiveTabItem = items[index];
-        newActiveTab = items[index].name;
-        changeHeadController(newActiveTabItem, modelController);
-      }
-
-      return {
-        items: newItems,
-        activeTab: newActiveTab,
-      };
-    });
-  },
+      if (!activeTab || items.length === 0) return {};
+      const index = items.findIndex(({ name }) => name === activeTab);
+      if (index === -1) return {};
+      const tab = items[(index - 1 + items.length) % items.length];
+      changeHeadController(tab, modelController);
+      return { activeTab: tab.name };
+    }),
 }));

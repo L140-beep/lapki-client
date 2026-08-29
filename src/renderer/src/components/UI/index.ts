@@ -10,3 +10,5 @@ export * from './Checkbox';
 export * from './Switch';
 export * from './TextAreaAutoResize';
 export * from './TextArea';
+export * from './SubstractButton';
+export * from './AddButton';

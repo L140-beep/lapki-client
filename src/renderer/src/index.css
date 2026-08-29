@@ -7,7 +7,7 @@
     @apply outline-none;
   }
   body {
-    @apply bg-bg-primary font-Fira text-text-primary;
+    @apply bg-bg-primary font-Fira text-text-primary text-xs;
   }
   #canvas {
     @apply absolute outline-none focus:outline-none;
@@ -16,7 +16,7 @@
 
 @layer components {
   .btn {
-    @apply cursor-pointer select-none rounded border border-transparent px-8 py-2 transition-all disabled:cursor-not-allowed disabled:opacity-30;
+    @apply cursor-pointer select-none border rounded-lg border-transparent min-w-20 px-3 py-2 transition-all disabled:cursor-not-allowed disabled:opacity-30;
   }
 
   .btn-primary {
