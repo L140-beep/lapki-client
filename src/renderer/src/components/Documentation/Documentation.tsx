@@ -14,6 +14,7 @@ import { Show } from './components/Show';
 import { Tree } from './components/Tree';
 
 import Reference from '../ReferenceModal/Reference';
+import { TaskBook } from '../Tasks';
 
 export interface CurrentItem {
   isHtml: boolean;
@@ -38,20 +39,26 @@ export const Documentation: React.FC<DocumentationProps> = ({ width, onWidthChan
   const [activeTab, setActiveTab] = useState<number>(0);
   const [currentItem, setCurrentItem] = useState<CurrentItem | null>(null);
 
-  const [isOpen, onDocumentationToggle] = useDoc((state) => [
-    state.isOpen,
-    state.onDocumentationToggle,
-  ]);
+  const [isOpen, toggleOpen, closePanel, activeView, setActiveView, openDocumentation] = useDoc(
+    (state) => [
+      state.isOpen,
+      state.toggleOpen,
+      state.close,
+      state.activeView,
+      state.setActiveView,
+      state.openDocumentation,
+    ]
+  );
   const [minWidth, setMinWidth] = useState(5);
   const [maxWidth, setMaxWidth] = useState('60vw');
 
   const handleResize = (e, _direction, ref) => {
     if (e.pageX < 0.95 * window.innerWidth && !isOpen) {
-      onDocumentationToggle();
+      toggleOpen();
     }
 
     if (e.pageX >= 0.95 * window.innerWidth && isOpen) {
-      onDocumentationToggle();
+      toggleOpen();
     }
     //Получаем ширину блока документации
     onWidthChange(parseInt(ref.style.width));
@@ -70,7 +77,7 @@ export const Documentation: React.FC<DocumentationProps> = ({ width, onWidthChan
   useEffect(() => {
     const handleKeyPress = (e) => {
       if (e.key === 'F1') {
-        onDocumentationToggle();
+        openDocumentation();
       }
     };
     window.addEventListener('keydown', handleKeyPress);
@@ -78,7 +85,7 @@ export const Documentation: React.FC<DocumentationProps> = ({ width, onWidthChan
     return () => {
       window.removeEventListener('keydown', handleKeyPress);
     };
-  }, [onDocumentationToggle]);
+  }, [openDocumentation]);
 
   const onItemClick = (filePath: string) => {
     setActiveTab(1);
@@ -100,7 +107,7 @@ export const Documentation: React.FC<DocumentationProps> = ({ width, onWidthChan
 
   const onClose = () => {
     onWidthChange(0);
-    onDocumentationToggle();
+    closePanel();
   };
 
   const renderContent = () => {
@@ -120,7 +127,7 @@ export const Documentation: React.FC<DocumentationProps> = ({ width, onWidthChan
     }
 
     return (
-      <section className="flex h-screen select-none flex-col bg-bg-primary px-2 pt-4">
+      <section className="flex h-full select-none flex-col bg-bg-primary px-2 pt-4">
         <div className="relative mb-3 flex items-center justify-between border-b border-border-primary pb-1">
           <h1 className="text-2xl font-bold">Документация</h1>
           <button
@@ -197,7 +204,33 @@ export const Documentation: React.FC<DocumentationProps> = ({ width, onWidthChan
       onResize={handleResize}
       className="h-full border-l border-border-primary bg-bg-secondary"
     >
-      <div className="h-screen">{renderContent()}</div>
+      <div className="flex h-screen min-h-0 flex-col">
+        <div className="grid grid-cols-2 gap-1 border-b border-border-primary bg-bg-secondary p-2">
+          <button
+            type="button"
+            className={twMerge(
+              'rounded border border-primary p-2 text-sm',
+              activeView === 'documentation' && 'bg-primary text-text-secondary'
+            )}
+            onClick={() => setActiveView('documentation')}
+          >
+            Документация
+          </button>
+          <button
+            type="button"
+            className={twMerge(
+              'rounded border border-primary p-2 text-sm',
+              activeView === 'tasks' && 'bg-primary text-text-secondary'
+            )}
+            onClick={() => setActiveView('tasks')}
+          >
+            Задачник
+          </button>
+        </div>
+        <div className="min-h-0 flex-1">
+          {activeView === 'documentation' ? renderContent() : <TaskBook onClose={onClose} />}
+        </div>
+      </div>
     </Resizable>
   );
 };

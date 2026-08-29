@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 
 import { useDropzone } from 'react-dropzone';
-import { Toaster } from 'sonner';
+import { Toaster, toast } from 'sonner';
 import { twMerge } from 'tailwind-merge';
 
 import {
@@ -31,9 +31,12 @@ import {
 } from '@renderer/lib/data/PlatformLoader';
 import { preloadPicto } from '@renderer/lib/drawable';
 import { useModelContext } from '@renderer/store/ModelContext';
+import { useTasks } from '@renderer/store/useTasks';
+import { useWorkspace } from '@renderer/store/useWorkspace';
 
 import { NotInitialized } from './NotInitialized';
 
+import type { TaskCatalog } from '../../../../common/tasks';
 import { RestoreDataModal } from '../RestoreDataModal';
 
 export const MainContainer: React.FC = () => {
@@ -49,8 +52,12 @@ export const MainContainer: React.FC = () => {
   const isInitialized = modelController.model.useData('', 'isInitialized');
   const basename = modelController.model.useData('', 'basename');
   const [docWidth, setDocWidth] = useState<number>(0);
-  const [workspace, setWorkspace] = useState<'editor' | 'simulator'>('editor');
+  const workspace = useWorkspace((state) => state.activeWorkspace);
   const closeAllWindows = useWindowManagerStore((state) => state.closeAllWindows);
+  const [setTaskCatalog, submissionActive] = useTasks((state) => [
+    state.setCatalog,
+    state.submissionActive,
+  ]);
   const initialSimulationSmId = Object.keys(controller.stateMachinesSub).find(
     (smId) => smId !== ''
   );
@@ -75,9 +82,26 @@ export const MainContainer: React.FC = () => {
 
   useRecentFilesHooks();
 
+  useEffect(() => {
+    window.electron.ipcRenderer
+      .invoke('tasks:getCatalog')
+      .then((catalog) => setTaskCatalog(catalog as TaskCatalog))
+      .catch((error) =>
+        setTaskCatalog({
+          tasks: [],
+          diagnostics: [{ file: 'resources/tasks', message: String(error) }],
+          assetRootUrl: '',
+        })
+      );
+  }, [setTaskCatalog]);
+
   useAppTitle();
   const onDrop = useCallback(
     (acceptedFiles: File[]) => {
+      if (useTasks.getState().submissionActive) {
+        toast.warning('Дождитесь завершения проверки решения');
+        return;
+      }
       operations.onRequestOpenFile(acceptedFiles[0].path);
     },
     [operations]
@@ -130,15 +154,20 @@ export const MainContainer: React.FC = () => {
     setIsTempSaveStored(false);
   };
 
-  const toggleSimulator = () => {
-    setWorkspace((current) => {
-      if (current === 'editor') {
-        closeAllWindows();
-        return 'simulator';
-      }
-      return 'editor';
-    });
-  };
+  useEffect(() => {
+    if (workspace !== 'editor') closeAllWindows();
+  }, [closeAllWindows, workspace]);
+
+  useEffect(() => {
+    if (!submissionActive) return;
+    const blockEditingKeys = (event: KeyboardEvent) => {
+      if (event.key === 'F1') return;
+      event.preventDefault();
+      event.stopImmediatePropagation();
+    };
+    window.addEventListener('keydown', blockEditingKeys, true);
+    return () => window.removeEventListener('keydown', blockEditingKeys, true);
+  }, [submissionActive]);
 
   // автосохранение
   useEffect(() => {
@@ -175,8 +204,7 @@ export const MainContainer: React.FC = () => {
         <Header
           callbacks={operations}
           onCompilerImportData={initImportData}
-          simulatorOpen={workspace === 'simulator'}
-          onSimulatorToggle={toggleSimulator}
+          initialSimulationSmId={initialSimulationSmId}
           renderStartScreen={
             !isInitialized
               ? (fileMenu) => (
@@ -201,7 +229,13 @@ export const MainContainer: React.FC = () => {
           }
         />
         {isInitialized && (
-          <div className="grid min-h-0 w-full flex-1 grid-cols-[auto_1fr_auto]">
+          <div
+            className={twMerge(
+              'grid min-h-0 w-full flex-1 grid-cols-[auto_1fr_auto]',
+              submissionActive && 'pointer-events-none opacity-70'
+            )}
+            aria-busy={submissionActive}
+          >
             <Sidebar />
 
             <div

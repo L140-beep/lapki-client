@@ -29,6 +29,7 @@ describe('InterpreterClient', () => {
     InterpreterClient.connection = undefined;
     InterpreterClient.ready = false;
     InterpreterClient.activeRunId = undefined;
+    InterpreterClient.activeKind = undefined;
   });
 
   it('uses the interpreter websocket endpoint', () => {
@@ -56,7 +57,7 @@ describe('InterpreterClient', () => {
     expect(runId).toBeTruthy();
     const envelope = JSON.parse(send.mock.calls[0][0]);
     expect(envelope).toMatchObject({
-      protocolVersion: 1,
+      protocolVersion: 2,
       type: 'run.start',
       runId,
       payload,
@@ -67,10 +68,11 @@ describe('InterpreterClient', () => {
 
   it('releases the active run after a terminal response', () => {
     InterpreterClient.activeRunId = 'run-1';
+    InterpreterClient.activeKind = 'run';
 
     InterpreterClient.messageHandler({
       data: JSON.stringify({
-        protocolVersion: 1,
+        protocolVersion: 2,
         type: 'run.cancelled',
         requestId: 'request-1',
         runId: 'run-1',
@@ -79,5 +81,64 @@ describe('InterpreterClient', () => {
     } as Websocket.MessageEvent);
 
     expect(InterpreterClient.activeRunId).toBeUndefined();
+    expect(InterpreterClient.activeKind).toBeUndefined();
+  });
+
+  it('starts a correlated test operation and allows cancellation', () => {
+    const send = vi.fn();
+    InterpreterClient.connection = {
+      readyState: Websocket.OPEN,
+      send,
+    } as unknown as Websocket;
+    InterpreterClient.ready = true;
+
+    const runId = InterpreterClient.startTest({
+      xml: '<graphml/>',
+      machineId: 'machine',
+      testId: 'first',
+      task: {
+        schemaVersion: 1,
+        id: 'task',
+        version: 1,
+        title: 'Task',
+        summary: 'Summary',
+        description: 'Description',
+        platformId: 'junior-reader',
+        tests: [],
+      },
+    });
+
+    if (!runId) throw new Error('Expected test run ID');
+    expect(InterpreterClient.activeKind).toBe('test');
+    expect(InterpreterClient.cancel(runId)).toBe(true);
+    expect(JSON.parse(send.mock.calls[0][0]).type).toBe('test.start');
+    expect(JSON.parse(send.mock.calls[1][0]).type).toBe('run.cancel');
+  });
+
+  it('does not send cancellation for a submission', () => {
+    const send = vi.fn();
+    InterpreterClient.connection = {
+      readyState: Websocket.OPEN,
+      send,
+    } as unknown as Websocket;
+    InterpreterClient.ready = true;
+    const runId = InterpreterClient.startSubmission({
+      xml: '<graphml/>',
+      machineId: 'machine',
+      task: {
+        schemaVersion: 1,
+        id: 'task',
+        version: 1,
+        title: 'Task',
+        summary: 'Summary',
+        description: 'Description',
+        platformId: 'junior-reader',
+        tests: [],
+      },
+    });
+
+    if (!runId) throw new Error('Expected submission ID');
+    expect(InterpreterClient.cancel(runId)).toBe(false);
+    expect(send).toHaveBeenCalledTimes(1);
   });
 });

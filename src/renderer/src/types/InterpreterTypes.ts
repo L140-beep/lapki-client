@@ -1,10 +1,11 @@
+import type { ProgrammingTask, VerificationCheck } from '../../../common/tasks';
 import type {
   GardenerCell,
   GardenerOrientation,
   GardenerPosition,
 } from '../components/Simulator/model';
 
-export const INTERPRETER_PROTOCOL_VERSION = 1 as const;
+export const INTERPRETER_PROTOCOL_VERSION = 2 as const;
 
 export type SimulationMode = 'finite' | 'endless';
 
@@ -28,7 +29,32 @@ export type RunStartPayload = {
   parameters: GardenerParameters | ReaderParameters;
 };
 
-export type InterpreterRequestType = 'run.start' | 'run.cancel';
+export type TaskStartPayload = {
+  xml: string;
+  machineId: string;
+  task: ProgrammingTask;
+};
+
+export type TestStartPayload = TaskStartPayload & { testId: string };
+
+export type TestFailureCode = 'CHECK_FAILED' | 'TIMEOUT' | 'GARDENER_CRASH' | 'EXECUTION_ERROR';
+
+export type TestVerdict = {
+  testId: string;
+  status: 'passed' | 'failed';
+  reasonCode?: TestFailureCode;
+  failedCheckType?: VerificationCheck['type'];
+  outcome: Omit<SimulationResult, 'steps'>;
+};
+
+export type SubmissionResult = {
+  status: 'accepted' | 'not-accepted';
+  passed: number;
+  total: number;
+  verdicts: TestVerdict[];
+};
+
+export type InterpreterRequestType = 'run.start' | 'run.cancel' | 'test.start' | 'submission.start';
 export type InterpreterResponseType =
   | 'connection.ready'
   | 'run.started'
@@ -36,6 +62,14 @@ export type InterpreterResponseType =
   | 'run.completed'
   | 'run.cancelled'
   | 'run.failed'
+  | 'test.started'
+  | 'test.cancel.accepted'
+  | 'test.completed'
+  | 'test.cancelled'
+  | 'submission.started'
+  | 'submission.test.started'
+  | 'submission.test.completed'
+  | 'submission.completed'
   | 'error';
 
 export interface InterpreterEnvelope<TPayload = Record<string, unknown>> {

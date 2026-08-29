@@ -1,11 +1,16 @@
 import React, { Dispatch, useEffect, useRef, useState } from 'react';
 
+import { toast } from 'sonner';
+
 import { useSettings } from '@renderer/hooks';
 import { useFileMenu } from '@renderer/hooks/useFileMenu';
 import { useFlasherHooks } from '@renderer/hooks/useFlasherHooks';
 import { useModal } from '@renderer/hooks/useModal';
+import { useWindowManagerStore } from '@renderer/hooks/useWindowManagerStore';
 import { useDoc } from '@renderer/store/useDoc';
 import { useManagerMS } from '@renderer/store/useManagerMS';
+import { useSimulatorWindow } from '@renderer/store/useSimulatorWindow';
+import { useTasks } from '@renderer/store/useTasks';
 import { Elements } from '@renderer/types/diagram';
 
 import {
@@ -23,6 +28,8 @@ import {
 
 import { CompilerConnection } from '../Modules/CompilerConnection';
 import { Flasher } from '../Modules/Flasher';
+import { Simulator } from '../Simulator';
+import { MovingModal } from '../UI/Modal/MovingModal';
 
 export interface HeaderCallbacks {
   onRequestNewFile: () => void;
@@ -41,8 +48,7 @@ interface HeaderProps {
     openData: [boolean, string | null, string | null, string]
   ) => void;
   renderStartScreen?: (fileMenu: React.ReactNode) => React.ReactNode;
-  simulatorOpen: boolean;
-  onSimulatorToggle: () => void;
+  initialSimulationSmId?: string;
 }
 
 type HeaderMenu = 'files' | 'settings' | 'history' | null;
@@ -57,8 +63,7 @@ export const Header: React.FC<HeaderProps> = ({
   },
   onCompilerImportData,
   renderStartScreen,
-  simulatorOpen,
-  onSimulatorToggle,
+  initialSimulationSmId,
 }) => {
   const rootRef = useRef<HTMLElement>(null);
   const [openMenu, setOpenMenu] = useState<HeaderMenu>(null);
@@ -67,15 +72,28 @@ export const Header: React.FC<HeaderProps> = ({
   const [isResetSettingsOpen, openResetSettings, closeResetSettings] = useModal(false);
   const [isAutosaveOpen, openAutosaveSettings, closeAutosaveSettings] = useModal(false);
   const [isDocModalOpen, openDocModal, closeDocModal] = useModal(false);
+  const [isSimulatorOpen, openSimulator, closeSimulator] = useSimulatorWindow((state) => [
+    state.isOpen,
+    state.open,
+    state.close,
+  ]);
+  const submissionActive = useTasks((state) => state.submissionActive);
+  const [setActiveWindow, bringToFront, removeWindow] = useWindowManagerStore((state) => [
+    state.setActiveWindow,
+    state.bringToFront,
+    state.removeWindow,
+  ]);
   const [flasherSetting, setFlasherSetting] = useSettings('flasher');
   const [isFlasherSettingsOpen, openFlasherSettings, closeFlasherSettings] = useModal(false);
   const [openData, setOpenData] = useState<
     [boolean, string | null, string | null, string] | undefined
   >(undefined);
   const compilerStatus = useManagerMS((state) => state.compilerStatus);
-  const [onDocumentationToggle, isDocOpen] = useDoc((state) => [
+  const [openDocumentation, openTasks, isDocOpen, activeDocView] = useDoc((state) => [
     state.onDocumentationToggle,
+    state.openTasks,
     state.isOpen,
+    state.activeView,
   ]);
   const { items: fileMenuItems, modals: fileMenuModals } = useFileMenu({
     onRequestNewFile,
@@ -88,6 +106,12 @@ export const Header: React.FC<HeaderProps> = ({
   });
 
   useFlasherHooks();
+
+  useEffect(() => {
+    if (!isSimulatorOpen) return;
+    setActiveWindow('simulator');
+    bringToFront('simulator');
+  }, [bringToFront, isSimulatorOpen, setActiveWindow]);
 
   useEffect(() => {
     const handlePointerDown = (event: MouseEvent) => {
@@ -122,6 +146,22 @@ export const Header: React.FC<HeaderProps> = ({
 
   const toggleMenu = (menu: Exclude<HeaderMenu, null>) => {
     setOpenMenu((current) => (current === menu ? null : menu));
+  };
+
+  const openSimulatorWindow = () => {
+    setOpenMenu(null);
+    openSimulator();
+    setActiveWindow('simulator');
+    bringToFront('simulator');
+  };
+
+  const closeSimulatorWindow = () => {
+    if (submissionActive) {
+      toast.warning('Дождитесь завершения проверки решения');
+      return;
+    }
+    closeSimulator();
+    removeWindow('simulator');
   };
 
   const menuButtonClass =
@@ -180,21 +220,31 @@ export const Header: React.FC<HeaderProps> = ({
 
         <button
           type="button"
-          className={`${menuButtonClass} ${isDocOpen ? 'bg-bg-hover' : ''}`}
-          aria-pressed={isDocOpen}
-          onClick={onDocumentationToggle}
+          className={`${menuButtonClass} ${
+            isDocOpen && activeDocView === 'documentation' ? 'bg-bg-hover' : ''
+          }`}
+          aria-pressed={isDocOpen && activeDocView === 'documentation'}
+          onClick={openDocumentation}
         >
           Документация
         </button>
 
         <button
           type="button"
-          className={`${menuButtonClass} ${simulatorOpen ? 'bg-bg-hover' : ''}`}
-          aria-pressed={simulatorOpen}
-          onClick={() => {
-            setOpenMenu(null);
-            onSimulatorToggle();
-          }}
+          className={`${menuButtonClass} ${
+            isDocOpen && activeDocView === 'tasks' ? 'bg-bg-hover' : ''
+          }`}
+          aria-pressed={isDocOpen && activeDocView === 'tasks'}
+          onClick={openTasks}
+        >
+          Задачник
+        </button>
+
+        <button
+          type="button"
+          className={`${menuButtonClass} ${isSimulatorOpen ? 'bg-bg-hover' : ''}`}
+          aria-pressed={isSimulatorOpen}
+          onClick={openSimulatorWindow}
         >
           Симулятор
         </button>
@@ -204,6 +254,7 @@ export const Header: React.FC<HeaderProps> = ({
             type="button"
             className={menuButtonClass}
             aria-expanded={openMenu === 'history'}
+            disabled={submissionActive}
             onClick={() => toggleMenu('history')}
           >
             История изменений
@@ -217,6 +268,20 @@ export const Header: React.FC<HeaderProps> = ({
       </header>
 
       {renderStartScreen?.(fileMenu('start-screen'))}
+
+      {isSimulatorOpen && (
+        <MovingModal
+          id="simulator"
+          title="Симулятор"
+          isOpen
+          position={{ x: 32, y: 32 }}
+          onRequestClose={closeSimulatorWindow}
+          hideCancelButton
+          className="h-[calc(100vh-64px)] w-[calc(100vw-64px)] p-3"
+        >
+          <Simulator initialSmId={initialSimulationSmId} />
+        </MovingModal>
+      )}
 
       {fileMenuModals}
 

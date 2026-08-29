@@ -8,6 +8,7 @@ import { Compiler } from '@renderer/components/Modules/Compiler';
 import { importGraphml } from '@renderer/lib/data/GraphmlParser';
 import { useModelContext } from '@renderer/store/ModelContext';
 import { useFlasher } from '@renderer/store/useFlasher';
+import { useTasks } from '@renderer/store/useTasks';
 import { Elements } from '@renderer/types/diagram';
 import { isLeft, isRight, unwrapEither } from '@renderer/types/Either';
 
@@ -78,6 +79,10 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
 
   /*Открытие файла*/
   const handleOpenFile = async (path?: string) => {
+    if (useTasks.getState().submissionActive) {
+      toast.warning('Дождитесь завершения проверки решения');
+      return;
+    }
     if (isStale) {
       setData({
         shownName: name,
@@ -116,6 +121,10 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
 
   //Создание нового файла
   const handleNewFile = async () => {
+    if (useTasks.getState().submissionActive) {
+      toast.warning('Дождитесь завершения проверки решения');
+      return;
+    }
     if (isStale) {
       setData({
         shownName: name,
@@ -239,6 +248,13 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
   useEffect(() => {
     //Сохранение документа после закрытия редактора
     const unsubscribe = window.electron.ipcRenderer.on('app-close', () => {
+      if (
+        useTasks.getState().submissionActive &&
+        !window.confirm('Проверка решения ещё выполняется и будет потеряна. Закрыть приложение?')
+      ) {
+        window.electron.ipcRenderer.send('reset-close');
+        return;
+      }
       if (isStale) {
         setData({
           shownName: name,
