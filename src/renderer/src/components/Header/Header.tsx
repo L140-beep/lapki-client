@@ -1,22 +1,31 @@
 import React, { Dispatch, useEffect, useRef, useState } from 'react';
 
 import { useSettings } from '@renderer/hooks';
+import { useFileMenu } from '@renderer/hooks/useFileMenu';
 import { useFlasherHooks } from '@renderer/hooks/useFlasherHooks';
 import { useModal } from '@renderer/hooks/useModal';
+import { useWindowManagerStore } from '@renderer/hooks/useWindowManagerStore';
 import { useDoc } from '@renderer/store/useDoc';
 import { useManagerMS } from '@renderer/store/useManagerMS';
 import { CompilerResult } from '@renderer/types/CompilerTypes';
 
-import { Flasher } from '../Modules/Flasher';
-import { CompilerSelectModal } from '../serverSelect/CompilerSelectModal';
 import {
+  AboutTheProgramModal,
+  Autosave,
+  CompilerSelectModal,
+  DocSelectModal,
   FlasherSelectModal,
   FlasherSelectModalFormValues,
-} from '../serverSelect/FlasherSelectModal';
+  History,
+  MenuDropdown,
+  ResetSettingsModal,
+  Setting,
+} from './components';
+
+import { Flasher } from '../Modules/Flasher';
 import { CompilerTab } from '../Sidebar/Compiler';
-import { History } from '../Sidebar/History';
-import { Menu } from '../Sidebar/Menu';
-import { Setting } from '../Sidebar/Setting';
+import { Simulator } from '../Simulator';
+import { MovingModal } from '../UI/Modal/MovingModal';
 
 export interface HeaderCallbacks {
   onRequestNewFile: () => void;
@@ -31,8 +40,8 @@ export interface HeaderCallbacks {
 interface HeaderProps {
   callbacks: HeaderCallbacks;
   openImportError: (error: string) => void;
-  simulatorOpen: boolean;
-  onSimulatorToggle: () => void;
+  renderStartScreen?: (fileMenu: React.ReactNode) => React.ReactNode;
+  initialSimulationSmId?: string;
 }
 
 type HeaderMenu = 'files' | 'settings' | 'history' | null;
@@ -46,12 +55,22 @@ export const Header: React.FC<HeaderProps> = ({
     onRequestImportFile,
   },
   openImportError,
-  simulatorOpen,
-  onSimulatorToggle,
+  renderStartScreen,
+  initialSimulationSmId,
 }) => {
   const rootRef = useRef<HTMLElement>(null);
   const [openMenu, setOpenMenu] = useState<HeaderMenu>(null);
   const [isCompilerOpen, openCompilerSettings, closeCompilerSettings] = useModal(false);
+  const [isAboutModalOpen, openAboutModal, closeAboutModal] = useModal(false);
+  const [isResetSettingsOpen, openResetSettings, closeResetSettings] = useModal(false);
+  const [isAutosaveOpen, openAutosaveSettings, closeAutosaveSettings] = useModal(false);
+  const [isDocModalOpen, openDocModal, closeDocModal] = useModal(false);
+  const [isSimulatorOpen, openSimulator, closeSimulator] = useModal(false);
+  const [setActiveWindow, bringToFront, removeWindow] = useWindowManagerStore((state) => [
+    state.setActiveWindow,
+    state.bringToFront,
+    state.removeWindow,
+  ]);
   const [flasherSetting, setFlasherSetting] = useSettings('flasher');
   const [isFlasherSettingsOpen, openFlasherSettings, closeFlasherSettings] = useModal(false);
   const [openData, setOpenData] = useState<
@@ -64,6 +83,15 @@ export const Header: React.FC<HeaderProps> = ({
     state.onDocumentationToggle,
     state.isOpen,
   ]);
+  const { items: fileMenuItems, modals: fileMenuModals } = useFileMenu({
+    onRequestNewFile,
+    onRequestOpenFile,
+    onRequestSaveFile,
+    onRequestSaveAsFile,
+    onRequestImport: onRequestImportFile,
+    compilerStatus,
+    setOpenData,
+  });
 
   useFlasherHooks();
 
@@ -106,10 +134,27 @@ export const Header: React.FC<HeaderProps> = ({
     setOpenMenu((current) => (current === menu ? null : menu));
   };
 
+  const openSimulatorWindow = () => {
+    setOpenMenu(null);
+    openSimulator();
+    setActiveWindow('simulator');
+    bringToFront('simulator');
+  };
+
+  const closeSimulatorWindow = () => {
+    closeSimulator();
+    removeWindow('simulator');
+  };
+
   const menuButtonClass =
-    'h-full px-3 text-xs text-text-primary transition-colors hover:bg-bg-hover focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary';
+    'h-full rounded-lg px-3 text-xs text-text-primary transition-colors hover:bg-bg-hover focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary';
   const popoverClass =
     'absolute left-0 top-full z-[110] max-h-[calc(100vh-25px)] min-w-[260px] overflow-y-auto border border-border-primary bg-bg-secondary shadow-[0_2px_4px_rgba(0,0,0,0.2)]';
+  const settingsPopoverClass = 'absolute left-[11px] top-full z-[110] w-[160px] overflow-visible';
+  const filePopoverClass = 'absolute left-[11px] top-full z-[110] w-[144px]';
+  const fileMenu = (variant: 'popover' | 'start-screen' = 'popover', onItemSelect?: () => void) => (
+    <MenuDropdown variant={variant} onItemSelect={onItemSelect} items={fileMenuItems} />
+  );
 
   return (
     <>
@@ -124,21 +169,11 @@ export const Header: React.FC<HeaderProps> = ({
             aria-expanded={openMenu === 'files'}
             onClick={() => toggleMenu('files')}
           >
-            Файлы
+            Файл
           </button>
-          {openMenu === 'files' && (
-            <div className={popoverClass}>
-              <Menu
-                onRequestNewFile={onRequestNewFile}
-                onRequestOpenFile={onRequestOpenFile}
-                onRequestSaveFile={onRequestSaveFile}
-                onRequestSaveAsFile={onRequestSaveAsFile}
-                onRequestImport={onRequestImportFile}
-                compilerStatus={compilerStatus}
-                setOpenData={setOpenData}
-              />
-            </div>
-          )}
+          <div className={`${filePopoverClass} ${openMenu !== 'files' ? 'hidden' : ''}`}>
+            {fileMenu('popover', () => setOpenMenu(null))}
+          </div>
         </div>
 
         <div className="relative h-full">
@@ -151,10 +186,15 @@ export const Header: React.FC<HeaderProps> = ({
             Настройки
           </button>
           {openMenu === 'settings' && (
-            <div className={popoverClass}>
+            <div className={settingsPopoverClass}>
               <Setting
                 openCompilerSettings={openCompilerSettings}
+                openAboutModal={openAboutModal}
+                openResetSettings={openResetSettings}
                 openLoaderSettings={openLoaderSettings}
+                openAutosaveSettings={openAutosaveSettings}
+                openDocumentationSettings={openDocModal}
+                onItemSelect={() => setOpenMenu(null)}
               />
             </div>
           )}
@@ -171,12 +211,9 @@ export const Header: React.FC<HeaderProps> = ({
 
         <button
           type="button"
-          className={`${menuButtonClass} ${simulatorOpen ? 'bg-bg-hover' : ''}`}
-          aria-pressed={simulatorOpen}
-          onClick={() => {
-            setOpenMenu(null);
-            onSimulatorToggle();
-          }}
+          className={`${menuButtonClass} ${isSimulatorOpen ? 'bg-bg-hover' : ''}`}
+          aria-pressed={isSimulatorOpen}
+          onClick={openSimulatorWindow}
         >
           Симулятор
         </button>
@@ -198,6 +235,24 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
       </header>
 
+      {renderStartScreen?.(fileMenu('start-screen'))}
+
+      {isSimulatorOpen && (
+        <MovingModal
+          id="simulator"
+          title="Симулятор"
+          isOpen
+          position={{ x: 32, y: 32 }}
+          onRequestClose={closeSimulatorWindow}
+          hideCancelButton
+          className="h-[calc(100vh-64px)] w-[calc(100vw-64px)] p-3"
+        >
+          <Simulator initialSmId={initialSimulationSmId} />
+        </MovingModal>
+      )}
+
+      {fileMenuModals}
+
       <div className="hidden">
         <CompilerTab
           openData={openData}
@@ -214,6 +269,10 @@ export const Header: React.FC<HeaderProps> = ({
         onClose={closeFlasherModal}
       />
       <CompilerSelectModal isOpen={isCompilerOpen} onClose={closeCompilerSettings} />
+      <AboutTheProgramModal isOpen={isAboutModalOpen} onClose={closeAboutModal} />
+      <ResetSettingsModal isOpen={isResetSettingsOpen} onClose={closeResetSettings} />
+      <DocSelectModal isOpen={isDocModalOpen} onClose={closeDocModal} />
+      <Autosave isOpen={isAutosaveOpen} onClose={closeAutosaveSettings} />
     </>
   );
 };

@@ -418,6 +418,7 @@ const GardenerSimulator: React.FC<RuntimeProps> = ({
           </FieldInput>
           <div className="mt-4 grid grid-cols-2 gap-2">
             <button
+              type="button"
               className={buttonClassName}
               disabled={!ready || active}
               onClick={() =>
@@ -432,7 +433,7 @@ const GardenerSimulator: React.FC<RuntimeProps> = ({
             >
               Запустить
             </button>
-            <button className={buttonClassName} disabled={!active} onClick={onCancel}>
+            <button type="button" className={buttonClassName} disabled={!active} onClick={onCancel}>
               Отменить
             </button>
           </div>
@@ -568,6 +569,7 @@ const ReaderSimulator: React.FC<RuntimeProps> = ({
           </FieldInput>
           <div className="grid grid-cols-2 gap-2">
             <button
+              type="button"
               className={buttonClassName}
               disabled={!ready || active}
               onClick={() => {
@@ -577,7 +579,7 @@ const ReaderSimulator: React.FC<RuntimeProps> = ({
             >
               Запустить
             </button>
-            <button className={buttonClassName} disabled={!active} onClick={onCancel}>
+            <button type="button" className={buttonClassName} disabled={!active} onClick={onCancel}>
               Отменить
             </button>
           </div>

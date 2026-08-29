@@ -3,9 +3,8 @@ import React from 'react';
 import ReactModal, { Props } from 'react-modal';
 import { twMerge } from 'tailwind-merge';
 
-import { ReactComponent as Close } from '@renderer/assets/icons/close.svg';
-
 import './style.css';
+import { CloseButton } from './CloseButton';
 
 ReactModal.setAppElement('#root');
 
@@ -76,7 +75,7 @@ export const Modal: React.FC<ModalProps> = ({
     <ReactModal
       {...props}
       className={twMerge(
-        'absolute left-1/2 top-12 max-h-[90vh] w-full max-w-3xl -translate-x-1/2 rounded-lg bg-bg-primary p-6 outline-none scrollbar-thin scrollbar-track-transparent scrollbar-thumb-current',
+        'absolute left-1/2 top-12 max-h-[90vh] w-full max-w-3xl -translate-x-1/2 rounded-lg bg-bg-primary p-6 outline-none scrollbar-thumb-current',
         className
       )}
       overlayClassName={twMerge(
@@ -87,21 +86,12 @@ export const Modal: React.FC<ModalProps> = ({
     >
       <div
         className={twMerge(
-          'relative mb-3 flex items-center justify-between border-b border-border-primary pb-1',
+          'relative mb-6 flex items-center justify-between border-b border-border-primary pb-6',
           headerClassName
         )}
       >
-        <h1 className={twMerge('text-2xl font-bold', titleClassName)}>{title}</h1>
-        <button
-          type="button"
-          className={twMerge(
-            'rounded-full p-3 transition-colors hover:bg-bg-hover active:bg-bg-active',
-            closeClassName
-          )}
-          onClick={props.onRequestClose}
-        >
-          <Close className={twMerge('h-4 w-4', closeIconClassName)} />
-        </button>
+        <h1 className={twMerge('text-[12px] font-medium', titleClassName)}>{title}</h1>
+        <CloseButton onClick={props.onRequestClose} />
       </div>
 
       <form className={formClassName} onSubmit={onSubmit}>

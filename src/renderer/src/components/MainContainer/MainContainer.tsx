@@ -31,6 +31,9 @@ import {
 } from '@renderer/lib/data/PlatformLoader';
 import { preloadPicto } from '@renderer/lib/drawable';
 import { useModelContext } from '@renderer/store/ModelContext';
+import { useWorkspace } from '@renderer/store/useWorkspace';
+
+import { NotInitialized } from './NotInitialized';
 
 import { RestoreDataModal } from '../RestoreDataModal';
 
@@ -47,7 +50,7 @@ export const MainContainer: React.FC = () => {
   const isInitialized = modelController.model.useData('', 'isInitialized');
   const basename = modelController.model.useData('', 'basename');
   const [docWidth, setDocWidth] = useState<number>(0);
-  const [workspace, setWorkspace] = useState<'editor' | 'simulator'>('editor');
+  const workspace = useWorkspace((state) => state.activeWorkspace);
   const closeAllWindows = useWindowManagerStore((state) => state.closeAllWindows);
   const initialSimulationSmId = Object.keys(controller.stateMachinesSub).find(
     (smId) => smId !== ''
@@ -127,15 +130,9 @@ export const MainContainer: React.FC = () => {
     setIsTempSaveStored(false);
   };
 
-  const toggleSimulator = () => {
-    setWorkspace((current) => {
-      if (current === 'editor') {
-        closeAllWindows();
-        return 'simulator';
-      }
-      return 'editor';
-    });
-  };
+  useEffect(() => {
+    if (workspace !== 'editor') closeAllWindows();
+  }, [closeAllWindows, workspace]);
 
   // автосохранение
   useEffect(() => {
@@ -172,28 +169,55 @@ export const MainContainer: React.FC = () => {
         <Header
           callbacks={operations}
           openImportError={openImportError}
-          simulatorOpen={workspace === 'simulator'}
-          onSimulatorToggle={toggleSimulator}
+          initialSimulationSmId={initialSimulationSmId}
+          renderStartScreen={
+            !isInitialized
+              ? (fileMenu) => (
+                  <main
+                    className={twMerge(
+                      'relative flex min-h-0 flex-1 items-center justify-center overflow-auto bg-bg-primary px-6 py-8',
+                      isDragActive && 'bg-bg-hover'
+                    )}
+                    {...getRootProps()}
+                  >
+                    <input {...getInputProps()} />
+                    <div className="flex items-center">
+                      <aside className="mr-[24px] w-[188px]">{fileMenu}</aside>
+                      <div className="h-[400px] w-px bg-border-primary" aria-hidden="true" />
+                      <div className="ml-[103px]">
+                        <NotInitialized />
+                      </div>
+                    </div>
+                  </main>
+                )
+              : undefined
+          }
         />
-        <div className="grid min-h-0 w-full flex-1 grid-cols-[auto_1fr_auto]">
-          <Sidebar />
+        {isInitialized && (
+          <div className="grid min-h-0 w-full flex-1 grid-cols-[auto_1fr_auto]">
+            <Sidebar />
 
-          <div
-            className={twMerge(
-              'relative min-w-80 bg-bg-primary',
-              'after:pointer-events-none after:absolute after:inset-0 after:z-50 after:block after:bg-bg-hover after:opacity-0 after:transition-all after:content-[""]',
-              isDragActive && 'opacity-30'
-            )}
-            {...getRootProps()}
-          >
-            <input {...getInputProps()} />
-            {workspace === 'editor' ? (
-              <DiagramEditor key={controller.id} controller={controller} editor={controller.app} />
-            ) : (
-              <Simulator initialSmId={initialSimulationSmId} />
-            )}
+            <div
+              className={twMerge(
+                'relative min-w-80 bg-bg-primary',
+                'after:pointer-events-none after:absolute after:inset-0 after:z-50 after:block after:bg-bg-hover after:opacity-0 after:transition-all after:content-[""]',
+                isDragActive && 'opacity-30'
+              )}
+              {...getRootProps()}
+            >
+              <input {...getInputProps()} />
+              {workspace === 'editor' ? (
+                <DiagramEditor
+                  key={controller.id}
+                  controller={controller}
+                  editor={controller.app}
+                />
+              ) : (
+                <Simulator initialSmId={initialSimulationSmId} />
+              )}
+            </div>
           </div>
-        </div>
+        )}
 
         <div className="fixed right-0 top-[25px] z-[90] h-[calc(100vh-25px)]">
           <Documentation onWidthChange={setDocWidth} width={docWidth} />

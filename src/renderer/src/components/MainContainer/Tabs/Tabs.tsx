@@ -56,7 +56,7 @@ export const Tabs: React.FC = () => {
             isActive={activeTab === tab.name}
             type={tab.type}
             onMouseDown={() => {
-              setActiveTab(modelController, tab.name);
+              setActiveTab(tab.name);
             }}
           />
         ))}

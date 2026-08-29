@@ -155,6 +155,9 @@ export const initSettingsHandlers = (webContents: WebContents) => {
   ipcMain.handle('settings:get', (_event, key) => {
     return settings.get(key);
   });
+  ipcMain.handle('settings:getDefault', (_event, key: SettingsKey) => {
+    return structuredClone(defaultSettings[key]);
+  });
   ipcMain.handle('settings:set', async (_event, key: SettingsKey, value) => {
     await settingsChange(webContents, key, value);
   });

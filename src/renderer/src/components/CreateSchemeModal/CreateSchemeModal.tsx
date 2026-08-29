@@ -80,21 +80,12 @@ export const CreateSchemeModal: React.FC<CreateSchemeModalProps> = ({
   return (
     <Modal
       {...props}
-      className="top-[18px] box-border flex h-[562px] max-h-[calc(100vh-36px)] w-[calc(100%-40px)] max-w-[667px] flex-col bg-bg-modal p-6"
-      headerClassName="mb-[23px] min-h-[39px] pb-3"
-      titleClassName="text-xs font-normal"
-      closeClassName="p-2"
-      closeIconClassName="h-2.5 w-2.5"
-      formClassName="flex min-h-0 flex-1 flex-col"
-      contentClassName="min-h-0 flex-1"
-      actionsClassName="mt-auto"
-      submitClassName="btn-primary h-8 min-w-[88px] px-3 py-2"
       hideCancelButton
       onRequestClose={handleCLose}
       onSubmit={handleSubmit}
       submitDisabled={submitDisabled}
       title="Создание документа"
-      submitLabel="Сохранить"
+      submitLabel={tabValue === 1 ? 'Открыть' : 'Сохранить'}
     >
       <Tabs
         className="mb-3"

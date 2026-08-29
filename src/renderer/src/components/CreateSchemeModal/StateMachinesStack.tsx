@@ -3,6 +3,7 @@ import { useLayoutEffect, useRef } from 'react';
 import { twMerge } from 'tailwind-merge';
 
 import { ReactComponent as DeleteIcon } from '@renderer/assets/icons/delete.svg';
+import { ScrollArea } from '@renderer/components/UI';
 import { Platform } from '@renderer/types/platform';
 export type StateMachinesStackItem = {
   id: string;
@@ -36,8 +37,9 @@ export const StateMachinesStack: React.FC<StateMachinesStackProps> = ({
   };
 
   return (
-    <div
-      className="h-full w-full overflow-y-auto scroll-auto p-[7px] scrollbar-thin scrollbar-track-transparent scrollbar-thumb-scrollbar-thumb"
+    <ScrollArea
+      className="h-full w-full"
+      viewportClassName="scroll-auto px-[7px] scrollbar-thumb-scrollbar-thumb"
       ref={containerRef}
     >
       {selectedStateMachines.map((sm, index) => {
@@ -63,11 +65,11 @@ export const StateMachinesStack: React.FC<StateMachinesStackProps> = ({
               className="ml-auto rounded p-1 opacity-0 transition-all group-hover:opacity-100 hover:bg-bg-active focus:opacity-100"
               onClick={(e) => handleOnDelte(e, index)}
             >
-              <DeleteIcon className="h-3 w-3" />
+              <DeleteIcon className="h-3 w-3 text-red-500" />
             </button>
           </div>
         );
       })}
-    </div>
+    </ScrollArea>
   );
 };
