@@ -630,7 +630,7 @@ export const Simulator: React.FC<SimulatorProps> = ({ initialSmId }) => {
       setLastRunXml(undefined);
       interpreter.clear();
     }
-    // initialSmId changes only when the singleton tab is explicitly reopened.
+    // initialSmId changes only when the Simulator workspace is opened for another machine.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialSmId]);
 

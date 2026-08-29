@@ -52,6 +52,7 @@ export type WindowManagerState = {
   windowAnimation: WindowAnimationType;
   addWindow: (window: Window) => void;
   removeWindow: (id: string) => void;
+  closeAllWindows: () => void;
   updateWindow: (id: string, updates: Partial<Window>) => void;
   setActiveWindow: (id: string) => void;
   bringToFront: (id: string) => void;
@@ -128,6 +129,16 @@ export const useWindowManagerStore = create<WindowManagerState>((set) => ({
         previousWindowId: newPreviousWindowId,
         windowHistory: newHistory,
       };
+    }),
+
+  closeAllWindows: () =>
+    set({
+      windows: [],
+      activeWindowId: null,
+      previousWindowId: null,
+      windowHistory: [],
+      selectedWindowIndex: 0,
+      isSplitterVisible: false,
     }),
 
   updateWindow: (id, updates) =>

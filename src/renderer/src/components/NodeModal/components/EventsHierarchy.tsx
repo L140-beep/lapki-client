@@ -18,7 +18,6 @@ interface EventsHierarchyProps {
   platform: PlatformManager;
   events: EventData[];
   components: { [id: string]: Component };
-  visual: boolean;
   selectedEventIndex: number | undefined;
   selectedActionIndex: number | null;
   onSelectEvent: (eventIndex: number) => void;
@@ -34,7 +33,6 @@ export const EventsHierarchy: React.FC<EventsHierarchyProps> = ({
   platform,
   events,
   components,
-  visual: _visual,
   selectedEventIndex,
   selectedActionIndex,
   onSelectEvent,
