@@ -5,6 +5,8 @@ import {
   INTERPRETER_PROTOCOL_VERSION,
   InterpreterEnvelope,
   RunStartPayload,
+  TaskStartPayload,
+  TestStartPayload,
 } from '@renderer/types/InterpreterTypes';
 
 import { ClientStatus } from './Websocket/ClientStatus';
@@ -13,6 +15,7 @@ import { ClientWS } from './Websocket/ClientWS';
 export class InterpreterClient extends ClientWS {
   static ready = false;
   static activeRunId: string | undefined;
+  static activeKind: 'run' | 'test' | 'submission' | undefined;
 
   static async connect(host: string, port: number, autoReconnect = true) {
     this.ready = false;
@@ -31,12 +34,14 @@ export class InterpreterClient extends ClientWS {
   static closeHandler(host: string, port: number, event: Websocket.CloseEvent): void {
     this.ready = false;
     this.activeRunId = undefined;
+    this.activeKind = undefined;
     super.closeHandler(host, port, event);
   }
 
   static errorHandler(error: unknown): void {
     this.ready = false;
     this.activeRunId = undefined;
+    this.activeKind = undefined;
     super.errorHandler(error);
   }
 
@@ -54,9 +59,13 @@ export class InterpreterClient extends ClientWS {
         (envelope.type === 'run.completed' ||
           envelope.type === 'run.cancelled' ||
           envelope.type === 'run.failed' ||
+          envelope.type === 'test.completed' ||
+          envelope.type === 'test.cancelled' ||
+          envelope.type === 'submission.completed' ||
           envelope.type === 'error')
       ) {
         this.activeRunId = undefined;
+        this.activeKind = undefined;
       }
       this.emitMessage(envelope);
     } catch (error) {
@@ -65,7 +74,7 @@ export class InterpreterClient extends ClientWS {
   }
 
   static start(payload: RunStartPayload): string | undefined {
-    if (!this.ready) return;
+    if (!this.ready || this.activeRunId) return;
     const runId = nanoid();
     const envelope: InterpreterEnvelope<RunStartPayload> = {
       protocolVersion: INTERPRETER_PROTOCOL_VERSION,
@@ -76,10 +85,42 @@ export class InterpreterClient extends ClientWS {
     };
     if (!this.sendJson(envelope)) return;
     this.activeRunId = runId;
+    this.activeKind = 'run';
     return runId;
   }
 
+  private static startTaskOperation(
+    type: 'test.start' | 'submission.start',
+    payload: TestStartPayload | TaskStartPayload
+  ): string | undefined {
+    if (!this.ready || this.activeRunId) return;
+    const runId = nanoid();
+    if (
+      !this.sendJson({
+        protocolVersion: INTERPRETER_PROTOCOL_VERSION,
+        type,
+        requestId: nanoid(),
+        runId,
+        payload,
+      } satisfies InterpreterEnvelope<TestStartPayload | TaskStartPayload>)
+    ) {
+      return;
+    }
+    this.activeRunId = runId;
+    this.activeKind = type === 'test.start' ? 'test' : 'submission';
+    return runId;
+  }
+
+  static startTest(payload: TestStartPayload): string | undefined {
+    return this.startTaskOperation('test.start', payload);
+  }
+
+  static startSubmission(payload: TaskStartPayload): string | undefined {
+    return this.startTaskOperation('submission.start', payload);
+  }
+
   static cancel(runId: string): boolean {
+    if (this.activeKind === 'submission') return false;
     return this.sendJson({
       protocolVersion: INTERPRETER_PROTOCOL_VERSION,
       type: 'run.cancel',

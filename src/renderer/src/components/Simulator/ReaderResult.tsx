@@ -87,7 +87,7 @@ export const ReaderResult: React.FC<{
 
       <div className="grid gap-3 xl:grid-cols-2">
         <SignalSequence title="Системные события" signals={signals} />
-        <SignalSequence title="Вызванные сигналы" signals={calledSignals} />
+        <SignalSequence title="Выходные импульсы" signals={calledSignals} />
       </div>
     </div>
   );

@@ -4,6 +4,7 @@ import { twMerge } from 'tailwind-merge';
 
 import { exportStateMachineCGML } from '@renderer/lib/data/GraphmlBuilder';
 import { useModelContext } from '@renderer/store/ModelContext';
+import { getActiveTask, useTasks } from '@renderer/store/useTasks';
 import { StateMachine } from '@renderer/types/diagram';
 import {
   GardenerParameters,
@@ -30,6 +31,8 @@ import {
   isSimulationResultStale,
   selectInitialMachineId,
 } from './selection';
+import { TaskMode } from './TaskMode';
+import { taskForProtocol } from './taskProtocol';
 import { useInterpreter } from './useInterpreter';
 
 interface SimulatorProps {
@@ -596,13 +599,23 @@ const ReaderSimulator: React.FC<RuntimeProps> = ({
 export const Simulator: React.FC<SimulatorProps> = ({ initialSmId }) => {
   const modelController = useModelContext();
   const interpreter = useInterpreter();
+  const [activeTask, solutionMachineId, selectSolution] = useTasks((state) => [
+    getActiveTask(state),
+    state.solutionMachineId,
+    state.selectSolution,
+  ]);
   const stateMachines = modelController.model.useData('', 'elements.stateMachinesId') as {
     [id: string]: StateMachine;
   };
-  const options = getSimulationMachineOptions(stateMachines);
+  const allOptions = getSimulationMachineOptions(stateMachines);
+  const options = activeTask
+    ? allOptions.filter(
+        ({ machine: optionMachine }) => optionMachine.platform === activeTask.platformId
+      )
+    : allOptions;
   const optionIds = JSON.stringify(options.map(({ id }) => id));
   const [selectedSmId, setSelectedSmId] = useState(() =>
-    selectInitialMachineId(options, initialSmId)
+    selectInitialMachineId(options, solutionMachineId ?? initialSmId)
   );
   const [lastRunXml, setLastRunXml] = useState<string>();
   const subscriptionSmId = selectedSmId ?? '';
@@ -624,6 +637,11 @@ export const Simulator: React.FC<SimulatorProps> = ({ initialSmId }) => {
     lastRunXml,
     currentXml
   );
+
+  useEffect(() => {
+    if (!activeTask) return;
+    selectSolution(selectedSmId, currentXml);
+  }, [activeTask, currentXml, selectSolution, selectedSmId]);
 
   useEffect(() => {
     if (!initialSmId || interpreter.active) return;
@@ -650,6 +668,10 @@ export const Simulator: React.FC<SimulatorProps> = ({ initialSmId }) => {
     setSelectedSmId(smId);
     setLastRunXml(undefined);
     interpreter.clear();
+    if (activeTask) {
+      const xml = exportStateMachineCGML(modelController.model.data.elements, smId);
+      selectSolution(smId, xml);
+    }
   };
 
   const start = (mode: SimulationMode, timeout: number, parameters: SimulationParameters) => {
@@ -661,6 +683,32 @@ export const Simulator: React.FC<SimulatorProps> = ({ initialSmId }) => {
       mode,
       ...(mode === 'finite' ? { timeoutSeconds: timeout } : {}),
       parameters,
+    });
+  };
+
+  const runTaskTest = (testId: string) => {
+    if (!activeTask || !selectedSmId || !currentXml) return;
+    interpreter.startTest({
+      xml: currentXml,
+      machineId: selectedSmId,
+      task: taskForProtocol(activeTask),
+      testId,
+    });
+  };
+
+  const submitTask = () => {
+    if (!activeTask || !selectedSmId || !currentXml) return;
+    if (
+      !window.confirm(
+        'Будут последовательно запущены все тесты. Проверку нельзя отменить, закрыть Simulator или изменить диаграмму до завершения. Продолжить?'
+      )
+    ) {
+      return;
+    }
+    interpreter.startSubmission({
+      xml: currentXml,
+      machineId: selectedSmId,
+      task: taskForProtocol(activeTask),
     });
   };
 
@@ -676,10 +724,25 @@ export const Simulator: React.FC<SimulatorProps> = ({ initialSmId }) => {
       />
       {!machine && (
         <div className="p-6 text-text-inactive">
-          В текущем документе нет машин с поддержкой симуляции.
+          {activeTask
+            ? `В текущем документе нет машины для платформы ${activeTask.platformId}. Откройте или создайте совместимый документ.`
+            : 'В текущем документе нет машин с поддержкой симуляции.'}
         </div>
       )}
-      {machine?.platform === 'junior-gardener' && (
+      {activeTask && (
+        <TaskMode
+          task={activeTask}
+          ready={interpreter.ready}
+          active={interpreter.active}
+          operationKind={interpreter.operationKind}
+          error={interpreter.error}
+          hasSolution={machine !== undefined}
+          onRunTest={runTaskTest}
+          onCancel={interpreter.cancel}
+          onSubmit={submitTask}
+        />
+      )}
+      {!activeTask && machine?.platform === 'junior-gardener' && (
         <GardenerSimulator
           {...interpreter}
           stale={resultStale}
@@ -687,7 +750,7 @@ export const Simulator: React.FC<SimulatorProps> = ({ initialSmId }) => {
           onCancel={interpreter.cancel}
         />
       )}
-      {machine?.platform === 'junior-reader' && (
+      {!activeTask && machine?.platform === 'junior-reader' && (
         <ReaderSimulator
           {...interpreter}
           stale={resultStale}

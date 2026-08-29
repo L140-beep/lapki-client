@@ -1,5 +1,7 @@
 import React, { Dispatch, useEffect, useRef, useState } from 'react';
 
+import { toast } from 'sonner';
+
 import { useSettings } from '@renderer/hooks';
 import { useFileMenu } from '@renderer/hooks/useFileMenu';
 import { useFlasherHooks } from '@renderer/hooks/useFlasherHooks';
@@ -7,6 +9,8 @@ import { useModal } from '@renderer/hooks/useModal';
 import { useWindowManagerStore } from '@renderer/hooks/useWindowManagerStore';
 import { useDoc } from '@renderer/store/useDoc';
 import { useManagerMS } from '@renderer/store/useManagerMS';
+import { useSimulatorWindow } from '@renderer/store/useSimulatorWindow';
+import { useTasks } from '@renderer/store/useTasks';
 import { CompilerResult } from '@renderer/types/CompilerTypes';
 
 import {
@@ -65,7 +69,12 @@ export const Header: React.FC<HeaderProps> = ({
   const [isResetSettingsOpen, openResetSettings, closeResetSettings] = useModal(false);
   const [isAutosaveOpen, openAutosaveSettings, closeAutosaveSettings] = useModal(false);
   const [isDocModalOpen, openDocModal, closeDocModal] = useModal(false);
-  const [isSimulatorOpen, openSimulator, closeSimulator] = useModal(false);
+  const [isSimulatorOpen, openSimulator, closeSimulator] = useSimulatorWindow((state) => [
+    state.isOpen,
+    state.open,
+    state.close,
+  ]);
+  const submissionActive = useTasks((state) => state.submissionActive);
   const [setActiveWindow, bringToFront, removeWindow] = useWindowManagerStore((state) => [
     state.setActiveWindow,
     state.bringToFront,
@@ -79,9 +88,11 @@ export const Header: React.FC<HeaderProps> = ({
   const [compilerData, setCompilerData] = useState<CompilerResult | undefined>(undefined);
   const [compilerStatus, setCompilerStatus] = useState('Не подключен.');
   const { setCompilerData: setCompilerDataMS } = useManagerMS();
-  const [onDocumentationToggle, isDocOpen] = useDoc((state) => [
+  const [openDocumentation, openTasks, isDocOpen, activeDocView] = useDoc((state) => [
     state.onDocumentationToggle,
+    state.openTasks,
     state.isOpen,
+    state.activeView,
   ]);
   const { items: fileMenuItems, modals: fileMenuModals } = useFileMenu({
     onRequestNewFile,
@@ -98,6 +109,12 @@ export const Header: React.FC<HeaderProps> = ({
   useEffect(() => {
     setCompilerDataMS(compilerData);
   }, [compilerData, setCompilerDataMS]);
+
+  useEffect(() => {
+    if (!isSimulatorOpen) return;
+    setActiveWindow('simulator');
+    bringToFront('simulator');
+  }, [bringToFront, isSimulatorOpen, setActiveWindow]);
 
   useEffect(() => {
     const handlePointerDown = (event: MouseEvent) => {
@@ -142,6 +159,10 @@ export const Header: React.FC<HeaderProps> = ({
   };
 
   const closeSimulatorWindow = () => {
+    if (submissionActive) {
+      toast.warning('Дождитесь завершения проверки решения');
+      return;
+    }
     closeSimulator();
     removeWindow('simulator');
   };
@@ -202,11 +223,24 @@ export const Header: React.FC<HeaderProps> = ({
 
         <button
           type="button"
-          className={`${menuButtonClass} ${isDocOpen ? 'bg-bg-hover' : ''}`}
-          aria-pressed={isDocOpen}
-          onClick={onDocumentationToggle}
+          className={`${menuButtonClass} ${
+            isDocOpen && activeDocView === 'documentation' ? 'bg-bg-hover' : ''
+          }`}
+          aria-pressed={isDocOpen && activeDocView === 'documentation'}
+          onClick={openDocumentation}
         >
           Документация
+        </button>
+
+        <button
+          type="button"
+          className={`${menuButtonClass} ${
+            isDocOpen && activeDocView === 'tasks' ? 'bg-bg-hover' : ''
+          }`}
+          aria-pressed={isDocOpen && activeDocView === 'tasks'}
+          onClick={openTasks}
+        >
+          Задачник
         </button>
 
         <button
@@ -223,6 +257,7 @@ export const Header: React.FC<HeaderProps> = ({
             type="button"
             className={menuButtonClass}
             aria-expanded={openMenu === 'history'}
+            disabled={submissionActive}
             onClick={() => toggleMenu('history')}
           >
             История изменений
