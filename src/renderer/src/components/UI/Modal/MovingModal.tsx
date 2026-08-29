@@ -9,7 +9,7 @@ import { Window } from './MovingWindow';
 
 interface ModalProps extends Omit<Props, 'className' | 'overlayClassName'> {
   id: string;
-  title: string;
+  title: React.ReactNode;
   cancelLabel?: string;
   submitLabel?: string;
   extraLabel?: string;
@@ -83,7 +83,9 @@ export const MovingModal: React.FC<ModalProps> = ({
         <div className="flex items-center justify-end gap-2 pt-3">
           <button
             type="button"
-            className={sideClassName ?? 'btn-secondary border border-primary text-primary font-medium'}
+            className={
+              sideClassName ?? 'btn-secondary border border-primary font-medium text-primary'
+            }
             onClick={onSide}
             hidden={!sideLabel}
           >

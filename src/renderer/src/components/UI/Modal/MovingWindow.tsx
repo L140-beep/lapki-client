@@ -5,9 +5,10 @@ import { twMerge } from 'tailwind-merge';
 
 import { useWindowManagerStore } from '../../../hooks/useWindowManagerStore';
 
-// The sidebar occupies Tailwind's z-50 layer, so moving modals must be above it.
-const INACTIVE_WINDOW_Z_INDEX = 51;
-const ACTIVE_WINDOW_Z_INDEX = 52;
+// Windows must stay above the header, sidebars and their popovers. Regular
+// modals use z-300 so dialogs opened from a moving window remain on top.
+const INACTIVE_WINDOW_Z_INDEX = 200;
+const ACTIVE_WINDOW_Z_INDEX = 201;
 
 /**
  * Props for the Window component

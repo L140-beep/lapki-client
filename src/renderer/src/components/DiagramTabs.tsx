@@ -6,7 +6,10 @@ import { ReactComponent as SerialMonitorIcon } from '@renderer/assets/icons/seri
 import { ReactComponent as EditorIcon } from '@renderer/assets/icons/state_machine.svg';
 import { CompilerTab } from '@renderer/components/Sidebar/Compiler';
 import { FlasherTab } from '@renderer/components/Sidebar/Flasher/Flasher';
-import { SerialMonitorTab } from '@renderer/components/Sidebar/Flasher/SerialMonitor';
+import {
+  SerialMonitorStatus,
+  SerialMonitorTab,
+} from '@renderer/components/Sidebar/Flasher/SerialMonitor';
 import { MovingModal } from '@renderer/components/UI/Modal/MovingModal';
 import { WithHint } from '@renderer/components/UI/WithHint';
 import { useManagerMS } from '@renderer/store/useManagerMS';
@@ -17,21 +20,30 @@ const tabs = {
     title: 'Редактор',
     Icon: <EditorIcon className="h-6 w-6 [&_*]:stroke-current" />,
     className: '',
+    modalTitle: undefined,
   },
   compiler: {
     title: 'Компилятор',
     Icon: <CompilerIcon className="h-6 w-6 [&_*]:stroke-current" />,
     className: 'h-[620px] w-[400px]',
+    modalTitle: undefined,
   },
   flasher: {
     title: 'Загрузчик',
     Icon: <FlasherIcon className="h-6 w-6 [&_*]:stroke-current" />,
     className: 'h-[680px] w-[900px]',
+    modalTitle: undefined,
   },
   serialMonitor: {
     title: 'Монитор порта',
+    modalTitle: (
+      <div className="flex items-center gap-12">
+        <span>Монитор порта</span>
+        <SerialMonitorStatus />
+      </div>
+    ),
     Icon: <SerialMonitorIcon className="h-6 w-6 [&_*]:stroke-current" />,
-    className: 'h-[620px] w-[900px]',
+    className: 'h-[740px] max-h-[calc(100vh-24px)] w-[1074px] max-w-[calc(100vw-24px)]',
   },
 };
 
@@ -63,7 +75,7 @@ export const DiagramTabs = () => {
       case 'flasher':
         return <FlasherTab />;
       case 'serialMonitor':
-        return <SerialMonitorTab isTabOpen />;
+        return <SerialMonitorTab isTabOpen showStatus={false} />;
       default:
         return null;
     }
@@ -99,7 +111,7 @@ export const DiagramTabs = () => {
         <MovingModal
           key={activeTab}
           id={activeTab}
-          title={tab.title}
+          title={tab.modalTitle ?? tab.title}
           isOpen
           onRequestClose={() => setActiveTab('editor')}
           hideCancelButton

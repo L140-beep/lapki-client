@@ -79,7 +79,7 @@ export const Modal: React.FC<ModalProps> = ({
         className
       )}
       overlayClassName={twMerge(
-        'bg-[rgba(0,0,0,0.6)] fixed inset-0 backdrop-blur z-50',
+        'fixed inset-0 z-[300] bg-[rgba(0,0,0,0.6)] backdrop-blur',
         overlayClassName
       )}
       closeTimeoutMS={100}
@@ -91,7 +91,11 @@ export const Modal: React.FC<ModalProps> = ({
         )}
       >
         <h1 className={twMerge('text-[12px] font-medium', titleClassName)}>{title}</h1>
-        <CloseButton onClick={props.onRequestClose} />
+        <CloseButton
+          className={closeClassName}
+          iconClassName={closeIconClassName}
+          onClick={props.onRequestClose}
+        />
       </div>
 
       <form className={formClassName} onSubmit={onSubmit}>
