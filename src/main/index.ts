@@ -141,14 +141,17 @@ const startModules = async () => {
 };
 
 initSettings();
-startModules();
 
 // Выполняется после инициализации Electron
-app.whenReady().then(() => {
+app.whenReady().then(async () => {
   if (!app.isPackaged) {
     installDevToolsExtension('react-dev-tools');
   }
   ipcMain.handle('appVersion', app.getVersion);
+
+  // Start modules before the renderer reads their dynamically assigned ports.
+  // Initial startup has no WebContents to notify about settings changes yet.
+  await startModules();
 
   const mainWindow = createWindow();
   initFileHandlersIPC();

@@ -36,6 +36,21 @@ describe('InterpreterClient', () => {
     expect(InterpreterClient.makeAddress('127.0.0.1', 49152)).toBe('ws://127.0.0.1:49152/ws');
   });
 
+  it('keeps readiness when reconnecting to the active websocket', async () => {
+    InterpreterClient.host = '127.0.0.1';
+    InterpreterClient.port = 49152;
+    InterpreterClient.connection = {
+      readyState: Websocket.OPEN,
+      OPEN: Websocket.OPEN,
+      CONNECTING: Websocket.CONNECTING,
+    } as unknown as Websocket;
+    InterpreterClient.ready = true;
+
+    await InterpreterClient.connect('127.0.0.1', 49152);
+
+    expect(InterpreterClient.ready).toBe(true);
+  });
+
   it('sends a correlated versioned start request only after readiness', () => {
     const send = vi.fn();
     InterpreterClient.connection = {

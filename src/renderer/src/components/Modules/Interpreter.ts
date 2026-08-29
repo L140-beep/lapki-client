@@ -18,7 +18,12 @@ export class InterpreterClient extends ClientWS {
   static activeKind: 'run' | 'test' | 'submission' | undefined;
 
   static async connect(host: string, port: number, autoReconnect = true) {
-    this.ready = false;
+    const hasActiveConnection =
+      this.isEqualAdress(host, port) &&
+      this.connection !== undefined &&
+      (this.connection.readyState === Websocket.OPEN ||
+        this.connection.readyState === Websocket.CONNECTING);
+    if (!hasActiveConnection) this.ready = false;
     return super.connect(host, port, autoReconnect);
   }
 
