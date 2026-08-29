@@ -2,6 +2,46 @@
 
 ## Glossary
 
+### Task catalog
+
+The collection of programming tasks available to the user. A task becomes discoverable when its task definition is added to the catalog; it does not require registration elsewhere.
+
+### Programming task
+
+A named assignment for one target platform, explained by a short summary and a full description and assessed by its verification tests.
+
+### Verification test
+
+One independently runnable example that supplies immutable platform input and determines whether a state-machine solution satisfies part of a programming task. The user can inspect but cannot edit its input and cannot inspect its expected outcome. Every test has a finite execution limit. The State Machine Interpreter, rather than the client, determines its verdict.
+
+For a Gardener task, a test can assess the final field and final position. For a Reader task, it assesses the ordered signal sequence.
+
+Every test has one or more typed checks, all of which must pass. Gardener checks compare the final field or position; a Reader check compares the exact ordered output-impulse sequence.
+
+### Output impulse
+
+An observable answer emitted by a Reader solution through its Impulse component. Output impulses are distinct from internal state-machine events and UserSignal events. Ordinary Reader simulation and task verification expose only output impulses as called signals.
+
+### Target platform
+
+The platform required by a programming task and shared by all of its verification tests. Only state machines for that platform can be evaluated as solutions to the task.
+
+### Task-solving session
+
+The current association between one programming task and one compatible state-machine solution. Its test verdicts are separate from ordinary simulation results and become invalid when the selected solution changes. It remains current when its panels are closed and ends only when the user ends it, selects another task, or exits the application.
+
+### Test verdict
+
+The State Machine Interpreter's assessment of one verification test as passed or not passed. A timeout, crash, or execution error is a non-passing verdict.
+
+### Test run
+
+The cancellable execution of one verification test for feedback during a task-solving session. Its verdict and execution details do not replace the result of an ordinary simulation run and never contribute to solution submission. A task-solving session retains test verdicts but retains detailed outcome and execution history only for its most recent test run.
+
+### Solution submission
+
+The binary assessment of a task-solving session by rerunning every verification test and reporting both every test verdict and one aggregate accepted-or-not-accepted outcome. Earlier test-run verdicts are discarded and never contribute to this assessment. A failed test does not prevent the remaining tests from running. Submission results include final outcomes but not execution histories. Once confirmed and started, a submission cannot be cancelled, and its state-machine solution cannot be edited or replaced until the submission finishes. Programming tasks and submissions do not award scores.
+
 ### Active state machine
 
 The state machine associated with the currently active editor tab. Simulation always applies to this machine and includes its unsaved changes.
