@@ -274,7 +274,6 @@ export const Header: React.FC<HeaderProps> = ({
           id="simulator"
           title="Симулятор"
           isOpen
-          position={{ x: 32, y: 32 }}
           onRequestClose={closeSimulatorWindow}
           hideCancelButton
           className="h-[calc(100vh-64px)] w-[calc(100vw-64px)] p-3"

@@ -8,7 +8,6 @@ interface TabsState {
   activeTab: string | null;
   setActiveTab: (tabName: string) => void;
   openTab: (modelController: ModelController, tab: Tab) => void;
-  openOrReplaceTab: (modelController: ModelController, tab: Tab) => void;
   closeTab: (tabName: string, modelController: ModelController) => void;
   nextTab: (modelController: ModelController) => void;
   prevTab: (modelController: ModelController) => void;
