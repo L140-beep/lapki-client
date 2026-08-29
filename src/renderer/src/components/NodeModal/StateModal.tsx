@@ -32,7 +32,6 @@ export const StateModal: React.FC<StateModalProps> = ({ smId, controller }) => {
   const components = modelController.model.useData(smId, 'elements.components') as {
     [id: string]: Component;
   };
-  const visual = modelController.model.useData(smId, 'elements.visual') as boolean;
   modelController.model.useData(smId, 'elements.states');
   const platforms = controller.useData('platform') as { [id: string]: PlatformManager };
   const platform = platforms[smId];
@@ -311,7 +310,6 @@ export const StateModal: React.FC<StateModalProps> = ({ smId, controller }) => {
             platform={platform}
             events={state?.data.events ?? []}
             components={components}
-            visual={visual}
             selectedEventIndex={currentEventIndex}
             selectedActionIndex={selectedActionIndex}
             onSelectEvent={handleSelectEvent}

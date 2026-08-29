@@ -31,6 +31,8 @@ export interface HeaderCallbacks {
 interface HeaderProps {
   callbacks: HeaderCallbacks;
   openImportError: (error: string) => void;
+  simulatorOpen: boolean;
+  onSimulatorToggle: () => void;
 }
 
 type HeaderMenu = 'files' | 'settings' | 'history' | null;
@@ -44,6 +46,8 @@ export const Header: React.FC<HeaderProps> = ({
     onRequestImportFile,
   },
   openImportError,
+  simulatorOpen,
+  onSimulatorToggle,
 }) => {
   const rootRef = useRef<HTMLElement>(null);
   const [openMenu, setOpenMenu] = useState<HeaderMenu>(null);
@@ -163,6 +167,18 @@ export const Header: React.FC<HeaderProps> = ({
           onClick={onDocumentationToggle}
         >
           Документация
+        </button>
+
+        <button
+          type="button"
+          className={`${menuButtonClass} ${simulatorOpen ? 'bg-bg-hover' : ''}`}
+          aria-pressed={simulatorOpen}
+          onClick={() => {
+            setOpenMenu(null);
+            onSimulatorToggle();
+          }}
+        >
+          Симулятор
         </button>
 
         <div className="relative h-full">

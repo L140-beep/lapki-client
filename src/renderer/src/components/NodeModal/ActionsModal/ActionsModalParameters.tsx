@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
 
-import { ReactComponent as QuestionMark } from '@renderer/assets/icons/question-mark.svg';
 import { AttributeConstSwitch } from '@renderer/components/AttributeConstSwitch';
 import { ComponentFormFieldLabel } from '@renderer/components/ComponentFormFieldLabel';
-import { Select, SelectOption, WithHint } from '@renderer/components/UI';
+import { Select, SelectOption } from '@renderer/components/UI';
 import { CanvasController } from '@renderer/lib/data/ModelController/CanvasController';
 import { isVariable } from '@renderer/lib/utils';
 import { ArgList, Variable } from '@renderer/types/diagram';

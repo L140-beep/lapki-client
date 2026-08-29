@@ -16,12 +16,14 @@ import {
   Tooltip,
   DiagramEditor,
   Header,
+  Simulator,
 } from '@renderer/components';
 import { hideLoadingOverlay } from '@renderer/components/utils/OverlayControl';
 import { useErrorModal, useFileOperations, useSettings } from '@renderer/hooks';
 import { useAppTitle } from '@renderer/hooks/useAppTitle';
 import { useModal } from '@renderer/hooks/useModal';
 import { useRecentFilesHooks } from '@renderer/hooks/useRecentFilesHooks';
+import { useWindowManagerStore } from '@renderer/hooks/useWindowManagerStore';
 import {
   getPlatformsErrors,
   preloadPlatforms,
@@ -45,6 +47,11 @@ export const MainContainer: React.FC = () => {
   const isInitialized = modelController.model.useData('', 'isInitialized');
   const basename = modelController.model.useData('', 'basename');
   const [docWidth, setDocWidth] = useState<number>(0);
+  const [workspace, setWorkspace] = useState<'editor' | 'simulator'>('editor');
+  const closeAllWindows = useWindowManagerStore((state) => state.closeAllWindows);
+  const initialSimulationSmId = Object.keys(controller.stateMachinesSub).find(
+    (smId) => smId !== ''
+  );
 
   const { errorModalProps, openLoadError, openPlatformError, openSaveError, openImportError } =
     useErrorModal();
@@ -120,6 +127,16 @@ export const MainContainer: React.FC = () => {
     setIsTempSaveStored(false);
   };
 
+  const toggleSimulator = () => {
+    setWorkspace((current) => {
+      if (current === 'editor') {
+        closeAllWindows();
+        return 'simulator';
+      }
+      return 'editor';
+    });
+  };
+
   // автосохранение
   useEffect(() => {
     if (autoSaveSettings === null || isSaveModalOpen || !isInitialized) return;
@@ -152,7 +169,12 @@ export const MainContainer: React.FC = () => {
   return (
     <div className="h-screen select-none overflow-hidden">
       <div className="relative flex h-full w-full flex-col">
-        <Header callbacks={operations} openImportError={openImportError} />
+        <Header
+          callbacks={operations}
+          openImportError={openImportError}
+          simulatorOpen={workspace === 'simulator'}
+          onSimulatorToggle={toggleSimulator}
+        />
         <div className="grid min-h-0 w-full flex-1 grid-cols-[auto_1fr_auto]">
           <Sidebar />
 
@@ -165,22 +187,28 @@ export const MainContainer: React.FC = () => {
             {...getRootProps()}
           >
             <input {...getInputProps()} />
-            <DiagramEditor key={controller.id} controller={controller} editor={controller.app} />
+            {workspace === 'editor' ? (
+              <DiagramEditor key={controller.id} controller={controller} editor={controller.app} />
+            ) : (
+              <Simulator initialSmId={initialSimulationSmId} />
+            )}
           </div>
         </div>
 
         <div className="fixed right-0 top-[25px] z-[90] h-[calc(100vh-25px)]">
           <Documentation onWidthChange={setDocWidth} width={docWidth} />
         </div>
-        <div
-          className={twMerge(
-            'absolute top-[25px] h-[calc(100%_-_25px)]',
-            isMounted && 'top-[69.19px] h-[calc(100%_-_69.19px)]'
-          )}
-          style={{ right: `${docWidth}px` }}
-        >
-          <EditorSettings />
-        </div>
+        {workspace === 'editor' && (
+          <div
+            className={twMerge(
+              'absolute top-[25px] h-[calc(100%_-_25px)]',
+              isMounted && 'top-[69.19px] h-[calc(100%_-_69.19px)]'
+            )}
+            style={{ right: `${docWidth}px` }}
+          >
+            <EditorSettings />
+          </div>
+        )}
       </div>
 
       <div className="z-[100]">
@@ -201,7 +229,7 @@ export const MainContainer: React.FC = () => {
         />
       </div>
 
-      {isMounted && (
+      {isMounted && workspace === 'editor' && (
         <>
           <DiagramContextMenu /> <Tooltip controller={controller} />
         </>

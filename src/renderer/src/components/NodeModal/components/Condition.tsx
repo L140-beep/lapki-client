@@ -7,7 +7,6 @@ import { twMerge } from 'tailwind-merge';
 import { AttributeConstSwitch } from '@renderer/components/AttributeConstSwitch';
 import { Select, SubButton, TabPanel, Tabs, TextField } from '@renderer/components/UI';
 import { AddButton } from '@renderer/components/UI/AddButton';
-import { DeleteButton } from '@renderer/components/UI/DeleteButton';
 import { useModelContext } from '@renderer/store/ModelContext';
 
 import { useCondition } from '../hooks';

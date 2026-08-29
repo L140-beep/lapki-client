@@ -8,7 +8,6 @@ import { Compiler } from '@renderer/components/Modules/Compiler';
 import { importGraphml } from '@renderer/lib/data/GraphmlParser';
 import { useModelContext } from '@renderer/store/ModelContext';
 import { useFlasher } from '@renderer/store/useFlasher';
-import { useTabs } from '@renderer/store/useTabs';
 import { Elements } from '@renderer/types/diagram';
 import { isLeft, isRight, unwrapEither } from '@renderer/types/Either';
 
@@ -28,8 +27,6 @@ export const useFileOperations = (args: useFileOperationsArgs) => {
   const model = modelController.model;
   const name = modelController.model.useData('', 'name') as string | null;
   const isStale = modelController.model.useData('', 'isStale');
-  const [clearTabs] = useTabs((state) => [state.setActiveTab]);
-
   const [data, setData] = useState<SaveModalData | null>(null);
   const [isOpen, setIsOpen] = useState(false);
   const openSaveModal = () => setIsOpen(true);

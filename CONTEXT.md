@@ -24,7 +24,7 @@ The local presentation of a simulation result's execution history. Reviewing a G
 
 ### Simulator
 
-The single workspace view in which a user selects a supported state machine from the current document, configures it, controls it, and observes simulation runs. The view is always available, even when the current document has no supported state machines. Its state-machine selection cannot change during an active simulation run.
+The single primary workspace view in which a user selects a supported state machine from the current document, configures it, controls it, and observes simulation runs. It is opened from the application header and replaces the Diagram Editor workspace instead of opening as a tab or moving window. Opening it closes moving windows owned by the Diagram Editor. The view is always available, even when the current document has no supported state machines. Its state-machine selection cannot change during an active simulation run.
 
 ### Simulation configuration
 

@@ -4,7 +4,6 @@ import { twMerge } from 'tailwind-merge';
 
 import { ReactComponent as ActionIcon } from '@renderer/assets/icons/action.svg';
 import { ReactComponent as CollapseIcon } from '@renderer/assets/icons/collapse.svg';
-import { ReactComponent as DeleteIcon } from '@renderer/assets/icons/delete.svg';
 import { ReactComponent as EventIcon } from '@renderer/assets/icons/event.svg';
 import { WithHint } from '@renderer/components/UI';
 import { AddButton } from '@renderer/components/UI/AddButton';
@@ -19,7 +18,6 @@ interface EventsHierarchyProps {
   platform: PlatformManager;
   events: EventData[];
   components: { [id: string]: Component };
-  visual: boolean;
   selectedEventIndex: number | undefined;
   selectedActionIndex: number | null;
   onSelectEvent: (eventIndex: number) => void;
@@ -35,7 +33,6 @@ export const EventsHierarchy: React.FC<EventsHierarchyProps> = ({
   platform,
   events,
   components,
-  visual,
   selectedEventIndex,
   selectedActionIndex,
   onSelectEvent,

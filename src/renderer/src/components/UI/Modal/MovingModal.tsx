@@ -8,8 +8,6 @@ import { ReactComponent as Close } from '@renderer/assets/icons/close.svg';
 import './style.css';
 import { Window } from './MovingWindow';
 
-import { useWindowManagerStore } from '../../../hooks/useWindowManagerStore';
-
 interface ModalProps extends Omit<Props, 'className' | 'overlayClassName'> {
   id: string;
   title: string;
@@ -59,7 +57,6 @@ export const MovingModal: React.FC<ModalProps> = ({
   onCancel,
   ...props
 }) => {
-  const { removeWindow } = useWindowManagerStore();
   const handleCancel = (e: React.MouseEvent) => {
     // debugger;
     if (onCancel) return onCancel();
