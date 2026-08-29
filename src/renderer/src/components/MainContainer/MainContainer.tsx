@@ -55,6 +55,7 @@ export const MainContainer: React.FC = () => {
     operations,
     performNewFile,
     handleOpenFromTemplate,
+    initImportData,
     tempSaveOperations,
     loadGraphml,
   } = useFileOperations({
@@ -156,7 +157,7 @@ export const MainContainer: React.FC = () => {
       <div className="relative flex h-full w-full flex-col">
         <Header
           callbacks={operations}
-          openImportError={openImportError}
+          onCompilerImportData={initImportData}
           renderStartScreen={
             !isInitialized
               ? (fileMenu) => (

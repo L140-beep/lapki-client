@@ -1,11 +1,14 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
+import { twMerge } from 'tailwind-merge';
+
+import { ReactComponent as ConnectionStatus } from '@renderer/assets/icons/circle.svg';
 import { ReactComponent as CompilerIcon } from '@renderer/assets/icons/compiler.svg';
 import { ReactComponent as FlasherIcon } from '@renderer/assets/icons/flasher.svg';
 import { ReactComponent as SerialMonitorIcon } from '@renderer/assets/icons/serial_monitor.svg';
 import { ReactComponent as EditorIcon } from '@renderer/assets/icons/state_machine.svg';
 import { CompilerTab } from '@renderer/components/Sidebar/Compiler';
-import { FlasherTab } from '@renderer/components/Sidebar/Flasher/Flasher';
+import { FlasherStatus, FlasherTab } from '@renderer/components/Sidebar/Flasher/Flasher';
 import {
   SerialMonitorStatus,
   SerialMonitorTab,
@@ -13,7 +16,20 @@ import {
 import { MovingModal } from '@renderer/components/UI/Modal/MovingModal';
 import { WithHint } from '@renderer/components/UI/WithHint';
 import { useManagerMS } from '@renderer/store/useManagerMS';
-import { CompilerResult } from '@renderer/types/CompilerTypes';
+
+import { CompilerStatus } from './Modules/Websocket/ClientStatus';
+
+const humanizeCompilerResult = (status?: string): string => {
+  if (!status) return 'Нет данных';
+  switch (status) {
+    case 'OK':
+      return 'Готово';
+    case 'NOTOK':
+      return 'Проблема!';
+    default:
+      return status;
+  }
+};
 
 const tabs = {
   editor: {
@@ -25,14 +41,19 @@ const tabs = {
   compiler: {
     title: 'Компилятор',
     Icon: <CompilerIcon className="h-6 w-6 [&_*]:stroke-current" />,
-    className: 'h-[620px] w-[400px]',
+    className: 'h-[406px] max-h-[calc(100vh-24px)] w-[1074px] max-w-[calc(100vw-24px)]',
     modalTitle: undefined,
   },
   flasher: {
     title: 'Загрузчик',
     Icon: <FlasherIcon className="h-6 w-6 [&_*]:stroke-current" />,
-    className: 'h-[680px] w-[900px]',
-    modalTitle: undefined,
+    className: 'h-[644px] max-h-[calc(100vh-24px)] w-[1074px] max-w-[calc(100vw-24px)]',
+    modalTitle: (
+      <div className="flex items-center gap-12">
+        <span>Загрузчик</span>
+        <FlasherStatus />
+      </div>
+    ),
   },
   serialMonitor: {
     title: 'Монитор порта',
@@ -51,27 +72,12 @@ type TabName = keyof typeof tabs;
 
 export const DiagramTabs = () => {
   const [activeTab, setActiveTab] = useState<TabName>('editor');
-  const [compilerData, setCompilerData] = useState<CompilerResult>();
-  const [compilerStatus, setCompilerStatus] = useState('Не подключен.');
-  const { setCompilerData: setCompilerDataMS } = useManagerMS();
-
-  useEffect(() => {
-    setCompilerDataMS(compilerData);
-  }, [compilerData, setCompilerDataMS]);
+  const { compilerData, compilerStatus } = useManagerMS();
 
   const renderTab = () => {
     switch (activeTab) {
       case 'compiler':
-        return (
-          <CompilerTab
-            openData={undefined}
-            compilerData={compilerData}
-            setCompilerData={setCompilerData}
-            compilerStatus={compilerStatus}
-            setCompilerStatus={setCompilerStatus}
-            openImportError={() => undefined}
-          />
-        );
+        return <CompilerTab />;
       case 'flasher':
         return <FlasherTab />;
       case 'serialMonitor':
@@ -82,6 +88,34 @@ export const DiagramTabs = () => {
   };
 
   const tab = activeTab === 'editor' ? null : tabs[activeTab];
+  const modalTitle =
+    activeTab === 'compiler' ? (
+      <div className="flex items-center gap-2">
+        <span>Компилятор</span>
+        <ConnectionStatus
+          className={twMerge(
+            'ml-1 fill-text-inactive',
+            (compilerStatus === CompilerStatus.NO_CONNECTION ||
+              compilerStatus === CompilerStatus.CONNECTION_ERROR) &&
+              'fill-error',
+            compilerStatus === CompilerStatus.CONNECTED && 'fill-success'
+          )}
+          width="8px"
+          height="8px"
+        />
+        <span className="ml-10">Статус:</span>
+        <span
+          className={twMerge(
+            'font-normal text-primary',
+            compilerData?.result === 'NOTOK' && 'text-error'
+          )}
+        >
+          {humanizeCompilerResult(compilerData?.result)}
+        </span>
+      </div>
+    ) : (
+      tab?.modalTitle ?? tab?.title
+    );
 
   return (
     <>
@@ -111,7 +145,7 @@ export const DiagramTabs = () => {
         <MovingModal
           key={activeTab}
           id={activeTab}
-          title={tab.modalTitle ?? tab.title}
+          title={modalTitle}
           isOpen
           onRequestClose={() => setActiveTab('editor')}
           hideCancelButton

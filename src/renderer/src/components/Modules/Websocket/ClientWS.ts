@@ -46,11 +46,12 @@ export abstract class ClientWS {
     if (!this.isEqualAdress(host, port)) {
       this.initOrResetReconnectTimer(autoReconnect);
       // чтобы предовратить повторное соединение
-    } else if (
-      this.connection &&
-      (this.connection.readyState === this.connection.OPEN ||
-        this.connection.readyState === this.connection.CONNECTING)
-    ) {
+    } else if (this.connection?.readyState === Websocket.OPEN) {
+      this.onStatusChange(ClientStatus.CONNECTED);
+      this.setSecondsUntilReconnect(null);
+      return this.connection;
+    } else if (this.connection?.readyState === Websocket.CONNECTING) {
+      this.onStatusChange(ClientStatus.CONNECTING);
       return this.connection;
     }
     /*

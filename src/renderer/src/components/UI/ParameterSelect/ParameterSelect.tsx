@@ -41,13 +41,20 @@ type ParameterSelectProps<
 > = Omit<Props<ParameterSelectOption<Value>, false, Group>, 'isMulti'> & {
   error?: string;
   containerClassName?: string;
+  menuWidth?: string | number;
 };
 
 /** Compact select used for parameters with a fixed set of allowed values. */
 export function ParameterSelect<
   Value extends string | number,
   Group extends GroupBase<ParameterSelectOption<Value>> = GroupBase<ParameterSelectOption<Value>>
->({ error, containerClassName, className, ...props }: ParameterSelectProps<Value, Group>) {
+>({
+  error,
+  containerClassName,
+  className,
+  menuWidth = '75px',
+  ...props
+}: ParameterSelectProps<Value, Group>) {
   return (
     <div className={twMerge('w-full', containerClassName)}>
       <ReactSelect
@@ -59,7 +66,7 @@ export function ParameterSelect<
         menuPosition="fixed"
         styles={{
           menuPortal: (base) => ({ ...base, zIndex: 9999 }),
-          menu: (base) => ({ ...base, right: 0, left: 'auto', width: '75px' }),
+          menu: (base) => ({ ...base, right: 0, left: 'auto', width: menuWidth }),
           control: (base) => ({ ...base, minHeight: '32px', height: '32px' }),
         }}
         components={{ MenuList: ParameterMenuList }}
