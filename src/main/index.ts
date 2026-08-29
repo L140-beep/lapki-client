@@ -17,6 +17,7 @@ import {
   initSettingsHandlers,
   settingsChangeSend,
 } from './settings';
+import { loadTaskCatalog } from './tasks';
 import { getAllTemplates, getTemplate } from './templates';
 import { basePath, installDevToolsExtension } from './utils';
 
@@ -151,6 +152,9 @@ app.whenReady().then(() => {
 
   const mainWindow = createWindow();
   initFileHandlersIPC();
+  const taskCatalog = loadTaskCatalog();
+
+  ipcMain.handle('tasks:getCatalog', () => taskCatalog);
 
   ipcMain.handle('Module:reboot', async (_event, module: ModuleName) => {
     await ModuleManager.stopModule(module);
