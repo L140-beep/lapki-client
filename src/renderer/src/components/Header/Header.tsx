@@ -91,11 +91,11 @@ export const Header: React.FC<HeaderProps> = ({
     [boolean, string | null, string | null, string] | undefined
   >(undefined);
   const compilerStatus = useManagerMS((state) => state.compilerStatus);
-  const [openDocumentation, openTasks, isDocOpen, activeDocView] = useDoc((state) => [
+  const [openDocumentation, openTasks, isDocOpen, visibleDocViews] = useDoc((state) => [
     state.onDocumentationToggle,
-    state.openTasks,
+    state.onTasksToggle,
     state.isOpen,
-    state.activeView,
+    state.visibleViews,
   ]);
   const { items: fileMenuItems, modals: fileMenuModals } = useFileMenu({
     onRequestNewFile,
@@ -223,9 +223,9 @@ export const Header: React.FC<HeaderProps> = ({
         <button
           type="button"
           className={`${menuButtonClass} ${
-            isDocOpen && activeDocView === 'documentation' ? 'bg-bg-hover' : ''
+            isDocOpen && visibleDocViews.documentation ? 'bg-bg-hover' : ''
           }`}
-          aria-pressed={isDocOpen && activeDocView === 'documentation'}
+          aria-pressed={isDocOpen && visibleDocViews.documentation}
           onClick={openDocumentation}
         >
           Документация
@@ -234,9 +234,9 @@ export const Header: React.FC<HeaderProps> = ({
         <button
           type="button"
           className={`${menuButtonClass} ${
-            isDocOpen && activeDocView === 'tasks' ? 'bg-bg-hover' : ''
+            isDocOpen && visibleDocViews.tasks ? 'bg-bg-hover' : ''
           }`}
-          aria-pressed={isDocOpen && activeDocView === 'tasks'}
+          aria-pressed={isDocOpen && visibleDocViews.tasks}
           onClick={openTasks}
         >
           Задачник

@@ -1,27 +1,35 @@
 import { create } from 'zustand';
 
+export type RightSidebarView = 'documentation' | 'tasks';
+
 interface DocState {
   isOpen: boolean;
-  activeView: 'documentation' | 'tasks';
+  visibleViews: Record<RightSidebarView, boolean>;
+  mountedViews: Record<RightSidebarView, boolean>;
   onDocumentationToggle: () => void;
-  openDocumentation: () => void;
-  openTasks: () => void;
-  setActiveView: (view: 'documentation' | 'tasks') => void;
+  onTasksToggle: () => void;
+  closeView: (view: RightSidebarView) => void;
   toggleOpen: () => void;
-  close: () => void;
 }
+
+const toggleView =
+  (view: RightSidebarView) =>
+  (state: DocState): Partial<DocState> => {
+    const shouldShow = !state.isOpen || !state.visibleViews[view];
+
+    return {
+      isOpen: true,
+      visibleViews: { ...state.visibleViews, [view]: shouldShow },
+      mountedViews: { ...state.mountedViews, [view]: true },
+    };
+  };
 
 export const useDoc = create<DocState>((set) => ({
   isOpen: false,
-  activeView: 'documentation',
-  onDocumentationToggle: () =>
-    set(({ isOpen, activeView }) => ({
-      isOpen: activeView === 'documentation' ? !isOpen : true,
-      activeView: 'documentation',
-    })),
-  openDocumentation: () => set({ isOpen: true, activeView: 'documentation' }),
-  openTasks: () => set({ isOpen: true, activeView: 'tasks' }),
-  setActiveView: (activeView) => set({ activeView, isOpen: true }),
+  visibleViews: { documentation: false, tasks: false },
+  mountedViews: { documentation: false, tasks: false },
+  onDocumentationToggle: () => set(toggleView('documentation')),
+  onTasksToggle: () => set(toggleView('tasks')),
+  closeView: (view) => set((state) => ({ visibleViews: { ...state.visibleViews, [view]: false } })),
   toggleOpen: () => set(({ isOpen }) => ({ isOpen: !isOpen })),
-  close: () => set({ isOpen: false }),
 }));

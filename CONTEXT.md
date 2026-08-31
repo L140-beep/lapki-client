@@ -2,6 +2,18 @@
 
 ## Glossary
 
+### Right sidebar
+
+The auxiliary workspace on the right side of the application. It can show the Documentation section, the Taskbook section, or both independently. Collapsing the sidebar hides its workspace without closing either section.
+
+### Documentation section
+
+The Right sidebar section for browsing component reference material and project documentation.
+
+### Taskbook section
+
+The Right sidebar section for discovering and reading programming tasks. Closing this section does not end the current Task-solving session.
+
 ### Task catalog
 
 The collection of programming tasks available to the user. A task becomes discoverable when its task definition is added to the catalog; it does not require registration elsewhere.
