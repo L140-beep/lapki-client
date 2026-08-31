@@ -269,19 +269,17 @@ export const Header: React.FC<HeaderProps> = ({
 
       {renderStartScreen?.(fileMenu('start-screen'))}
 
-      {isSimulatorOpen && (
-        <MovingModal
-          id="simulator"
-          title="Симулятор"
-          isOpen
-          position={{ x: 32, y: 32 }}
-          onRequestClose={closeSimulatorWindow}
-          hideCancelButton
-          className="h-[calc(100vh-64px)] w-[calc(100vw-64px)] p-3"
-        >
-          <Simulator initialSmId={initialSimulationSmId} />
-        </MovingModal>
-      )}
+      <MovingModal
+        id="simulator"
+        title="Симулятор"
+        isOpen={isSimulatorOpen}
+        position={{ x: 32, y: 32 }}
+        onRequestClose={closeSimulatorWindow}
+        hideCancelButton
+        className="h-[calc(100vh-64px)] w-[calc(100vw-64px)] p-3"
+      >
+        <Simulator initialSmId={initialSimulationSmId} />
+      </MovingModal>
 
       {fileMenuModals}
 
