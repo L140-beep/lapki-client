@@ -40,6 +40,7 @@ export default {
           '--b-c': '#f8f9fa',
           '--b-p': '#666666',
           '--b-w': '#E4A11B',
+          '--b-i': '#DEDEDE',
 
           '--t-p': '#f2f2f2',
           '--t-s': '#fff',
@@ -85,6 +86,7 @@ export default {
           '--b-c': '#343a40',
           '--b-p': '#DEDEDE',
           '--b-w': '#E4A11B',
+          '--b-i': '#DEDEDE',
 
           '--t-p': '#000',
           '--t-s': '#fff',
