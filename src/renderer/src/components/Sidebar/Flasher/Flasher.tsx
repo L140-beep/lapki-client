@@ -962,7 +962,7 @@ export const FlasherTab: React.FC = () => {
           />
           <button
             type="button"
-            className="text-error transition-opacity enabled:hover:opacity-70 disabled:opacity-30"
+            className="danger transition-opacity enabled:hover:opacity-70 disabled:opacity-30"
             disabled={selectedDevicesCount === 0}
             aria-label="Удалить выбранные устройства"
             onClick={handleRemoveDevs}

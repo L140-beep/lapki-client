@@ -65,7 +65,7 @@ export const StateMachinesStack: React.FC<StateMachinesStackProps> = ({
               className="ml-auto rounded p-1 opacity-0 transition-all group-hover:opacity-100 hover:bg-bg-active focus:opacity-100"
               onClick={(e) => handleOnDelte(e, index)}
             >
-              <DeleteIcon className="h-3 w-3 text-red-500" />
+              <DeleteIcon className="danger h-3 w-3" />
             </button>
           </div>
         );

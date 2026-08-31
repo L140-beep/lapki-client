@@ -75,6 +75,7 @@ const ParameterMenuList = <
       {...otherInnerProps}
       ref={innerRef}
       className="ParameterSelect__menu-list"
+      viewportClassName="mr-0"
       style={{ ...style, maxHeight }}
     >
       {children}

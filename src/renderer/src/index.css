@@ -74,6 +74,10 @@
     @apply btn border-[#7a7a7a] bg-[#7a7a7a] text-text-secondary enabled:hover:opacity-90 enabled:active:opacity-80;
   }
 
+  .danger {
+    @apply text-red-500;
+  }
+
   .dropdown-menu {
     @apply rounded-lg bg-white text-text-primary shadow-[0_2px_14px_rgba(0,0,0,0.25)];
   }

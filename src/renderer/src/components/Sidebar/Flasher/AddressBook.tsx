@@ -125,7 +125,7 @@ export const AddressBookModal: React.FC<AddressBookModalProps> = ({
             </button>
             <button
               type="button"
-              className="btn-secondary flex h-8 min-w-0 items-center gap-2 border-primary px-3 py-1.5 text-primary"
+              className="btn-secondary danger flex h-8 min-w-0 items-center gap-2 border-red-500 px-3 py-1.5"
               onClick={handleRemove}
               disabled={!selectedData}
             >

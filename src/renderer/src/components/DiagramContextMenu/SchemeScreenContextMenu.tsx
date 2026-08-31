@@ -149,6 +149,7 @@ export const SchemeScreenContextMenu: React.FC<SchemeScreenContextMenuProps> = (
             Вставить
           </MenuItem>
           <MenuItem
+            className="danger"
             onClick={() =>
               componentFuncs.onRequestDeleteComponent(
                 menuVariant.component.id,

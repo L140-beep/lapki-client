@@ -13,9 +13,7 @@ export const DeleteButton: React.FC<DeleteButtonProps> = ({ className, disabled,
         type="button"
         className={twMerge(!disabled && 'cursor-pointer', className)}
       >
-        <DeleteIcon
-          className={twMerge('shrink-0 text-red-500', disabled && 'text-border-primary')}
-        />
+        <DeleteIcon className={twMerge('danger shrink-0', disabled && 'text-border-primary')} />
       </button>
     </div>
   );
