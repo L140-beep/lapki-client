@@ -1,9 +1,12 @@
 import React, { useEffect, useMemo, useState } from 'react';
 
 import { toast } from 'sonner';
+import { twMerge } from 'tailwind-merge';
 
+import { ReactComponent as ArrowIcon } from '@renderer/assets/icons/arrow-down.svg';
 import { ReactComponent as Close } from '@renderer/assets/icons/close.svg';
 import { InterpreterClient } from '@renderer/components/Modules/Interpreter';
+import { CloseButton } from '@renderer/components/UI/Modal/CloseButton';
 import { useSimulatorWindow } from '@renderer/store/useSimulatorWindow';
 import { getActiveTask, useTasks } from '@renderer/store/useTasks';
 
@@ -11,7 +14,7 @@ import type { CatalogTask } from '../../../../common/tasks';
 
 const platformNames = {
   'junior-gardener': 'Садовник',
-  'junior-reader': 'Reader',
+  'junior-reader': 'Строчник',
 };
 
 const inlineText = (text: string): React.ReactNode[] =>
@@ -31,7 +34,7 @@ const MarkdownDescription: React.FC<{
 }> = ({ task, assetRootUrl }) => {
   const imagePattern = /^!\[([^\]]*)\]\(([^)]+)\)$/;
   return (
-    <div className="space-y-2 text-sm leading-6">
+    <div className="space-y-2 text-xs leading-5">
       {task.description.split('\n').map((rawLine, index) => {
         const line = rawLine.trim();
         const image = line.match(imagePattern);
@@ -56,13 +59,13 @@ const MarkdownDescription: React.FC<{
         }
         if (line.startsWith('# '))
           return (
-            <h2 key={index} className="text-xl font-bold">
+            <h2 key={index} className="h2-header">
               {inlineText(line.slice(2))}
             </h2>
           );
         if (line.startsWith('## '))
           return (
-            <h3 key={index} className="text-lg font-semibold">
+            <h3 key={index} className="h2-header">
               {inlineText(line.slice(3))}
             </h3>
           );
@@ -78,7 +81,19 @@ const MarkdownDescription: React.FC<{
   );
 };
 
-export const TaskBook: React.FC<{ onClose: () => void }> = ({ onClose }) => {
+interface TaskBookProps {
+  canCollapse: boolean;
+  isCollapsed: boolean;
+  onClose: () => void;
+  onToggleCollapse: () => void;
+}
+
+export const TaskBook: React.FC<TaskBookProps> = ({
+  canCollapse,
+  isCollapsed,
+  onClose,
+  onToggleCollapse,
+}) => {
   const [
     catalog,
     catalogLoaded,
@@ -143,109 +158,142 @@ export const TaskBook: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   };
 
   return (
-    <section className="flex h-full min-h-0 flex-col bg-bg-primary px-3 pb-3">
-      <div className="mb-3 flex items-center justify-between border-b border-border-primary pb-2">
-        <div>
-          <h1 className="text-xl font-bold">Задачник</h1>
-          <p className="text-xs text-text-inactive">Локальные задачи по машинам состояний</p>
-        </div>
-        <button type="button" className="rounded-full p-3 hover:bg-bg-hover" onClick={onClose}>
-          <Close width="1rem" height="1rem" />
-        </button>
-      </div>
-
-      {!catalogLoaded && <p className="text-sm text-text-inactive">Загрузка задач...</p>}
-      {catalogLoaded && catalog.tasks.length === 0 && (
-        <p className="text-sm text-text-inactive">В resources/tasks нет доступных задач.</p>
+    <section
+      className={twMerge(
+        'flex h-full min-h-0 flex-col bg-bg-primary px-3 text-xs',
+        !isCollapsed && 'pb-3 pt-2'
       )}
-
-      <div className="min-h-0 flex-1 space-y-2 overflow-y-auto pr-1">
-        {catalog.tasks.map((task) => {
-          const isSelected = selectedTaskId === task.id;
-
-          return (
-            <article
-              key={task.id}
-              className={`rounded border ${
-                isSelected ? 'border-primary bg-bg-hover' : 'border-border-primary'
-              }`}
-            >
-              <button
-                type="button"
-                className="w-full p-3 text-left"
-                aria-expanded={isSelected}
-                onClick={() => setSelectedTaskId(isSelected ? undefined : task.id)}
-              >
-                <div className="flex items-center justify-between gap-2">
-                  <span className="font-medium">{task.title}</span>
-                  {activeTask?.id === task.id && (
-                    <span className="text-xs text-primary">решается</span>
-                  )}
-                </div>
-                <p className="mt-1 text-xs text-text-inactive">{task.summary}</p>
-              </button>
-
-              {isSelected && (
-                <div className="border-t border-border-primary p-3">
-                  <div className="mb-3 flex items-start justify-between gap-2">
-                    <div className="flex flex-wrap items-center gap-2 text-xs">
-                      <span className="rounded bg-bg-primary px-2 py-1">
-                        {platformNames[task.platformId]}
-                      </span>
-                      <span>Версия {task.version}</span>
-                      <span>{task.tests.length} теста(ов)</span>
-                    </div>
-                    <button
-                      type="button"
-                      className="shrink-0 rounded-full p-2 hover:bg-bg-primary"
-                      aria-label="Закрыть задачу"
-                      title="Закрыть задачу"
-                      onClick={() => setSelectedTaskId(undefined)}
-                    >
-                      <Close width="0.875rem" height="0.875rem" />
-                    </button>
-                  </div>
-                  <MarkdownDescription task={task} assetRootUrl={catalog.assetRootUrl} />
-                  <div className="mt-4 flex gap-2">
-                    <button
-                      type="button"
-                      className="btn-primary"
-                      disabled={submissionActive}
-                      onClick={solve}
-                    >
-                      {activeTask?.id === task.id
-                        ? 'Продолжить решение'
-                        : 'Решать задачу'}
-                    </button>
-                    {activeTask?.id === task.id && (
-                      <button
-                        type="button"
-                        className="btn-secondary"
-                        disabled={submissionActive}
-                        onClick={finishTask}
-                      >
-                        Завершить задачу
-                      </button>
-                    )}
-                  </div>
-                </div>
+    >
+      <div
+        className={twMerge(
+          'flex items-center justify-between border-b border-border-primary',
+          isCollapsed ? 'pb-1' : 'mb-3 mt-2 pb-2'
+        )}
+      >
+        {canCollapse ? (
+          <button
+            type="button"
+            className={twMerge('flex h-11', isCollapsed ? 'items-center' : 'items-start')}
+            aria-label={isCollapsed ? 'Развернуть задачник' : 'Свернуть задачник'}
+            onClick={onToggleCollapse}
+          >
+            <ArrowIcon
+              className={twMerge(
+                'size-3 rotate-0 transition-transform',
+                !isCollapsed && 'mt-1.5',
+                isCollapsed && '-rotate-90'
               )}
-            </article>
-          );
-        })}
+            />
+            <div className="ml-1 text-left">
+              <h1 className="h2-header">Задачник</h1>
+              {!isCollapsed && (
+                <p className="text-xs text-text-inactive">Локальные задачи по машинам состояний</p>
+              )}
+            </div>
+          </button>
+        ) : (
+          <div className="text-left">
+            <h1 className="h2-header">Задачник</h1>
+            <p className="text-xs text-text-inactive">Локальные задачи по машинам состояний</p>
+          </div>
+        )}
+        {!isCollapsed && <CloseButton aria-label="Закрыть задачник" onClick={onClose} />}
       </div>
 
-      {catalog.diagnostics.length > 0 && (
-        <details className="mt-3 rounded border border-error p-2 text-xs">
-          <summary>Ошибки файлов задач: {catalog.diagnostics.length}</summary>
-          <ul className="mt-2 space-y-1">
-            {catalog.diagnostics.map((diagnostic, index) => (
-              <li key={`${diagnostic.file}-${index}`}>
-                {diagnostic.file}: {diagnostic.message}
-              </li>
-            ))}
-          </ul>
-        </details>
+      {!isCollapsed && (
+        <>
+          {!catalogLoaded && <p className="text-xs text-text-inactive">Загрузка задач...</p>}
+          {catalogLoaded && catalog.tasks.length === 0 && (
+            <p className="text-xs text-text-inactive">В resources/tasks нет доступных задач.</p>
+          )}
+
+          <div className="min-h-0 flex-1 space-y-2 overflow-y-auto pr-1">
+            {catalog.tasks.map((task) => {
+              const isSelected = selectedTaskId === task.id;
+
+              return (
+                <article
+                  key={task.id}
+                  className={`rounded border ${
+                    isSelected ? 'border-primary bg-bg-hover' : 'border-border-primary'
+                  }`}
+                >
+                  <button
+                    type="button"
+                    className="w-full p-3 text-left"
+                    aria-expanded={isSelected}
+                    onClick={() => setSelectedTaskId(isSelected ? undefined : task.id)}
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="font-medium">{task.title}</span>
+                      {activeTask?.id === task.id && (
+                        <span className="text-xs text-primary">решается</span>
+                      )}
+                    </div>
+                    <p className="mt-1 text-xs text-text-inactive">{task.summary}</p>
+                  </button>
+
+                  {isSelected && (
+                    <div className="border-t border-border-primary p-3">
+                      <div className="mb-3 flex items-start justify-between gap-2">
+                        <div className="flex flex-wrap items-center gap-2 text-xs">
+                          <span className="rounded bg-bg-primary px-2 py-1">
+                            {platformNames[task.platformId]}
+                          </span>
+                          <span>Версия {task.version}</span>
+                          <span>{task.tests.length} теста(ов)</span>
+                        </div>
+                        <button
+                          type="button"
+                          className="shrink-0 rounded-full p-2 hover:bg-bg-primary"
+                          aria-label="Закрыть задачу"
+                          title="Закрыть задачу"
+                          onClick={() => setSelectedTaskId(undefined)}
+                        >
+                          <Close width="0.875rem" height="0.875rem" />
+                        </button>
+                      </div>
+                      <MarkdownDescription task={task} assetRootUrl={catalog.assetRootUrl} />
+                      <div className="mt-4 flex gap-2">
+                        <button
+                          type="button"
+                          className="btn-primary"
+                          disabled={submissionActive}
+                          onClick={solve}
+                        >
+                          {activeTask?.id === task.id ? 'Продолжить решение' : 'Решать задачу'}
+                        </button>
+                        {activeTask?.id === task.id && (
+                          <button
+                            type="button"
+                            className="btn-secondary"
+                            disabled={submissionActive}
+                            onClick={finishTask}
+                          >
+                            Завершить задачу
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </article>
+              );
+            })}
+          </div>
+
+          {catalog.diagnostics.length > 0 && (
+            <details className="mt-3 rounded border border-error p-2 text-xs">
+              <summary>Ошибки файлов задач: {catalog.diagnostics.length}</summary>
+              <ul className="mt-2 space-y-1">
+                {catalog.diagnostics.map((diagnostic, index) => (
+                  <li key={`${diagnostic.file}-${index}`}>
+                    {diagnostic.file}: {diagnostic.message}
+                  </li>
+                ))}
+              </ul>
+            </details>
+          )}
+        </>
       )}
     </section>
   );

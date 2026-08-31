@@ -25,6 +25,7 @@ import {
   setFieldCell,
 } from './model';
 import { ExecutionHistory } from './ExecutionHistory';
+import { GardenerMarker, gardenerCellStyles } from './GardenerField';
 import { countUnicodeCharacters, limitUnicodeCharacters } from './readerModel';
 import { ReaderResult } from './ReaderResult';
 import { SimulationMode, SimulationRunPanel } from './SimulationRunPanel';
@@ -72,27 +73,12 @@ const fieldTools: { value: GardenerTool; label: string; swatch: string }[] = [
   { value: 3, label: 'Василёк', swatch: 'bg-[#65ced8]' },
 ];
 
-const cellStyles: Record<GardenerCell, string> = {
-  [-1]: 'bg-[#333333]',
-  0: 'bg-bg-primary',
-  1: 'bg-[#e87373]',
-  2: 'bg-[#78ed9d]',
-  3: 'bg-[#65ced8]',
-};
-
 const cellLabels: Record<GardenerCell, string> = {
   [-1]: 'стена',
   0: 'пустая клетка',
   1: 'роза',
   2: 'мята',
   3: 'василёк',
-};
-
-const orientationRotation: Record<GardenerOrientation, string> = {
-  north: 'rotate-0',
-  east: 'rotate-90',
-  south: 'rotate-180',
-  west: '-rotate-90',
 };
 
 const orientationOptions: { value: GardenerOrientation; label: string }[] = [
@@ -104,6 +90,9 @@ const orientationOptions: { value: GardenerOrientation; label: string }[] = [
 
 const controlClassName =
   'h-8 w-full rounded-lg border border-border-primary bg-bg-primary px-3 text-xs text-text-primary outline-none focus:border-primary';
+
+const gardenerNumericControlClassName =
+  'h-8 w-full rounded-lg border border-border-primary bg-bg-primary px-3 text-xs text-text-primary outline-none';
 
 const PLAYBACK_INTERVAL_MS = 500;
 
@@ -126,7 +115,7 @@ const MachineSelector: React.FC<{
 }> = ({ options, selectedSmId, active, onSelect }) => (
   <div className="min-w-0">
     <label className="grid gap-2 text-xs" htmlFor="simulator-state-machine">
-      <span className="text-sm text-text-primary">Машина состояний</span>
+      <span className="h2-header font-medium">Машина состояний</span>
       <ParameterSelect
         inputId="simulator-state-machine"
         className="w-full"
@@ -355,7 +344,7 @@ const GardenerSimulator: React.FC<GardenerRuntimeProps> = ({
                     aria-label={`Клетка ${x}, ${y}: ${cellLabels[cell]}`}
                     className={twMerge(
                       'relative size-8 rounded-lg',
-                      cellStyles[cell],
+                      gardenerCellStyles[cell],
                       reviewingHistory && 'cursor-default'
                     )}
                     draggable={false}
@@ -364,15 +353,10 @@ const GardenerSimulator: React.FC<GardenerRuntimeProps> = ({
                     onMouseEnter={(event) => handleCellMouseEnter(event, x, y)}
                   >
                     {hasGardener && (
-                      <span
+                      <GardenerMarker
                         aria-label="Стартовая позиция Садовника"
-                        className={twMerge(
-                          'absolute inset-0 flex items-center justify-center text-xl text-[#ffd600] transition-transform',
-                          orientationRotation[displayedOrientation]
-                        )}
-                      >
-                        ▲
-                      </span>
+                        orientation={displayedOrientation}
+                      />
                     )}
                   </button>
                 );
@@ -395,7 +379,7 @@ const GardenerSimulator: React.FC<GardenerRuntimeProps> = ({
               <FieldInput label="Ширина" htmlFor="simulator-field-width">
                 <input
                   id="simulator-field-width"
-                  className={controlClassName}
+                  className={gardenerNumericControlClassName}
                   type="number"
                   min={MIN_FIELD_SIZE}
                   max={MAX_FIELD_SIZE}
@@ -406,7 +390,7 @@ const GardenerSimulator: React.FC<GardenerRuntimeProps> = ({
               <FieldInput label="Высота" htmlFor="simulator-field-height">
                 <input
                   id="simulator-field-height"
-                  className={controlClassName}
+                  className={gardenerNumericControlClassName}
                   type="number"
                   min={MIN_FIELD_SIZE}
                   max={MAX_FIELD_SIZE}
@@ -417,7 +401,7 @@ const GardenerSimulator: React.FC<GardenerRuntimeProps> = ({
               <FieldInput label="Старт X" htmlFor="simulator-position-x">
                 <input
                   id="simulator-position-x"
-                  className={controlClassName}
+                  className={gardenerNumericControlClassName}
                   type="number"
                   min={0}
                   max={width - 1}
@@ -433,7 +417,7 @@ const GardenerSimulator: React.FC<GardenerRuntimeProps> = ({
               <FieldInput label="Старт Y" htmlFor="simulator-position-y">
                 <input
                   id="simulator-position-y"
-                  className={controlClassName}
+                  className={gardenerNumericControlClassName}
                   type="number"
                   min={0}
                   max={height - 1}
@@ -525,7 +509,7 @@ const ReaderSimulator: React.FC<ReaderRuntimeProps> = ({
   const [timeout, setTimeoutValue] = useState(10);
 
   return (
-    <div className="grid min-h-0 flex-1 grid-cols-[190px_250px_170px] content-start justify-start gap-x-4 gap-y-5 overflow-auto text-sm max-[729px]:grid-cols-1">
+    <div className="grid min-h-0 flex-1 grid-cols-[205px_250px_170px] content-start justify-start gap-x-6 gap-y-5 overflow-auto text-sm max-[729px]:grid-cols-1">
       <SimulationRunPanel
         machineSelector={machineSelector}
         mode={mode}

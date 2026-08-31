@@ -79,7 +79,7 @@ export const SerialMonitorStatus: React.FC = () => {
   const { device, connectionStatus } = useSerialMonitor();
 
   return (
-    <span>
+    <span className="font-normal">
       Статус:{' '}
       <span className="text-primary">{getCurrentDeviceDisplay(device, connectionStatus)}</span>
     </span>

@@ -66,7 +66,7 @@ describe('parseProgrammingTask', () => {
     );
 
     expect(task.id).toBe('gardener-letter-a');
-    expect(task.tests.map((test) => (test.input as { width: number }).width)).toEqual([5, 7, 9]);
+    expect(task.tests.map((test) => (test.input as { width: number }).width)).toEqual([5, 8, 7]);
   });
 
   it('validates the bundled Gardener letter B task', () => {
@@ -75,6 +75,57 @@ describe('parseProgrammingTask', () => {
     );
 
     expect(task.id).toBe('gardener-letter-b');
-    expect(task.tests.map((test) => (test.input as { width: number }).width)).toEqual([5, 7, 9]);
+    expect(
+      task.tests.map((test) => {
+        const input = test.input as { width: number; height: number; position: { x: number; y: number } };
+        return [input.width, input.height, input.position.x, input.position.y];
+      })
+    ).toEqual([
+      [7, 7, 0, 0],
+      [5, 7, 0, 0],
+      [8, 9, 0, 0],
+    ]);
+  });
+
+  it('validates the bundled Gardener greeting task', () => {
+    const task = parseProgrammingTask(
+      JSON.parse(readFileSync('resources/tasks/gardener-hello.task.json', 'utf8'))
+    );
+
+    expect(task.id).toBe('gardener-hello');
+    expect(task.tests).toHaveLength(1);
+  });
+
+  it('validates the bundled Gardener mint abundance task', () => {
+    const task = parseProgrammingTask(
+      JSON.parse(readFileSync('resources/tasks/gardener-mint-abundance.task.json', 'utf8'))
+    );
+
+    expect(task.id).toBe('gardener-mint-abundance');
+    expect(
+      task.tests.map((test) => {
+        const input = test.input as { width: number; height: number; orientation: string };
+        return [input.width, input.height, input.orientation];
+      })
+    ).toEqual([
+      [3, 2, 'SOUTH'],
+      [6, 4, 'SOUTH'],
+      [5, 7, 'SOUTH'],
+    ]);
+  });
+
+  it('validates the bundled Reader digits groups task', () => {
+    const task = parseProgrammingTask(
+      JSON.parse(readFileSync('resources/tasks/reader-digits-groups-over-33.task.json', 'utf8'))
+    );
+
+    expect(task.id).toBe('reader-digits-groups-over-33');
+    expect(task.tests.map((test) => (test.input as { message: string }).message)).toEqual([
+      '5-9999',
+      '10-20-4',
+      '99999',
+      '9999-9999',
+      '9876-999',
+    ]);
   });
 });

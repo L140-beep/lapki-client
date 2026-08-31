@@ -35,7 +35,7 @@ export const Setting: React.FC<SettingProps> = ({
   const [canvasSettings, setCanvasSettings] = useSettings('canvas');
   const { connectionStatus, isFlashing } = useFlasher();
 
-  const handleChangeTheme = (value: 'light' | 'dark') => {
+  const handleChangeTheme = (value: 'light') => {
     setTheme(value);
     document.documentElement.dataset.theme = value;
 
@@ -69,7 +69,7 @@ export const Setting: React.FC<SettingProps> = ({
           <span aria-hidden="true">›</span>
         </DropdownMenuItem>
         <DropdownMenu className="dropdown-submenu">
-          {(['light', 'dark'] as const).map((value) => (
+          {(['light'] as const).map((value) => (
             <DropdownMenuItem
               key={value}
               role="menuitemradio"

@@ -8,6 +8,7 @@ import type {
 } from '../../../../common/tasks';
 import { type TaskTestPhase, useTasks } from '../../store/useTasks';
 import type { SimulationResult } from '../../types/InterpreterTypes';
+import { GardenerMarker, type GardenerFieldOrientation, gardenerCellStyles } from './GardenerField';
 
 const phaseLabels = {
   idle: 'Не запускался',
@@ -28,15 +29,6 @@ const checkLabels = {
   'gardener.field.equals': 'Итоговое поле не совпадает',
   'gardener.position.equals': 'Итоговая позиция не совпадает',
   'reader.impulses.equals': 'Последовательность выходных импульсов не совпадает',
-};
-
-const orientationArrows = { NORTH: '↑', EAST: '→', SOUTH: '↓', WEST: '←' };
-const cellColors = {
-  [-1]: 'bg-zinc-700',
-  0: 'bg-bg-primary',
-  1: 'bg-rose-500/80',
-  2: 'bg-emerald-500/80',
-  3: 'bg-sky-500/80',
 };
 
 const phaseStyles: Record<TaskTestPhase, { dot: string; label: string; text: string }> = {
@@ -84,33 +76,33 @@ const FieldView: React.FC<{
   input: GardenerTaskInput;
   field?: GardenerTaskInput['field'];
   position?: GardenerTaskInput['position'];
-  orientation?: string;
+  orientation?: GardenerFieldOrientation;
 }> = ({
   input,
   field = input.field,
   position = input.position,
   orientation = input.orientation,
 }) => (
-  <div
-    className="grid w-full overflow-hidden rounded-lg border border-border-primary bg-bg-primary shadow-sm"
-    style={{
-      gridTemplateColumns: `repeat(${input.width}, minmax(0, 1fr))`,
-      maxWidth: `${input.width * 32}px`,
-    }}
-  >
-    {field.flatMap((row, y) =>
-      row.map((cell, x) => (
-        <div
-          key={`${x}-${y}`}
-          className={`border-border-primary/50 flex aspect-square items-center justify-center border text-sm font-medium ${cellColors[cell]}`}
-          title={`(${x}, ${y})`}
-        >
-          {position.x === x && position.y === y
-            ? orientationArrows[orientation.toUpperCase() as keyof typeof orientationArrows] ?? '●'
-            : ''}
-        </div>
-      ))
-    )}
+  <div className="overflow-auto rounded-lg bg-bg-secondary p-3">
+    <div
+      className="grid w-max gap-1.5"
+      style={{ gridTemplateColumns: `repeat(${input.width}, 2rem)` }}
+    >
+      {field.flatMap((row, y) =>
+        row.map((cell, x) => {
+          const hasGardener = position.x === x && position.y === y;
+          return (
+            <div
+              key={`${x}-${y}`}
+              className={`relative size-8 rounded-lg ${gardenerCellStyles[cell]}`}
+              title={`(${x}, ${y})`}
+            >
+              {hasGardener && <GardenerMarker orientation={orientation} />}
+            </div>
+          );
+        })
+      )}
+    </div>
   </div>
 );
 
@@ -152,10 +144,10 @@ const GardenerDetails: React.FC<{
     <div className="grid min-h-0 flex-1 grid-cols-2 content-start items-start gap-4 overflow-y-auto bg-bg-primary p-4">
       <section className="min-w-0 rounded-xl border border-border-primary bg-bg-primary p-4 shadow-sm">
         <div className="mb-4">
-          <p className="text-[11px] font-medium uppercase tracking-wide text-text-inactive">
+          <p className="text-xs font-medium uppercase tracking-wide text-text-inactive">
             Исходные данные
           </p>
-          <h3 className="mt-1 text-sm font-semibold">Входное поле</h3>
+          <h3 className="h2-header mt-1">Входное поле</h3>
         </div>
         <div className="flex justify-center">
           <FieldView input={input} />
@@ -165,12 +157,12 @@ const GardenerDetails: React.FC<{
       <section className="min-w-0 rounded-xl border border-border-primary bg-bg-primary p-4 shadow-sm">
         <div className="mb-4 flex items-start justify-between gap-3">
           <div>
-            <p className="text-[11px] font-medium uppercase tracking-wide text-text-inactive">
+            <p className="text-xs font-medium uppercase tracking-wide text-text-inactive">
               Результат
             </p>
-            <h3 className="mt-1 text-sm font-semibold">Фактическое поле</h3>
+            <h3 className="h2-header mt-1">Фактическое поле</h3>
           </div>
-          <span className="shrink-0 rounded-full bg-bg-secondary px-2 py-1 text-[11px] text-text-inactive">
+          <span className="shrink-0 rounded-full bg-bg-secondary px-2 py-1 text-xs text-text-inactive">
             {steps.length > 0 ? `${stepIndex + 1} / ${steps.length}` : 'Нет запуска'}
           </span>
         </div>
@@ -240,21 +232,21 @@ const ReaderDetails: React.FC<{
   return (
     <div className="grid gap-4 overflow-y-auto bg-bg-primary p-4 lg:grid-cols-2">
       <section className="rounded-xl border border-border-primary bg-bg-primary p-4 shadow-sm">
-        <h3 className="mb-3 font-semibold">Входная строка</h3>
-        <pre className="whitespace-pre-wrap rounded-lg border border-border-primary bg-bg-secondary p-3 text-sm">
+        <h3 className="h2-header mb-3">Входная строка</h3>
+        <pre className="whitespace-pre-wrap rounded-lg border border-border-primary bg-bg-secondary p-3 text-xs">
           {input.message}
         </pre>
       </section>
       <section className="rounded-xl border border-border-primary bg-bg-primary p-4 shadow-sm">
-        <h3 className="mb-3 font-semibold">Выходные импульсы</h3>
+        <h3 className="h2-header mb-3">Выходные импульсы</h3>
         {impulses.length ? (
-          <ol className="list-decimal space-y-1 pl-5 text-sm">
+          <ol className="list-decimal space-y-1 pl-5 text-xs">
             {impulses.map((signal, index) => (
               <li key={`${signal}-${index}`}>{signal}</li>
             ))}
           </ol>
         ) : (
-          <p className="text-sm text-text-inactive">Импульсы ещё не получены.</p>
+          <p className="text-xs text-text-inactive">Импульсы ещё не получены.</p>
         )}
       </section>
     </div>
@@ -321,16 +313,16 @@ export const TaskMode: React.FC<TaskModeProps> = ({
     : undefined;
 
   return (
-    <div className="grid min-h-0 flex-1 grid-cols-[minmax(0,1fr)_304px] overflow-hidden rounded-t-xl border border-b-0 border-border-primary">
+    <div className="grid min-h-0 flex-1 grid-cols-[minmax(0,1fr)_304px] overflow-hidden rounded-t-xl border border-border-primary">
       <div className="flex min-h-0 flex-col">
         <div className="border-b border-border-primary px-5 py-4">
           <div className="flex items-center justify-between gap-4">
             <div className="min-w-0">
-              <p className="text-[11px] text-text-inactive">
+              <p className="text-xs text-text-inactive">
                 Тест {Math.max(task.tests.findIndex((test) => test.id === selectedTest?.id) + 1, 1)}{' '}
                 из {task.tests.length}
               </p>
-              <h2 className="mt-1 truncate text-base font-semibold">{selectedTest?.title}</h2>
+              <h2 className="h2-header mt-1 truncate">{selectedTest?.title}</h2>
             </div>
             <div
               className={`flex shrink-0 items-center gap-2 rounded-full bg-bg-secondary px-3 py-1.5 text-xs font-medium ${selectedPhaseStyle.text}`}
@@ -340,7 +332,7 @@ export const TaskMode: React.FC<TaskModeProps> = ({
             </div>
           </div>
           {failedMessage && (
-            <div className="border-error/30 bg-error/5 mt-3 flex items-center gap-2 rounded-lg border px-3 py-2 text-sm text-error">
+            <div className="border-error/30 bg-error/5 mt-3 flex items-center gap-2 rounded-lg border px-3 py-2 text-xs text-error">
               <AlertIcon className="size-4 shrink-0" />
               <p>{failedMessage}</p>
             </div>
@@ -356,7 +348,7 @@ export const TaskMode: React.FC<TaskModeProps> = ({
 
       <aside className="flex min-h-0 flex-col border-l border-border-primary bg-bg-primary">
         <div className="border-b border-border-primary px-4 py-4">
-          <h2 className="truncate text-base font-semibold">{task.title}</h2>
+          <h2 className="h2-header truncate">{task.title}</h2>
           <div className="mt-2 flex items-center justify-between gap-3 text-xs text-text-inactive">
             <span>Проверочные тесты</span>
             <span>
@@ -391,7 +383,7 @@ export const TaskMode: React.FC<TaskModeProps> = ({
                   className="min-w-0 flex-1 rounded-md px-1 py-0.5 text-left"
                   onClick={() => setSelectedTestId(test.id)}
                 >
-                  <div className="truncate text-sm font-medium">{test.title}</div>
+                  <div className="truncate text-xs font-medium">{test.title}</div>
                   <div className={`mt-1 flex items-center gap-1.5 text-xs ${phaseStyle.text}`}>
                     <span className={`size-2 rounded-full ${phaseStyle.dot}`} />
                     {phaseStyle.label}
@@ -417,7 +409,7 @@ export const TaskMode: React.FC<TaskModeProps> = ({
         <div className="border-t border-border-primary bg-bg-primary p-3">
           {summary && (
             <div
-              className={`mb-3 rounded-lg px-3 py-2 text-sm font-medium ${
+              className={`mb-3 rounded-lg px-3 py-2 text-xs font-medium ${
                 submissionResult?.status === 'accepted'
                   ? 'bg-emerald-500/10 text-emerald-600'
                   : 'bg-error/5 text-error'
@@ -427,7 +419,7 @@ export const TaskMode: React.FC<TaskModeProps> = ({
             </div>
           )}
           {error && (
-            <div className="bg-error/5 mb-3 flex gap-2 rounded-lg px-3 py-2 text-sm text-error">
+            <div className="bg-error/5 mb-3 flex gap-2 rounded-lg px-3 py-2 text-xs text-error">
               <AlertIcon className="mt-0.5 size-4 shrink-0" />
               <p>{error}</p>
             </div>
@@ -446,7 +438,7 @@ export const TaskMode: React.FC<TaskModeProps> = ({
             Отправить решение
           </button>
           {!submissionResult && completedTests > 0 && (
-            <p className="mt-2 text-center text-[11px] text-text-inactive">
+            <p className="mt-2 text-center text-xs text-text-inactive">
               Пройдено тестов: {passedTests} из {task.tests.length}
             </p>
           )}

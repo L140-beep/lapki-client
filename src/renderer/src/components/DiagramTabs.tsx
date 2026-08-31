@@ -103,7 +103,7 @@ export const DiagramTabs = () => {
           width="8px"
           height="8px"
         />
-        <span className="ml-10">Статус:</span>
+        <span className="ml-10 font-normal">Статус:</span>
         <span
           className={twMerge(
             'font-normal text-primary',

@@ -3,6 +3,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Resizable } from 're-resizable';
 import {
   ImperativePanelGroupHandle,
+  ImperativePanelHandle,
   Panel,
   PanelGroup,
   PanelResizeHandle,
@@ -10,7 +11,8 @@ import {
 import { toast } from 'sonner';
 import { twMerge } from 'tailwind-merge';
 
-import { ReactComponent as Close } from '@renderer/assets/icons/close.svg';
+import { ReactComponent as ArrowIcon } from '@renderer/assets/icons/arrow-down.svg';
+import { CloseButton } from '@renderer/components/UI/Modal/CloseButton';
 import { useFetch, useSettings } from '@renderer/hooks';
 import { useDoc } from '@renderer/store/useDoc';
 import { File } from '@renderer/types/documentation';
@@ -33,7 +35,19 @@ export interface DocumentationProps {
   onWidthChange: (width: number) => void;
 }
 
-const DocumentationSection: React.FC<{ onClose: () => void }> = ({ onClose }) => {
+interface DocumentationSectionProps {
+  canCollapse: boolean;
+  isCollapsed: boolean;
+  onClose: () => void;
+  onToggleCollapse: () => void;
+}
+
+const DocumentationSection: React.FC<DocumentationSectionProps> = ({
+  canCollapse,
+  isCollapsed,
+  onClose,
+  onToggleCollapse,
+}) => {
   const [doc] = useSettings('doc');
   const rawUrl = doc?.type === 'local' ? doc?.localHost ?? '' : doc?.remoteHost ?? '';
   const url = rawUrl ? (rawUrl.endsWith('/') ? rawUrl : rawUrl + '/') : '';
@@ -74,7 +88,7 @@ const DocumentationSection: React.FC<{ onClose: () => void }> = ({ onClose }) =>
   if (error || !data) {
     return (
       <div className="px-4 pt-10">
-        <div className="text-lg">Ошибка загрузки. Что-то пошло не так.</div>
+        <div className="text-xs">Ошибка загрузки. Что-то пошло не так.</div>
         <button className="btn-primary" onClick={refetch}>
           Перезагрузить
         </button>
@@ -83,64 +97,92 @@ const DocumentationSection: React.FC<{ onClose: () => void }> = ({ onClose }) =>
   }
 
   return (
-    <section className="flex h-full select-none flex-col bg-bg-primary px-2 pt-4">
-      <div className="relative mb-3 flex items-center justify-between border-b border-border-primary pb-1">
-        <h1 className="text-2xl font-bold">Документация</h1>
-        <button
-          type="button"
-          className="rounded-full p-3 outline-none transition-colors hover:bg-bg-hover active:bg-bg-active"
-          aria-label="Закрыть документацию"
-          onClick={onClose}
-        >
-          <Close width="1rem" height="1rem" />
-        </button>
+    <section
+      className={twMerge(
+        'flex h-full select-none flex-col bg-bg-primary px-2 text-xs',
+        !isCollapsed && 'pt-4'
+      )}
+    >
+      <div
+        className={twMerge(
+          'relative flex items-center justify-between border-b border-border-primary pb-1',
+          !isCollapsed && 'mb-3 mt-2'
+        )}
+      >
+        {canCollapse ? (
+          <button
+            type="button"
+            className="flex h-11 items-center"
+            aria-label={isCollapsed ? 'Развернуть документацию' : 'Свернуть документацию'}
+            onClick={onToggleCollapse}
+          >
+            <ArrowIcon
+              className={twMerge(
+                'size-3 rotate-0 transition-transform',
+                isCollapsed && '-rotate-90'
+              )}
+            />
+            <h1 className="h2-header ml-1">Документация</h1>
+          </button>
+        ) : (
+          <h1 className="h2-header">Документация</h1>
+        )}
+        {!isCollapsed && <CloseButton aria-label="Закрыть документацию" onClick={onClose} />}
       </div>
-      <div className="grid grid-cols-3 gap-1 pb-2">
-        <button
-          className={twMerge(
-            'rounded border border-primary p-2',
-            activeTab === -1 && 'bg-primary text-text-secondary'
-          )}
-          onClick={() => setActiveTab(-1)}
-        >
-          Компоненты
-        </button>
-        <button
-          className={twMerge(
-            'rounded border border-primary p-2',
-            activeTab === 0 && 'bg-primary text-text-secondary'
-          )}
-          onClick={() => setActiveTab(0)}
-        >
-          Содержание
-        </button>
-        <button
-          className={twMerge(
-            'rounded border border-primary p-2 disabled:cursor-not-allowed disabled:opacity-30',
-            activeTab === 1 && 'bg-primary text-text-secondary'
-          )}
-          onClick={() => setActiveTab(1)}
-          disabled={!currentItem}
-        >
-          Просмотр
-        </button>
-      </div>
-      <div className="h-full overflow-y-hidden">
-        <div className={twMerge('h-full', activeTab !== -1 && 'hidden')}>
-          <ReferencePanel />
-        </div>
-        <div className={twMerge('h-full', activeTab !== 0 && 'hidden')}>
-          <Tree root={data.body} borderWidth={0} onItemClick={onItemClick} />
-        </div>
-        <div className={twMerge('h-full', activeTab !== 1 && 'hidden')}>
-          {currentItem && (
-            <>
-              <Show item={currentItem} />
-              <Navigation data={data} onItemClick={onItemClick} currentPath={currentItem.path} />
-            </>
-          )}
-        </div>
-      </div>
+      {!isCollapsed && (
+        <>
+          <div className="grid grid-cols-3 gap-1 pb-2">
+            <button
+              className={twMerge(
+                'rounded border border-primary p-2',
+                activeTab === -1 && 'bg-primary text-text-secondary'
+              )}
+              onClick={() => setActiveTab(-1)}
+            >
+              Компоненты
+            </button>
+            <button
+              className={twMerge(
+                'rounded border border-primary p-2',
+                activeTab === 0 && 'bg-primary text-text-secondary'
+              )}
+              onClick={() => setActiveTab(0)}
+            >
+              Содержание
+            </button>
+            <button
+              className={twMerge(
+                'rounded border border-primary p-2 disabled:cursor-not-allowed disabled:opacity-30',
+                activeTab === 1 && 'bg-primary text-text-secondary'
+              )}
+              onClick={() => setActiveTab(1)}
+              disabled={!currentItem}
+            >
+              Просмотр
+            </button>
+          </div>
+          <div className="h-full overflow-y-hidden">
+            <div className={twMerge('h-full', activeTab !== -1 && 'hidden')}>
+              <ReferencePanel />
+            </div>
+            <div className={twMerge('h-full', activeTab !== 0 && 'hidden')}>
+              <Tree root={data.body} borderWidth={0} onItemClick={onItemClick} />
+            </div>
+            <div className={twMerge('h-full', activeTab !== 1 && 'hidden')}>
+              {currentItem && (
+                <>
+                  <Show item={currentItem} />
+                  <Navigation
+                    data={data}
+                    onItemClick={onItemClick}
+                    currentPath={currentItem.path}
+                  />
+                </>
+              )}
+            </div>
+          </div>
+        </>
+      )}
     </section>
   );
 };
@@ -159,7 +201,11 @@ export const Documentation: React.FC<DocumentationProps> = ({ width, onWidthChan
   const [minWidth, setMinWidth] = useState(5);
   const [maxWidth, setMaxWidth] = useState('60vw');
   const panelGroupRef = useRef<ImperativePanelGroupHandle>(null);
+  const documentationPanelRef = useRef<ImperativePanelHandle>(null);
+  const tasksPanelRef = useRef<ImperativePanelHandle>(null);
   const splitLayout = useRef([50, 50]);
+  const [isDocumentationCollapsed, setDocumentationCollapsed] = useState(false);
+  const [isTasksCollapsed, setTasksCollapsed] = useState(false);
   const bothMounted = mountedViews.documentation && mountedViews.tasks;
   const bothVisible = visibleViews.documentation && visibleViews.tasks;
   const hasVisibleView = visibleViews.documentation || visibleViews.tasks;
@@ -203,6 +249,14 @@ export const Documentation: React.FC<DocumentationProps> = ({ width, onWidthChan
     if (bothVisible && layout[0] > 0 && layout[1] > 0) splitLayout.current = layout;
   };
 
+  const togglePanel = (view: 'documentation' | 'tasks') => {
+    const panel = view === 'documentation' ? documentationPanelRef.current : tasksPanelRef.current;
+    if (!panel) return;
+
+    if (panel.isCollapsed()) panel.expand();
+    else panel.collapse();
+  };
+
   return (
     <Resizable
       enable={{ left: true }}
@@ -213,13 +267,13 @@ export const Documentation: React.FC<DocumentationProps> = ({ width, onWidthChan
       className="h-full overflow-hidden rounded-l-2xl border-l border-border-primary bg-bg-secondary shadow-[-2px_0_4px_rgba(0,0,0,0.25)] [[data-theme=light]_&]:bg-white"
     >
       <div className="h-full min-h-0">
-        {!hasVisibleView && (
+        {isOpen && !hasVisibleView && (
           <div className="flex h-full items-center justify-center px-6 text-center text-text-inactive">
             Откройте документацию или задачник
           </div>
         )}
 
-        <div className={twMerge('h-full min-h-0', !hasVisibleView && 'hidden')}>
+        <div className={twMerge('h-full min-h-0', (!isOpen || !hasVisibleView) && 'hidden')}>
           <PanelGroup
             ref={panelGroupRef}
             direction="vertical"
@@ -228,17 +282,24 @@ export const Documentation: React.FC<DocumentationProps> = ({ width, onWidthChan
           >
             {mountedViews.documentation && (
               <Panel
+                ref={documentationPanelRef}
                 key="documentation"
                 id="documentation"
                 order={0}
                 collapsible
-                collapsedSize={0}
+                collapsedSize={visibleViews.documentation ? 6 : 0}
                 minSize={20}
                 defaultSize={50}
-                onCollapse={() => closeView('documentation')}
+                onCollapse={() => setDocumentationCollapsed(true)}
+                onExpand={() => setDocumentationCollapsed(false)}
                 className="min-h-0"
               >
-                <DocumentationSection onClose={() => closeView('documentation')} />
+                <DocumentationSection
+                  canCollapse={bothVisible}
+                  isCollapsed={isDocumentationCollapsed}
+                  onClose={() => closeView('documentation')}
+                  onToggleCollapse={() => togglePanel('documentation')}
+                />
               </Panel>
             )}
 
@@ -253,17 +314,24 @@ export const Documentation: React.FC<DocumentationProps> = ({ width, onWidthChan
 
             {mountedViews.tasks && (
               <Panel
+                ref={tasksPanelRef}
                 key="tasks"
                 id="tasks"
                 order={1}
                 collapsible
-                collapsedSize={0}
+                collapsedSize={visibleViews.tasks ? 6 : 0}
                 minSize={20}
                 defaultSize={50}
-                onCollapse={() => closeView('tasks')}
+                onCollapse={() => setTasksCollapsed(true)}
+                onExpand={() => setTasksCollapsed(false)}
                 className="min-h-0"
               >
-                <TaskBook onClose={() => closeView('tasks')} />
+                <TaskBook
+                  canCollapse={bothVisible}
+                  isCollapsed={isTasksCollapsed}
+                  onClose={() => closeView('tasks')}
+                  onToggleCollapse={() => togglePanel('tasks')}
+                />
               </Panel>
             )}
           </PanelGroup>
