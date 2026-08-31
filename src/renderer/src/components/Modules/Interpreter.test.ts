@@ -45,6 +45,7 @@ describe('InterpreterClient', () => {
       CONNECTING: Websocket.CONNECTING,
     } as unknown as Websocket;
     InterpreterClient.ready = true;
+    InterpreterClient.bind(vi.fn(), vi.fn());
 
     await InterpreterClient.connect('127.0.0.1', 49152);
 

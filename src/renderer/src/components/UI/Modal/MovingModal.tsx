@@ -9,7 +9,7 @@ import { Window } from './MovingWindow';
 
 interface ModalProps extends Omit<Props, 'className' | 'overlayClassName'> {
   id: string;
-  title: string;
+  title: React.ReactNode;
   cancelLabel?: string;
   submitLabel?: string;
   extraLabel?: string;

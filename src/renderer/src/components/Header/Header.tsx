@@ -11,7 +11,7 @@ import { useDoc } from '@renderer/store/useDoc';
 import { useManagerMS } from '@renderer/store/useManagerMS';
 import { useSimulatorWindow } from '@renderer/store/useSimulatorWindow';
 import { useTasks } from '@renderer/store/useTasks';
-import { CompilerResult } from '@renderer/types/CompilerTypes';
+import { Elements } from '@renderer/types/diagram';
 
 import {
   AboutTheProgramModal,
@@ -26,8 +26,8 @@ import {
   Setting,
 } from './components';
 
+import { CompilerConnection } from '../Modules/CompilerConnection';
 import { Flasher } from '../Modules/Flasher';
-import { CompilerTab } from '../Sidebar/Compiler';
 import { Simulator } from '../Simulator';
 import { MovingModal } from '../UI/Modal/MovingModal';
 
@@ -43,7 +43,10 @@ export interface HeaderCallbacks {
 
 interface HeaderProps {
   callbacks: HeaderCallbacks;
-  openImportError: (error: string) => void;
+  onCompilerImportData: (
+    importData: Elements,
+    openData: [boolean, string | null, string | null, string]
+  ) => void;
   renderStartScreen?: (fileMenu: React.ReactNode) => React.ReactNode;
   initialSimulationSmId?: string;
 }
@@ -58,7 +61,7 @@ export const Header: React.FC<HeaderProps> = ({
     onRequestSaveAsFile,
     onRequestImportFile,
   },
-  openImportError,
+  onCompilerImportData,
   renderStartScreen,
   initialSimulationSmId,
 }) => {
@@ -85,9 +88,7 @@ export const Header: React.FC<HeaderProps> = ({
   const [openData, setOpenData] = useState<
     [boolean, string | null, string | null, string] | undefined
   >(undefined);
-  const [compilerData, setCompilerData] = useState<CompilerResult | undefined>(undefined);
-  const [compilerStatus, setCompilerStatus] = useState('Не подключен.');
-  const { setCompilerData: setCompilerDataMS } = useManagerMS();
+  const compilerStatus = useManagerMS((state) => state.compilerStatus);
   const [openDocumentation, openTasks, isDocOpen, activeDocView] = useDoc((state) => [
     state.onDocumentationToggle,
     state.openTasks,
@@ -105,10 +106,6 @@ export const Header: React.FC<HeaderProps> = ({
   });
 
   useFlasherHooks();
-
-  useEffect(() => {
-    setCompilerDataMS(compilerData);
-  }, [compilerData, setCompilerDataMS]);
 
   useEffect(() => {
     if (!isSimulatorOpen) return;
@@ -288,16 +285,7 @@ export const Header: React.FC<HeaderProps> = ({
 
       {fileMenuModals}
 
-      <div className="hidden">
-        <CompilerTab
-          openData={openData}
-          compilerData={compilerData}
-          setCompilerData={setCompilerData}
-          compilerStatus={compilerStatus}
-          setCompilerStatus={setCompilerStatus}
-          openImportError={openImportError}
-        />
-      </div>
+      <CompilerConnection openData={openData} onImportData={onCompilerImportData} />
       <FlasherSelectModal
         isOpen={isFlasherSettingsOpen}
         onSubmit={handleFlasherModalSubmit}

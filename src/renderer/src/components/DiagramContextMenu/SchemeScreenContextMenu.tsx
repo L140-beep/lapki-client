@@ -199,6 +199,7 @@ export const SchemeScreenContextMenu: React.FC<SchemeScreenContextMenuProps> = (
       <ComponentDeleteModal {...componentFuncs.deleteProps} />
       <ComponentEditModal {...componentFuncs.editProps} />
       <StateMachineEditModal
+        variant="create"
         form={sMFuncs.addProps.addForm}
         isOpen={sMFuncs.addProps.isOpen}
         onClose={sMFuncs.addProps.onClose}
@@ -211,6 +212,7 @@ export const SchemeScreenContextMenu: React.FC<SchemeScreenContextMenuProps> = (
         selectPlatformDisabled={false}
       />
       <StateMachineEditModal
+        variant="edit"
         form={sMFuncs.editProps.editForm}
         isOpen={sMFuncs.editProps.isOpen}
         onClose={sMFuncs.editProps.onClose}

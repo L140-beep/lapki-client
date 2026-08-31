@@ -69,6 +69,7 @@ export const MainContainer: React.FC = () => {
     operations,
     performNewFile,
     handleOpenFromTemplate,
+    initImportData,
     tempSaveOperations,
     loadGraphml,
   } = useFileOperations({
@@ -202,7 +203,7 @@ export const MainContainer: React.FC = () => {
       <div className="relative flex h-full w-full flex-col">
         <Header
           callbacks={operations}
-          openImportError={openImportError}
+          onCompilerImportData={initImportData}
           initialSimulationSmId={initialSimulationSmId}
           renderStartScreen={
             !isInitialized
@@ -247,11 +248,7 @@ export const MainContainer: React.FC = () => {
             >
               <input {...getInputProps()} />
               {workspace === 'editor' ? (
-                <DiagramEditor
-                  key={controller.id}
-                  controller={controller}
-                  editor={controller.app}
-                />
+                <DiagramEditor key={controller.id} controller={controller} editor={controller.app} />
               ) : (
                 <Simulator initialSmId={initialSimulationSmId} />
               )}

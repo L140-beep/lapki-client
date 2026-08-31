@@ -2,14 +2,13 @@ import { beforeEach, describe, expect, it } from 'vitest';
 
 import { useWorkspace } from './useWorkspace';
 
-describe('primary workspace', () => {
+describe('useWorkspace', () => {
   beforeEach(() => {
-    useWorkspace.getState().setActiveWorkspace('editor');
+    useWorkspace.setState({ activeWorkspace: 'editor' });
   });
 
-  it('can switch independently from moving modal state', () => {
+  it('switches the primary workspace', () => {
     useWorkspace.getState().setActiveWorkspace('simulator');
-
     expect(useWorkspace.getState().activeWorkspace).toBe('simulator');
   });
 });
