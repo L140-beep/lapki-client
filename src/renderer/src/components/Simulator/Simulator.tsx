@@ -172,6 +172,8 @@ const GardenerSimulator: React.FC<RuntimeProps> = ({
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [orientation, setOrientation] = useState<GardenerOrientation>('south');
   const [selectedTool, setSelectedTool] = useState<GardenerTool>(0);
+  const [isMouseDown, setIsMouseDown] = useState(false);
+  const [isRightMouseDown, setIsRightMouseDown] = useState(false);
   const [mode, setMode] = useState<SimulationMode>('finite');
   const [timeout, setTimeoutValue] = useState(10);
   const [historyIndex, setHistoryIndex] = useState(0);
@@ -183,6 +185,31 @@ const GardenerSimulator: React.FC<RuntimeProps> = ({
   const displayedField = historyStep?.field ?? field;
   const displayedPosition = historyStep?.position ?? position;
   const displayedOrientation = historyStep?.orientation ?? orientation;
+
+  useEffect(() => {
+    const handleMouseUp = () => {
+      setIsMouseDown(false);
+      setIsRightMouseDown(false);
+    };
+
+    const handleMouseDown = (event: MouseEvent) => {
+      if (reviewingHistory) return;
+
+      if (event.button === 0) {
+        setIsMouseDown(true);
+      } else if (event.button === 2) {
+        setIsRightMouseDown(true);
+      }
+    };
+
+    window.addEventListener('mouseup', handleMouseUp);
+    window.addEventListener('mousedown', handleMouseDown);
+
+    return () => {
+      window.removeEventListener('mouseup', handleMouseUp);
+      window.removeEventListener('mousedown', handleMouseDown);
+    };
+  }, [reviewingHistory]);
 
   useEffect(() => {
     setHistoryIndex(Math.max(0, steps.length - 1));
@@ -229,13 +256,37 @@ const GardenerSimulator: React.FC<RuntimeProps> = ({
     setPosition((current) => clampPosition(current, width, nextHeight));
   };
 
-  const handleCellClick = (x: number, y: number) => {
+  const applySelectedTool = (x: number, y: number) => {
     if (selectedTool === 'position') {
       if (field[y][x] !== -1) setPosition({ x, y });
       return;
     }
     if (position.x === x && position.y === y && selectedTool === -1) return;
     setField((current) => setFieldCell(current, x, y, selectedTool));
+  };
+
+  const eraseCell = (x: number, y: number) => {
+    setField((current) => setFieldCell(current, x, y, 0));
+  };
+
+  const handleCellMouseDown = (event: React.MouseEvent, x: number, y: number) => {
+    event.preventDefault();
+
+    if (event.button === 0) {
+      applySelectedTool(x, y);
+    } else if (event.button === 2) {
+      eraseCell(x, y);
+    }
+  };
+
+  const handleCellMouseEnter = (event: React.MouseEvent, x: number, y: number) => {
+    event.preventDefault();
+
+    if (isRightMouseDown) {
+      eraseCell(x, y);
+    } else if (isMouseDown) {
+      applySelectedTool(x, y);
+    }
   };
 
   return (
@@ -366,7 +417,10 @@ const GardenerSimulator: React.FC<RuntimeProps> = ({
                       reviewingHistory && 'cursor-default'
                     )}
                     disabled={reviewingHistory}
-                    onClick={() => handleCellClick(x, y)}
+                    draggable={false}
+                    onContextMenu={(event) => event.preventDefault()}
+                    onMouseDown={(event) => handleCellMouseDown(event, x, y)}
+                    onMouseEnter={(event) => handleCellMouseEnter(event, x, y)}
                   >
                     {hasGardener && (
                       <span
