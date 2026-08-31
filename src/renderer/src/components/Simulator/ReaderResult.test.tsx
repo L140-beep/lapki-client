@@ -14,27 +14,25 @@ const result: SimulationResult = {
 };
 
 describe('ReaderResult', () => {
-  it('shows the last input and both ordered signal sequences', () => {
-    const html = renderToStaticMarkup(<ReaderResult result={result} input="Я🙂" stale={false} />);
+  it('shows output impulses without system events', () => {
+    const html = renderToStaticMarkup(<ReaderResult result={result} stale={false} />);
 
-    expect(html).toContain('Вход последнего запуска');
-    expect(html).toContain('Я🙂');
-    expect(html).toContain('2 символов');
-    expect(html).toContain('reader.char_accepted');
-    expect(html).toContain('reader.line_finished');
     expect(html).toContain('impulseA');
+    expect(html).not.toContain('reader.char_accepted');
+    expect(html).not.toContain('reader.line_finished');
+    expect(html).not.toContain('Системные события');
   });
 
   it('keeps a stale result visible with a warning', () => {
-    const html = renderToStaticMarkup(<ReaderResult result={result} input="text" stale />);
+    const html = renderToStaticMarkup(<ReaderResult result={result} stale />);
 
     expect(html).toContain('Результат устарел');
-    expect(html).toContain('reader.char_accepted');
+    expect(html).toContain('impulseA');
   });
 
   it('shows an empty state before the first run', () => {
-    const html = renderToStaticMarkup(<ReaderResult input="" stale={false} />);
+    const html = renderToStaticMarkup(<ReaderResult stale={false} />);
 
-    expect(html).toContain('Результат появится после запуска');
+    expect(html).toContain('Импульсы появятся после запуска');
   });
 });

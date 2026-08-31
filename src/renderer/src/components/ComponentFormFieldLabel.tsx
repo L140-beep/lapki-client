@@ -29,7 +29,7 @@ export const ComponentFormFieldLabel: React.FC<ComponentFormFieldLabelProps> = (
 
   return (
     <div className="w-full">
-      <Component className="grid w-full grid-cols-[max-content,1fr] items-center justify-start gap-2">
+      <Component className="grid w-full min-w-0 grid-cols-[max-content,minmax(0,1fr)] items-center justify-start gap-2">
         <div className={twMerge('flex w-20 gap-1', labelClassName)}>
           <span className="self-center">{label}</span>
           {hint && (
@@ -42,7 +42,7 @@ export const ComponentFormFieldLabel: React.FC<ComponentFormFieldLabelProps> = (
             </WithHint>
           )}
         </div>
-        <div className={twMerge(childrenDivClassname, 'w-full self-center')}>
+        <div className={twMerge(childrenDivClassname, 'w-full min-w-0 self-center')}>
           {children || (
             <div>
               <input

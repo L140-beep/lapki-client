@@ -68,4 +68,13 @@ describe('parseProgrammingTask', () => {
     expect(task.id).toBe('gardener-letter-a');
     expect(task.tests.map((test) => (test.input as { width: number }).width)).toEqual([5, 7, 9]);
   });
+
+  it('validates the bundled Gardener letter B task', () => {
+    const task = parseProgrammingTask(
+      JSON.parse(readFileSync('resources/tasks/gardener-letter-b.task.json', 'utf8'))
+    );
+
+    expect(task.id).toBe('gardener-letter-b');
+    expect(task.tests.map((test) => (test.input as { width: number }).width)).toEqual([5, 7, 9]);
+  });
 });

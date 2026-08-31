@@ -67,6 +67,8 @@ export const Header: React.FC<HeaderProps> = ({
 }) => {
   const rootRef = useRef<HTMLElement>(null);
   const [openMenu, setOpenMenu] = useState<HeaderMenu>(null);
+  const [simulatorStatus, setSimulatorStatus] = useState('Идет подключение...');
+  const [isAutoSizedSimulator, setIsAutoSizedSimulator] = useState(false);
   const [isCompilerOpen, openCompilerSettings, closeCompilerSettings] = useModal(false);
   const [isAboutModalOpen, openAboutModal, closeAboutModal] = useModal(false);
   const [isResetSettingsOpen, openResetSettings, closeResetSettings] = useModal(false);
@@ -260,7 +262,7 @@ export const Header: React.FC<HeaderProps> = ({
             История изменений
           </button>
           {openMenu === 'history' && (
-            <div className={`${popoverClass} w-[320px]`}>
+            <div className={`${popoverClass} w-[340px] rounded-lg`}>
               <History />
             </div>
           )}
@@ -271,14 +273,27 @@ export const Header: React.FC<HeaderProps> = ({
 
       <MovingModal
         id="simulator"
-        title="Симулятор"
+        title={
+          <div className="flex items-center gap-11">
+            <span>Симулятор</span>
+            <span className="font-normal">
+              Статус: <span className="text-primary">{simulatorStatus}</span>
+            </span>
+          </div>
+        }
         isOpen={isSimulatorOpen}
-        position={{ x: 32, y: 32 }}
+        position={{ x: 20, y: 18 }}
         onRequestClose={closeSimulatorWindow}
         hideCancelButton
-        className="h-[calc(100vh-64px)] w-[calc(100vw-64px)] p-3"
+        className={`max-h-[calc(100vh-36px)] max-w-[calc(100vw-40px)] p-6 [&>.content]:overflow-hidden ${
+          isAutoSizedSimulator ? 'h-fit w-fit' : 'h-[664px] w-[976px]'
+        }`}
       >
-        <Simulator initialSmId={initialSimulationSmId} />
+        <Simulator
+          initialSmId={initialSimulationSmId}
+          onStatusChange={setSimulatorStatus}
+          onAutoSizeChange={setIsAutoSizedSimulator}
+        />
       </MovingModal>
 
       {fileMenuModals}

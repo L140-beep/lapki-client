@@ -360,7 +360,7 @@ export const SerialMonitorTab: React.FC<SerialMonitorTabProps> = ({
         </label>
       </div>
 
-      <h2 className="mt-6 font-medium">Приём</h2>
+      <h2 className="h2-header mt-6">Приём</h2>
       <div
         className="mt-3 min-h-[120px] flex-1 select-text overflow-y-auto whitespace-break-spaces break-words rounded-lg border border-border-primary bg-bg-primary p-2 scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb"
         ref={deviceMessageContainerRef}
@@ -378,7 +378,7 @@ export const SerialMonitorTab: React.FC<SerialMonitorTabProps> = ({
         </button>
       </div>
 
-      <h2 className="mt-6 font-medium">Отправка</h2>
+      <h2 className="h2-header mt-6">Отправка</h2>
       <div className="mt-3 flex items-start gap-3">
         <WithHint hint={inputError}>
           {(hintProps) => (
@@ -433,7 +433,7 @@ export const SerialMonitorTab: React.FC<SerialMonitorTabProps> = ({
         </button>
       </div>
 
-      <h2 className="mt-6 font-medium">Журнал порта</h2>
+      <h2 className="h2-header mt-6">Журнал порта</h2>
       <div
         className="mt-3 h-[120px] min-h-[80px] select-text overflow-y-auto whitespace-break-spaces break-words rounded-lg border border-border-primary bg-bg-primary p-2 scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb"
         ref={logContainerRef}

@@ -2,7 +2,7 @@ import React, { useLayoutEffect, useMemo, useState } from 'react';
 
 import { SingleValue } from 'react-select';
 
-import { SelectOption } from '@renderer/components/UI';
+import { ParameterSelectOption } from '@renderer/components/UI';
 import { CanvasController } from '@renderer/lib/data/ModelController/CanvasController';
 import { PlatformManager } from '@renderer/lib/data/PlatformManager';
 import { useModelContext } from '@renderer/store/ModelContext';
@@ -39,15 +39,15 @@ export const useActionsModal = (
 
   const { getComponentOptions, getPropertyOptions } = useActions(smId, controller, null);
 
-  const componentOptions: SelectOption[] = useMemo(() => {
+  const componentOptions: ParameterSelectOption[] = useMemo(() => {
     return getComponentOptions('methods', isEditingEvent, iconClassName);
   }, [smId, platforms, componentsData, isEditingEvent, visual]);
 
-  const componentWithVariablesOptions: SelectOption[] = useMemo(() => {
+  const componentWithVariablesOptions: ParameterSelectOption[] = useMemo(() => {
     return getComponentOptions('variables', isEditingEvent, iconClassName);
   }, [smId, platforms, componentsData, isEditingEvent, visual]);
 
-  const methodOptions: SelectOption[] = useMemo(() => {
+  const methodOptions: ParameterSelectOption[] = useMemo(() => {
     if (!selectedComponent) return [];
     return getPropertyOptions(
       selectedComponent,
@@ -89,7 +89,7 @@ export const useActionsModal = (
     );
   };
 
-  const handleComponentChange = (value: SingleValue<SelectOption>) => {
+  const handleComponentChange = (value: SingleValue<ParameterSelectOption>) => {
     setSelectedComponent(value?.value ?? null);
     setSelectedMethod(null);
     setProtoParameters([]);
@@ -97,7 +97,7 @@ export const useActionsModal = (
     setErrors({});
   };
 
-  const handleMethodChange = (value: SingleValue<SelectOption>) => {
+  const handleMethodChange = (value: SingleValue<ParameterSelectOption>) => {
     setSelectedMethod(value?.value ?? null);
 
     updateParameters(selectedComponent, value?.value ?? null);

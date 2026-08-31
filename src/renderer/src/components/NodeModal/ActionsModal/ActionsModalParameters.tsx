@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 
 import { AttributeConstSwitch } from '@renderer/components/AttributeConstSwitch';
 import { ComponentFormFieldLabel } from '@renderer/components/ComponentFormFieldLabel';
-import { ParameterSelect, ScrollArea, Select, SelectOption } from '@renderer/components/UI';
+import { ParameterSelect, ParameterSelectOption, ScrollArea } from '@renderer/components/UI';
 import { CanvasController } from '@renderer/lib/data/ModelController/CanvasController';
 import { isVariable } from '@renderer/lib/utils';
 import { ArgList, Variable } from '@renderer/types/diagram';
@@ -26,8 +26,8 @@ interface ActionsModalParametersProps {
   errors: Record<string, string>;
   setErrors: React.Dispatch<React.SetStateAction<Record<string, string>>>;
 
-  componentOptions: SelectOption[];
-  attributeOptionsSearch: (selectedParameterComponent: string | null) => SelectOption[];
+  componentOptions: ParameterSelectOption[];
+  attributeOptionsSearch: (selectedParameterComponent: string | null) => ParameterSelectOption[];
 
   smId: string;
   controller: CanvasController;
@@ -121,8 +121,8 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
 
   return (
     <ScrollArea className="min-h-0 flex-1">
-      <div className="flex flex-col gap-2">
-        <h3 className="mb-1 text-xl">Параметры</h3>
+      <div className="flex min-w-0 flex-col gap-2">
+        <h3 className="mb-1 text-xs">Параметры</h3>
         {protoParameters.map((proto, idx) => {
           const { name, description = '', type = '', range } = proto;
           const parameter = parameters[name] ?? { value: '', order: idx };
@@ -148,7 +148,7 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
                 labelClassName="whitespace-pre"
                 hint={hint}
                 error={error}
-                childrenDivClassname="ml-[50px] w-[300px]"
+                childrenDivClassname="min-w-0 w-full"
               >
                 <ParameterSelect
                   options={options}
@@ -256,9 +256,9 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
                   error={error}
                 >
                   <div className="flex w-full gap-3">
-                    {/* Use `flex-1 min-w-0` so Select can shrink inside a flex row without forcing a wrap.
+                    {/* Use `flex-1 min-w-0` so ParameterSelect can shrink inside a flex row without forcing a wrap.
                       `h-8 box-border` keeps the control height fixed to prevent layout jumps. */}
-                    <Select
+                    <ParameterSelect
                       containerClassName={'flex-1 min-w-0 h-8 box-border'}
                       options={componentOptions}
                       onChange={(opt) =>
@@ -271,7 +271,7 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
                       noOptionsMessage={() => 'Нет подходящих компонентов'}
                       placeholder="Выберите компонент..."
                     />
-                    <Select
+                    <ParameterSelect
                       containerClassName={'flex-1 min-w-0 h-8 box-border'}
                       options={attributeOptions}
                       onChange={(opt) =>

@@ -2,7 +2,7 @@ import { useCallback, useMemo, useState } from 'react';
 
 import { SingleValue } from 'react-select';
 
-import { SelectOption } from '@renderer/components/UI';
+import { ParameterSelectOption } from '@renderer/components/UI';
 import { serializeEvent } from '@renderer/lib/data/GraphmlBuilder';
 import { variableRegex } from '@renderer/lib/data/GraphmlParser';
 import { CanvasController } from '@renderer/lib/data/ModelController/CanvasController';
@@ -38,7 +38,7 @@ export const useTrigger = (
 
   const [text, setText] = useState('');
 
-  const componentOptions: SelectOption[] = useMemo(() => {
+  const componentOptions: ParameterSelectOption[] = useMemo(() => {
     // Почему-то эта функция может вызываться раньше инициализации платформы
     // из-за чего возникают ошибки
     if (!controller.platform[smId]) {
@@ -83,7 +83,7 @@ export const useTrigger = (
     return result;
   }, [smId, controller, componentsData, addSystemComponents, controller.platform, visual]);
 
-  const methodOptions: SelectOption[] = useMemo(() => {
+  const methodOptions: ParameterSelectOption[] = useMemo(() => {
     if (!selectedComponent || !controller.platform[smId]) return [];
     const getAll = controller.platform[smId]['getAvailableEvents'];
     const getImg = controller.platform[smId]['getEventIconUrl'];
@@ -106,12 +106,12 @@ export const useTrigger = (
       });
   }, [smId, controller, selectedComponent]);
 
-  const handleComponentChange = useCallback((value: SingleValue<SelectOption>) => {
+  const handleComponentChange = useCallback((value: SingleValue<ParameterSelectOption>) => {
     setSelectedComponent(value?.value ?? null);
     setSelectedMethod(null);
   }, []);
 
-  const handleMethodChange = useCallback((value: SingleValue<SelectOption>) => {
+  const handleMethodChange = useCallback((value: SingleValue<ParameterSelectOption>) => {
     setSelectedMethod(value?.value ?? null);
     // debugger;
     // if (!visual && controller.platform[smId] && selectedComponent && value?.value)

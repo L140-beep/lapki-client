@@ -4,7 +4,7 @@ import { Controller, useForm } from 'react-hook-form';
 
 import { useSettings } from '@renderer/hooks';
 
-import { MovingModal, Select, TextField } from '../../UI';
+import { MovingModal, ParameterSelect, TextField } from '../../UI';
 
 type FormValues = Main['settings']['doc'];
 
@@ -110,7 +110,7 @@ export const DocSelectModal: React.FC<DocSelectModalProps> = ({ onClose, ...prop
             return (
               <label className="flex flex-col gap-2">
                 <span>Тип</span>
-                <Select
+                <ParameterSelect
                   containerClassName="w-36"
                   value={options.find((option) => option.value === value)}
                   onChange={handleChange}

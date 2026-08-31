@@ -1,5 +1,4 @@
 export * from './Badge';
-export * from './Select';
 export * from './ParameterSelect';
 export * from './Tabs';
 export * from './WithHint';

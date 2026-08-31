@@ -947,7 +947,7 @@ export const FlasherTab: React.FC = () => {
         </button>
       </div>
       <div className="mt-5 shrink-0">
-        <p className="mb-3 font-medium">Устройства на прошивку</p>
+        <p className="h2-header mb-3">Устройства на прошивку</p>
         <div className="mb-5 flex h-4 items-center gap-3">
           <Checkbox
             className="h-4 min-h-4 w-4 min-w-4 rounded-sm"
@@ -973,7 +973,7 @@ export const FlasherTab: React.FC = () => {
         <FlasherTable addressEnrtyEdit={addressEnrtyEdit} getEntryById={getEntryById} />
       </div>
       <div className="mt-5 shrink-0">{operationButtons()}</div>
-      <div className="mb-3 mt-6 shrink-0 font-medium">Журнал действий</div>
+      <div className="h2-header mb-3 mt-6 shrink-0">Журнал действий</div>
       <ScrollArea
         className="min-h-20 flex-1 rounded-lg border border-border-primary bg-bg-primary"
         viewportClassName="whitespace-break-spaces px-3 py-[7px]"

@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { Select } from '@renderer/components/UI';
+import { ParameterSelect } from '@renderer/components/UI';
 import { Action } from '@renderer/types/diagram';
 
 import { ActionsModalParameters } from './ActionsModalParameters';
@@ -42,24 +42,22 @@ export const ActionsModal: React.FC<ActionsModalProps> = (props) => {
         <p className="font-medium">Выберите действие</p>
       </div>
       <div className="mb-4 grid shrink-0 grid-cols-2 items-center gap-3">
-        <Select
+        <ParameterSelect
           className="w-full"
           options={componentOptions}
           value={componentOptions.find((o) => o.value === selectedComponent) ?? null}
           onChange={handleComponentChange}
           placeholder="Выберите компонент..."
-          isMulti={false}
           isClearable={false}
           isSearchable={false}
           noOptionsMessage={() => <div>Отсутствуют подходящие компоненты</div>}
         />
-        <Select
+        <ParameterSelect
           className="w-full"
           options={methodOptions}
           value={methodOptions.find((o) => o.value === selectedMethod) ?? null}
           onChange={handleMethodChange}
           placeholder="Выберите действие..."
-          isMulti={false}
           isClearable={false}
           isSearchable={false}
           noOptionsMessage={() => (

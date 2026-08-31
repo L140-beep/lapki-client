@@ -102,9 +102,10 @@ export const TaskBook: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   const [selectedTaskId, setSelectedTaskId] = useState<string>();
 
   useEffect(() => {
-    if (selectedTaskId && catalog.tasks.some((task) => task.id === selectedTaskId)) return;
-    setSelectedTaskId(activeTask?.id ?? catalog.tasks[0]?.id);
-  }, [activeTask?.id, catalog.tasks, selectedTaskId]);
+    if (selectedTaskId && !catalog.tasks.some((task) => task.id === selectedTaskId)) {
+      setSelectedTaskId(undefined);
+    }
+  }, [catalog.tasks, selectedTaskId]);
 
   const selectedTask = catalog.tasks.find((task) => task.id === selectedTaskId);
   const hasResults = useMemo(
@@ -158,60 +159,80 @@ export const TaskBook: React.FC<{ onClose: () => void }> = ({ onClose }) => {
         <p className="text-sm text-text-inactive">В resources/tasks нет доступных задач.</p>
       )}
 
-      <div className="grid min-h-0 flex-1 grid-rows-[auto_1fr] gap-3 overflow-hidden">
-        <div className="max-h-48 space-y-2 overflow-y-auto pr-1">
-          {catalog.tasks.map((task) => (
-            <button
-              key={task.id}
-              type="button"
-              className={`w-full rounded border p-3 text-left ${
-                selectedTaskId === task.id ? 'border-primary bg-bg-hover' : 'border-border-primary'
-              }`}
-              onClick={() => setSelectedTaskId(task.id)}
-            >
-              <div className="flex items-center justify-between gap-2">
-                <span className="font-medium">{task.title}</span>
-                {activeTask?.id === task.id && (
-                  <span className="text-xs text-primary">решается</span>
-                )}
-              </div>
-              <p className="mt-1 text-xs text-text-inactive">{task.summary}</p>
-            </button>
-          ))}
-        </div>
+      <div className="min-h-0 flex-1 space-y-2 overflow-y-auto pr-1">
+        {catalog.tasks.map((task) => {
+          const isSelected = selectedTaskId === task.id;
 
-        {selectedTask && (
-          <article className="min-h-0 overflow-y-auto rounded border border-border-primary p-3">
-            <div className="mb-3 flex flex-wrap items-center gap-2 text-xs">
-              <span className="rounded bg-bg-hover px-2 py-1">
-                {platformNames[selectedTask.platformId]}
-              </span>
-              <span>Версия {selectedTask.version}</span>
-              <span>{selectedTask.tests.length} теста(ов)</span>
-            </div>
-            <MarkdownDescription task={selectedTask} assetRootUrl={catalog.assetRootUrl} />
-            <div className="sticky bottom-0 mt-4 flex gap-2 bg-bg-primary py-2">
+          return (
+            <article
+              key={task.id}
+              className={`rounded border ${
+                isSelected ? 'border-primary bg-bg-hover' : 'border-border-primary'
+              }`}
+            >
               <button
                 type="button"
-                className="btn-primary"
-                disabled={submissionActive}
-                onClick={solve}
+                className="w-full p-3 text-left"
+                aria-expanded={isSelected}
+                onClick={() => setSelectedTaskId(isSelected ? undefined : task.id)}
               >
-                {activeTask?.id === selectedTask.id ? 'Продолжить решение' : 'Решать задачу'}
+                <div className="flex items-center justify-between gap-2">
+                  <span className="font-medium">{task.title}</span>
+                  {activeTask?.id === task.id && (
+                    <span className="text-xs text-primary">решается</span>
+                  )}
+                </div>
+                <p className="mt-1 text-xs text-text-inactive">{task.summary}</p>
               </button>
-              {activeTask?.id === selectedTask.id && (
-                <button
-                  type="button"
-                  className="btn-secondary"
-                  disabled={submissionActive}
-                  onClick={finishTask}
-                >
-                  Завершить задачу
-                </button>
+
+              {isSelected && (
+                <div className="border-t border-border-primary p-3">
+                  <div className="mb-3 flex items-start justify-between gap-2">
+                    <div className="flex flex-wrap items-center gap-2 text-xs">
+                      <span className="rounded bg-bg-primary px-2 py-1">
+                        {platformNames[task.platformId]}
+                      </span>
+                      <span>Версия {task.version}</span>
+                      <span>{task.tests.length} теста(ов)</span>
+                    </div>
+                    <button
+                      type="button"
+                      className="shrink-0 rounded-full p-2 hover:bg-bg-primary"
+                      aria-label="Закрыть задачу"
+                      title="Закрыть задачу"
+                      onClick={() => setSelectedTaskId(undefined)}
+                    >
+                      <Close width="0.875rem" height="0.875rem" />
+                    </button>
+                  </div>
+                  <MarkdownDescription task={task} assetRootUrl={catalog.assetRootUrl} />
+                  <div className="mt-4 flex gap-2">
+                    <button
+                      type="button"
+                      className="btn-primary"
+                      disabled={submissionActive}
+                      onClick={solve}
+                    >
+                      {activeTask?.id === task.id
+                        ? 'Продолжить решение'
+                        : 'Решать задачу'}
+                    </button>
+                    {activeTask?.id === task.id && (
+                      <button
+                        type="button"
+                        className="btn-secondary"
+                        disabled={submissionActive}
+                        onClick={finishTask}
+                      >
+                        Завершить задачу
+                      </button>
+                    )}
+                  </div>
+                </div>
               )}
-            </div>
-          </article>
-        )}
+            </article>
+          );
+        })}
       </div>
 
       {catalog.diagnostics.length > 0 && (

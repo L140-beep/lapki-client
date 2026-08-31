@@ -210,7 +210,7 @@ export const CompilerTab: React.FC = () => {
   return (
     <section className="flex h-full min-h-0 gap-8">
       <div className="flex w-[222px] shrink-0 flex-col">
-        <h2 className="mb-3 text-sm font-medium">Машины состояний</h2>
+        <h2 className="h2-header mb-3">Машины состояний</h2>
         <ScrollArea className="mb-4 max-h-[112px] py-0" viewportClassName="flex flex-col gap-2">
           <label className="flex cursor-pointer items-center gap-3">
             <Checkbox
@@ -277,7 +277,7 @@ export const CompilerTab: React.FC = () => {
       <div className="flex min-w-0 flex-1 flex-col">
         <div className="mb-3 flex min-h-5 items-center gap-5 overflow-x-auto">
           {sourceTabs.length === 0 ? (
-            <h2 className="text-sm font-medium">Журнал компиляции</h2>
+            <h2 className="h2-header">Журнал компиляции</h2>
           ) : (
             <>
               <button

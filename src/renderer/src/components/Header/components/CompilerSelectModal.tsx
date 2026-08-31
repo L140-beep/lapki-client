@@ -5,7 +5,7 @@ import { Controller, useForm } from 'react-hook-form';
 import { useSettings } from '@renderer/hooks';
 import { getUserOS, removeNonNumbers } from '@renderer/utils';
 
-import { MovingModal, Select, TextField } from '../../UI';
+import { MovingModal, ParameterSelect, TextField } from '../../UI';
 
 type FormValues = Main['settings']['compiler'];
 
@@ -93,7 +93,7 @@ export const CompilerSelectModal: React.FC<CompilerSelectModalProps> = ({ onClos
             return (
               <label className="flex flex-col gap-2">
                 <span>Тип</span>
-                <Select
+                <ParameterSelect
                   containerClassName="w-36"
                   value={options.find((opt) => opt.value === value)}
                   onChange={handleChange}

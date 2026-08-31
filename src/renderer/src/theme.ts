@@ -18,6 +18,7 @@ const colorNames = {
   'border-contrast': '--b-c',
   'border-primary': '--b-p',
   'border-warning': '--b-w',
+  'inactive-button': '--b-i',
 
   'text-primary': '--t-p',
   'text-secondary': '--t-s',

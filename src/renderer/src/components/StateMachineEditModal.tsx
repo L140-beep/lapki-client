@@ -1,7 +1,7 @@
 import { Controller, UseFormReturn } from 'react-hook-form';
 import { twMerge } from 'tailwind-merge';
 
-import { Modal, Select } from '@renderer/components/UI';
+import { Modal, ParameterSelect } from '@renderer/components/UI';
 import { StateMachineData } from '@renderer/lib/types';
 import { useModelContext } from '@renderer/store/ModelContext';
 
@@ -122,7 +122,7 @@ export const StateMachineEditModal: React.FC<StateMachineEditModalProps> = ({
               labelClassName="w-[72px]"
               error={errors.platform?.message}
             >
-              <Select
+              <ParameterSelect
                 className={twMerge('w-full', selectorDisable && 'opacity-60')}
                 isSearchable={false}
                 placeholder={isCreateMode ? 'Выберите платформу' : 'Выберите платформу...'}

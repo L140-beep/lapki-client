@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 
 import { twMerge } from 'tailwind-merge';
 
+import { ParameterSelect } from '@renderer/components/UI';
 import { exportStateMachineCGML } from '@renderer/lib/data/GraphmlBuilder';
 import { useModelContext } from '@renderer/store/ModelContext';
 import { getActiveTask, useTasks } from '@renderer/store/useTasks';
@@ -23,8 +24,10 @@ import {
   resizeField,
   setFieldCell,
 } from './model';
+import { ExecutionHistory } from './ExecutionHistory';
 import { countUnicodeCharacters, limitUnicodeCharacters } from './readerModel';
 import { ReaderResult } from './ReaderResult';
+import { SimulationMode, SimulationRunPanel } from './SimulationRunPanel';
 import {
   SimulationMachineOption,
   getSimulationMachineOptions,
@@ -37,9 +40,10 @@ import { useInterpreter } from './useInterpreter';
 
 interface SimulatorProps {
   initialSmId?: string;
+  onStatusChange?: (status: string) => void;
+  onAutoSizeChange?: (autoSize: boolean) => void;
 }
 
-type SimulationMode = 'finite' | 'endless';
 type GardenerTool = GardenerCell | 'position';
 type SimulationParameters = GardenerParameters | ReaderParameters;
 
@@ -53,21 +57,27 @@ interface RuntimeProps {
   onCancel: () => void;
 }
 
+interface GardenerRuntimeProps extends RuntimeProps {
+  machineSelector: React.ReactNode;
+}
+
+type ReaderRuntimeProps = GardenerRuntimeProps;
+
 const fieldTools: { value: GardenerTool; label: string; swatch: string }[] = [
-  { value: 0, label: 'Пусто', swatch: 'bg-bg-primary' },
-  { value: -1, label: 'Стена', swatch: 'bg-zinc-700' },
-  { value: 1, label: 'Роза', swatch: 'bg-rose-500' },
-  { value: 2, label: 'Мята', swatch: 'bg-emerald-500' },
-  { value: 3, label: 'Василёк', swatch: 'bg-sky-500' },
-  { value: 'position', label: 'Старт', swatch: 'bg-primary' },
+  { value: 'position', label: 'Старт', swatch: 'bg-[#ffd600]' },
+  { value: 0, label: 'Пусто', swatch: 'border border-border-primary bg-white' },
+  { value: -1, label: 'Стена', swatch: 'bg-[#333333]' },
+  { value: 1, label: 'Роза', swatch: 'bg-[#e87373]' },
+  { value: 2, label: 'Мята', swatch: 'bg-[#78ed9d]' },
+  { value: 3, label: 'Василёк', swatch: 'bg-[#65ced8]' },
 ];
 
 const cellStyles: Record<GardenerCell, string> = {
-  [-1]: 'bg-zinc-700',
+  [-1]: 'bg-[#333333]',
   0: 'bg-bg-primary',
-  1: 'bg-rose-500/80',
-  2: 'bg-emerald-500/80',
-  3: 'bg-sky-500/80',
+  1: 'bg-[#e87373]',
+  2: 'bg-[#78ed9d]',
+  3: 'bg-[#65ced8]',
 };
 
 const cellLabels: Record<GardenerCell, string> = {
@@ -85,79 +95,63 @@ const orientationRotation: Record<GardenerOrientation, string> = {
   west: '-rotate-90',
 };
 
-const controlClassName =
-  'w-full rounded border border-border-primary bg-bg-primary px-2 py-1.5 text-text-primary outline-none focus:border-primary';
+const orientationOptions: { value: GardenerOrientation; label: string }[] = [
+  { value: 'north', label: 'Север' },
+  { value: 'east', label: 'Восток' },
+  { value: 'south', label: 'Юг' },
+  { value: 'west', label: 'Запад' },
+];
 
-const buttonClassName =
-  'rounded px-3 py-2 font-medium transition-colors enabled:bg-primary enabled:text-text-secondary enabled:hover:bg-primaryHover disabled:cursor-not-allowed disabled:bg-bg-active disabled:text-text-disabled';
+const controlClassName =
+  'h-8 w-full rounded-lg border border-border-primary bg-bg-primary px-3 text-xs text-text-primary outline-none focus:border-primary';
 
 const PLAYBACK_INTERVAL_MS = 500;
-
-const Section: React.FC<React.PropsWithChildren<{ title: string; className?: string }>> = ({
-  title,
-  className,
-  children,
-}) => (
-  <section
-    className={twMerge('rounded-lg border border-border-primary bg-bg-secondary p-4', className)}
-  >
-    <h2 className="mb-3 text-base font-semibold">{title}</h2>
-    {children}
-  </section>
-);
 
 const FieldInput: React.FC<React.PropsWithChildren<{ label: string; htmlFor: string }>> = ({
   label,
   htmlFor,
   children,
 }) => (
-  <label className="grid gap-1 text-sm" htmlFor={htmlFor}>
-    <span className="text-text-inactive">{label}</span>
+  <label className="grid gap-2 text-xs" htmlFor={htmlFor}>
+    <span className="text-text-primary">{label}</span>
     {children}
   </label>
 );
 
-const SimulatorHeader: React.FC<{
+const MachineSelector: React.FC<{
   options: SimulationMachineOption[];
   selectedSmId?: string;
-  machine?: StateMachine;
-  status: string;
   active: boolean;
   onSelect: (smId: string) => void;
-}> = ({ options, selectedSmId, machine, status, active, onSelect }) => (
-  <header className="flex flex-wrap items-center gap-3 border-b border-border-primary px-5 py-3">
-    <div className="min-w-0">
-      <label className="grid gap-1 text-sm" htmlFor="simulator-state-machine">
-        <span className="text-text-inactive">Машина состояний</span>
-        <select
-          id="simulator-state-machine"
-          className={twMerge(controlClassName, 'min-w-64')}
-          value={selectedSmId ?? ''}
-          disabled={active || options.length === 0}
-          onChange={(event) => onSelect(event.target.value)}
-        >
-          {options.length === 0 && <option value="">Нет поддерживаемых машин</option>}
-          {options.map(({ id, machine: optionMachine }) => (
-            <option key={id} value={id}>
-              {optionMachine.name || id} ({optionMachine.platform})
-            </option>
-          ))}
-        </select>
-      </label>
-      {machine && (
-        <p className="mt-1 text-sm text-text-inactive">
-          {Object.keys(machine.states).length} состояний · {Object.keys(machine.transitions).length}{' '}
-          переходов
-        </p>
-      )}
-    </div>
-    <span className="ml-auto rounded-full border border-border-primary px-3 py-1 text-xs">
-      {status}
-    </span>
-  </header>
+}> = ({ options, selectedSmId, active, onSelect }) => (
+  <div className="min-w-0">
+    <label className="grid gap-2 text-xs" htmlFor="simulator-state-machine">
+      <span className="text-sm text-text-primary">Машина состояний</span>
+      <ParameterSelect
+        inputId="simulator-state-machine"
+        className="w-full"
+        isSearchable={false}
+        isClearable={false}
+        isDisabled={active || options.length === 0}
+        placeholder={options.length === 0 ? 'Нет поддерживаемых машин' : 'Выберите машину'}
+        noOptionsMessage={() => 'Нет поддерживаемых машин'}
+        options={options.map(({ id, machine: optionMachine }) => ({
+          value: id,
+          label: optionMachine.name || id,
+        }))}
+        value={options
+          .map(({ id, machine: optionMachine }) => ({ value: id, label: optionMachine.name || id }))
+          .find((option) => option.value === selectedSmId)}
+        onChange={(option) => {
+          if (option) onSelect(option.value);
+        }}
+      />
+    </label>
+  </div>
 );
 
-const GardenerSimulator: React.FC<RuntimeProps> = ({
+const GardenerSimulator: React.FC<GardenerRuntimeProps> = ({
+  machineSelector,
   ready,
   active,
   result,
@@ -170,7 +164,7 @@ const GardenerSimulator: React.FC<RuntimeProps> = ({
   const [height, setHeight] = useState(8);
   const [field, setField] = useState(() => createField(width, height));
   const [position, setPosition] = useState({ x: 0, y: 0 });
-  const [orientation, setOrientation] = useState<GardenerOrientation>('south');
+  const [orientation, setOrientation] = useState<GardenerOrientation>('east');
   const [selectedTool, setSelectedTool] = useState<GardenerTool>(0);
   const [isMouseDown, setIsMouseDown] = useState(false);
   const [isRightMouseDown, setIsRightMouseDown] = useState(false);
@@ -242,8 +236,14 @@ const GardenerSimulator: React.FC<RuntimeProps> = ({
     setIsPlaying((current) => !current);
   };
 
+  const stopHistoryPlayback = () => {
+    setIsPlaying(false);
+    setReviewingHistory(false);
+  };
+
   const updateWidth = (value: number) => {
     const nextWidth = Math.max(MIN_FIELD_SIZE, Math.min(MAX_FIELD_SIZE, value));
+    stopHistoryPlayback();
     setWidth(nextWidth);
     setField((current) => resizeField(current, nextWidth, height));
     setPosition((current) => clampPosition(current, nextWidth, height));
@@ -251,6 +251,7 @@ const GardenerSimulator: React.FC<RuntimeProps> = ({
 
   const updateHeight = (value: number) => {
     const nextHeight = Math.max(MIN_FIELD_SIZE, Math.min(MAX_FIELD_SIZE, value));
+    stopHistoryPlayback();
     setHeight(nextHeight);
     setField((current) => resizeField(current, width, nextHeight));
     setPosition((current) => clampPosition(current, width, nextHeight));
@@ -258,14 +259,19 @@ const GardenerSimulator: React.FC<RuntimeProps> = ({
 
   const applySelectedTool = (x: number, y: number) => {
     if (selectedTool === 'position') {
-      if (field[y][x] !== -1) setPosition({ x, y });
+      if (field[y][x] !== -1) {
+        stopHistoryPlayback();
+        setPosition({ x, y });
+      }
       return;
     }
     if (position.x === x && position.y === y && selectedTool === -1) return;
+    stopHistoryPlayback();
     setField((current) => setFieldCell(current, x, y, selectedTool));
   };
 
   const eraseCell = (x: number, y: number) => {
+    stopHistoryPlayback();
     setField((current) => setFieldCell(current, x, y, 0));
   };
 
@@ -290,117 +296,53 @@ const GardenerSimulator: React.FC<RuntimeProps> = ({
   };
 
   return (
-    <div className="grid min-h-0 flex-1 gap-4 overflow-auto p-4 xl:grid-cols-[17rem_minmax(28rem,1fr)_18rem]">
-      <div className="flex flex-col gap-4">
-        <Section title="Среда выполнения">
-          <div className="grid grid-cols-2 gap-3">
-            <FieldInput label="Ширина" htmlFor="simulator-field-width">
-              <input
-                id="simulator-field-width"
-                className={controlClassName}
-                type="number"
-                min={MIN_FIELD_SIZE}
-                max={MAX_FIELD_SIZE}
-                value={width}
-                disabled={reviewingHistory}
-                onChange={(event) => updateWidth(Number(event.target.value))}
-              />
-            </FieldInput>
-            <FieldInput label="Высота" htmlFor="simulator-field-height">
-              <input
-                id="simulator-field-height"
-                className={controlClassName}
-                type="number"
-                min={MIN_FIELD_SIZE}
-                max={MAX_FIELD_SIZE}
-                value={height}
-                disabled={reviewingHistory}
-                onChange={(event) => updateHeight(Number(event.target.value))}
-              />
-            </FieldInput>
-            <FieldInput label="Старт X" htmlFor="simulator-position-x">
-              <input
-                id="simulator-position-x"
-                className={controlClassName}
-                type="number"
-                min={0}
-                max={width - 1}
-                value={position.x}
-                disabled={reviewingHistory}
-                onChange={(event) =>
-                  setPosition((current) =>
-                    clampPosition({ ...current, x: Number(event.target.value) }, width, height)
-                  )
-                }
-              />
-            </FieldInput>
-            <FieldInput label="Старт Y" htmlFor="simulator-position-y">
-              <input
-                id="simulator-position-y"
-                className={controlClassName}
-                type="number"
-                min={0}
-                max={height - 1}
-                value={position.y}
-                disabled={reviewingHistory}
-                onChange={(event) =>
-                  setPosition((current) =>
-                    clampPosition({ ...current, y: Number(event.target.value) }, width, height)
-                  )
-                }
-              />
-            </FieldInput>
-          </div>
-          <FieldInput label="Ориентация" htmlFor="simulator-orientation">
-            <select
-              id="simulator-orientation"
-              className={controlClassName}
-              value={orientation}
-              disabled={reviewingHistory}
-              onChange={(event) => setOrientation(event.target.value as GardenerOrientation)}
-            >
-              <option value="north">Север</option>
-              <option value="east">Восток</option>
-              <option value="south">Юг</option>
-              <option value="west">Запад</option>
-            </select>
-          </FieldInput>
-        </Section>
+    <div className="grid min-h-0 flex-1 grid-cols-[205px_minmax(398px,1fr)_228px] gap-x-6 gap-y-5 overflow-auto text-sm max-[983px]:grid-cols-[205px_minmax(398px,1fr)] max-[729px]:grid-cols-1">
+      <div className="min-w-0">
+        <SimulationRunPanel
+          machineSelector={machineSelector}
+          mode={mode}
+          timeout={timeout}
+          ready={ready}
+          active={active}
+          error={error}
+          message={result?.message}
+          stale={stale}
+          onModeChange={(nextMode) => {
+            stopHistoryPlayback();
+            setMode(nextMode);
+          }}
+          onTimeoutChange={(nextTimeout) => {
+            stopHistoryPlayback();
+            setTimeoutValue(nextTimeout);
+          }}
+          onStart={() =>
+            onStart(mode, timeout, {
+              width,
+              height,
+              field,
+              position,
+              orientation: orientation.toUpperCase() as Uppercase<GardenerOrientation>,
+            })
+          }
+          onCancel={onCancel}
+        />
 
-        <Section title="Инструменты поля">
-          <div className="grid grid-cols-2 gap-2">
-            {fieldTools.map((tool) => (
-              <button
-                key={tool.label}
-                type="button"
-                disabled={reviewingHistory}
-                className={twMerge(
-                  'flex items-center gap-2 rounded border border-border-primary px-2 py-2 text-left text-sm hover:bg-bg-hover',
-                  selectedTool === tool.value && 'border-primary bg-bg-active'
-                )}
-                onClick={() => setSelectedTool(tool.value)}
-              >
-                <span className={twMerge('size-3 rounded-sm', tool.swatch)} />
-                {tool.label}
-              </button>
-            ))}
-          </div>
-          <button
-            type="button"
-            className="mt-3 w-full rounded border border-border-primary px-3 py-2 text-sm hover:bg-bg-hover"
-            disabled={reviewingHistory}
-            onClick={() => setField(createField(width, height))}
-          >
-            Очистить поле
-          </button>
-        </Section>
+        <ExecutionHistory
+          steps={steps}
+          historyIndex={historyIndex}
+          isPlaying={isPlaying}
+          isTruncated={result?.warnings?.includes('EXECUTION_HISTORY_TRUNCATED') ?? false}
+          onSelectStep={selectHistoryStep}
+          onTogglePlayback={togglePlayback}
+        />
       </div>
 
-      <Section title="Поле Садовника" className="flex min-h-[32rem] min-w-0 flex-col">
-        <div className="flex min-h-0 flex-1 items-center justify-center overflow-auto rounded bg-bg-primary p-4">
+      <section className="min-w-0">
+        <h2 className="h2-header mb-2">Поле</h2>
+        <div className="overflow-auto rounded-lg bg-bg-secondary p-3">
           <div
-            className="grid gap-1"
-            style={{ gridTemplateColumns: `repeat(${width}, minmax(1.75rem, 2.5rem))` }}
+            className="grid w-max gap-1.5"
+            style={{ gridTemplateColumns: `repeat(${width}, 2rem)` }}
           >
             {displayedField.flatMap((row, y) =>
               row.map((cell, x) => {
@@ -412,11 +354,10 @@ const GardenerSimulator: React.FC<RuntimeProps> = ({
                     title={`${x}, ${y}: ${cellLabels[cell]}`}
                     aria-label={`Клетка ${x}, ${y}: ${cellLabels[cell]}`}
                     className={twMerge(
-                      'relative aspect-square min-h-7 rounded-sm border border-border-primary transition hover:border-primary',
+                      'relative size-8 rounded-lg',
                       cellStyles[cell],
                       reviewingHistory && 'cursor-default'
                     )}
-                    disabled={reviewingHistory}
                     draggable={false}
                     onContextMenu={(event) => event.preventDefault()}
                     onMouseDown={(event) => handleCellMouseDown(event, x, y)}
@@ -426,7 +367,7 @@ const GardenerSimulator: React.FC<RuntimeProps> = ({
                       <span
                         aria-label="Стартовая позиция Садовника"
                         className={twMerge(
-                          'absolute inset-0 flex items-center justify-center text-xl text-text-primary drop-shadow transition-transform',
+                          'absolute inset-0 flex items-center justify-center text-xl text-[#ffd600] transition-transform',
                           orientationRotation[displayedOrientation]
                         )}
                       >
@@ -439,134 +380,138 @@ const GardenerSimulator: React.FC<RuntimeProps> = ({
             )}
           </div>
         </div>
-        <p className="mt-3 text-sm text-text-inactive">
+        <p className="mt-6 max-w-[398px] text-xs leading-4 text-text-inactive">
           {reviewingHistory
             ? `Просмотр шага ${historyIndex + 1} из ${steps.length}.`
-            : 'Выберите инструмент и нажмите на клетку. Значок «Старт» переносит начальную позицию.'}
+            : 'Выберите инструмент и нажмите на клетку. Кнопка “Старт” переносит начальную позицию.'}
         </p>
-      </Section>
+      </section>
 
-      <div className="flex flex-col gap-4">
-        <Section title="Запуск">
-          <FieldInput label="Режим" htmlFor="simulator-mode">
-            <select
-              id="simulator-mode"
-              className={controlClassName}
-              value={mode}
-              onChange={(event) => setMode(event.target.value as SimulationMode)}
-            >
-              <option value="finite">Обычный</option>
-              <option value="endless">Бесконечный</option>
-            </select>
-          </FieldInput>
-          <FieldInput label="Таймаут, секунд" htmlFor="simulator-timeout">
-            <input
-              id="simulator-timeout"
-              className={controlClassName}
-              type="number"
-              min={1}
-              max={30}
-              value={timeout}
-              disabled={mode === 'endless'}
-              onChange={(event) =>
-                setTimeoutValue(Math.max(1, Math.min(30, Number(event.target.value))))
-              }
-            />
-          </FieldInput>
-          <div className="mt-4 grid grid-cols-2 gap-2">
-            <button
-              type="button"
-              className={buttonClassName}
-              disabled={!ready || active}
-              onClick={() =>
-                onStart(mode, timeout, {
-                  width,
-                  height,
-                  field,
-                  position,
-                  orientation: orientation.toUpperCase() as Uppercase<GardenerOrientation>,
-                })
-              }
-            >
-              Запустить
-            </button>
-            <button type="button" className={buttonClassName} disabled={!active} onClick={onCancel}>
-              Отменить
-            </button>
-          </div>
-          {error && <p className="mt-3 text-sm text-error">{error}</p>}
-          {result?.message && <p className="mt-3 text-sm">{result.message}</p>}
-          {stale && <p className="mt-3 text-sm text-warning">Результат устарел.</p>}
-        </Section>
-
-        <Section title="История выполнения" className="flex-1">
-          {steps.length === 0 ? (
-            <div className="rounded border border-dashed border-border-primary p-4 text-center text-sm text-text-inactive">
-              История появится после запуска.
+      <div className="min-w-0 max-[983px]:col-span-2 max-[729px]:col-span-1">
+        <section>
+          <h2 className="h2-header mb-2">Настройки поля</h2>
+          <div className="rounded-lg border border-border-primary p-3">
+            <div className="grid grid-cols-2 gap-3">
+              <FieldInput label="Ширина" htmlFor="simulator-field-width">
+                <input
+                  id="simulator-field-width"
+                  className={controlClassName}
+                  type="number"
+                  min={MIN_FIELD_SIZE}
+                  max={MAX_FIELD_SIZE}
+                  value={width}
+                  onChange={(event) => updateWidth(Number(event.target.value))}
+                />
+              </FieldInput>
+              <FieldInput label="Высота" htmlFor="simulator-field-height">
+                <input
+                  id="simulator-field-height"
+                  className={controlClassName}
+                  type="number"
+                  min={MIN_FIELD_SIZE}
+                  max={MAX_FIELD_SIZE}
+                  value={height}
+                  onChange={(event) => updateHeight(Number(event.target.value))}
+                />
+              </FieldInput>
+              <FieldInput label="Старт X" htmlFor="simulator-position-x">
+                <input
+                  id="simulator-position-x"
+                  className={controlClassName}
+                  type="number"
+                  min={0}
+                  max={width - 1}
+                  value={position.x}
+                  onChange={(event) => {
+                    stopHistoryPlayback();
+                    setPosition((current) =>
+                      clampPosition({ ...current, x: Number(event.target.value) }, width, height)
+                    );
+                  }}
+                />
+              </FieldInput>
+              <FieldInput label="Старт Y" htmlFor="simulator-position-y">
+                <input
+                  id="simulator-position-y"
+                  className={controlClassName}
+                  type="number"
+                  min={0}
+                  max={height - 1}
+                  value={position.y}
+                  onChange={(event) => {
+                    stopHistoryPlayback();
+                    setPosition((current) =>
+                      clampPosition({ ...current, y: Number(event.target.value) }, width, height)
+                    );
+                  }}
+                />
+              </FieldInput>
             </div>
-          ) : (
-            <div className="grid gap-3 text-sm">
-              <input
-                aria-label="Шаг истории"
-                type="range"
-                min={0}
-                max={steps.length - 1}
-                value={historyIndex}
-                onChange={(event) => selectHistoryStep(Number(event.target.value))}
-              />
-              <div className="grid grid-cols-2 gap-2">
-                <button type="button" className={buttonClassName} onClick={togglePlayback}>
-                  {isPlaying ? 'Пауза' : 'Воспроизвести'}
-                </button>
+            <div className="mt-3">
+              <FieldInput label="Направление" htmlFor="simulator-orientation">
+                <ParameterSelect
+                  inputId="simulator-orientation"
+                  className="w-full"
+                  isSearchable={false}
+                  isClearable={false}
+                  options={orientationOptions}
+                  value={orientationOptions.find((option) => option.value === orientation)}
+                  onChange={(option) => {
+                    if (!option) return;
+                    stopHistoryPlayback();
+                    setOrientation(option.value);
+                  }}
+                />
+              </FieldInput>
+            </div>
+          </div>
+        </section>
+
+        <section className="mt-6">
+          <h2 className="h2-header mb-2">Инструменты</h2>
+          <div className="rounded-lg border border-border-primary p-3">
+            <div className="grid grid-cols-2 gap-2">
+              {fieldTools.map((tool) => (
                 <button
+                  key={tool.label}
                   type="button"
-                  className={buttonClassName}
-                  disabled={!reviewingHistory}
+                  className={twMerge(
+                    'flex h-8 items-center gap-2 rounded-lg border border-border-primary px-3 text-left text-xs transition-colors hover:bg-bg-hover',
+                    selectedTool === tool.value && 'bg-bg-active'
+                  )}
                   onClick={() => {
-                    setIsPlaying(false);
-                    setReviewingHistory(false);
+                    stopHistoryPlayback();
+                    setSelectedTool(tool.value);
                   }}
                 >
-                  К настройке
+                  {tool.value === 'position' ? (
+                    <span className="text-base leading-none text-[#ffd600]">▼</span>
+                  ) : (
+                    <span className={twMerge('size-4 shrink-0 rounded-full', tool.swatch)} />
+                  )}
+                  {tool.label}
                 </button>
-              </div>
-              <div className="flex items-center justify-between gap-2">
-                <button
-                  type="button"
-                  className={buttonClassName}
-                  disabled={historyIndex === 0}
-                  onClick={() => selectHistoryStep(historyIndex - 1)}
-                >
-                  Назад
-                </button>
-                <span>
-                  Шаг {historyIndex + 1} / {steps.length}
-                </span>
-                <button
-                  type="button"
-                  className={buttonClassName}
-                  disabled={historyIndex === steps.length - 1}
-                  onClick={() => selectHistoryStep(historyIndex + 1)}
-                >
-                  Вперёд
-                </button>
-              </div>
-              <p className="text-text-inactive">
-                Позиция: {steps[historyIndex].position.x}, {steps[historyIndex].position.y} ·{' '}
-                {steps[historyIndex].orientation}
-              </p>
-              {result?.warnings?.includes('EXECUTION_HISTORY_TRUNCATED') && (
-                <p className="text-warning">Показаны первые 5 000 шагов.</p>
-              )}
+              ))}
             </div>
-          )}
-        </Section>
+            <button
+              type="button"
+              className="mt-2 h-8 w-full rounded-lg border border-border-primary px-3 text-xs transition-colors hover:bg-bg-hover"
+              onClick={() => {
+                stopHistoryPlayback();
+                setField(createField(width, height));
+              }}
+            >
+              Очистить поле
+            </button>
+          </div>
+        </section>
       </div>
     </div>
   );
 };
 
-const ReaderSimulator: React.FC<RuntimeProps> = ({
+const ReaderSimulator: React.FC<ReaderRuntimeProps> = ({
+  machineSelector,
   ready,
   active,
   result,
@@ -576,81 +521,56 @@ const ReaderSimulator: React.FC<RuntimeProps> = ({
   onCancel,
 }) => {
   const [message, setMessage] = useState('');
-  const [lastRunMessage, setLastRunMessage] = useState('');
   const [mode, setMode] = useState<SimulationMode>('finite');
   const [timeout, setTimeoutValue] = useState(10);
 
   return (
-    <div className="grid min-h-0 flex-1 gap-4 overflow-auto p-4 lg:grid-cols-[minmax(24rem,2fr)_minmax(18rem,1fr)]">
-      <Section title="Входная строка" className="flex min-h-[24rem] flex-col">
-        <textarea
-          aria-label="Входная строка"
-          className={twMerge(
-            controlClassName,
-            'min-h-52 max-w-none flex-1 resize-none font-Fira-Mono'
-          )}
-          value={message}
-          placeholder="Введите строку для обработки"
-          onChange={(event) => setMessage(limitUnicodeCharacters(event.target.value, 10_000))}
-        />
-        <div className="mt-2 flex justify-end text-xs text-text-inactive">
-          <span>{countUnicodeCharacters(message)} / 10 000</span>
-        </div>
-      </Section>
-      <div className="flex flex-col gap-4">
-        <Section title="Запуск">
-          <FieldInput label="Режим" htmlFor="reader-simulator-mode">
-            <select
-              id="reader-simulator-mode"
-              className={controlClassName}
-              value={mode}
-              onChange={(event) => setMode(event.target.value as SimulationMode)}
-            >
-              <option value="finite">Обычный</option>
-              <option value="endless">Бесконечный</option>
-            </select>
-          </FieldInput>
-          <FieldInput label="Таймаут, секунд" htmlFor="reader-simulator-timeout">
-            <input
-              id="reader-simulator-timeout"
-              className={controlClassName}
-              type="number"
-              min={1}
-              max={30}
-              value={timeout}
-              disabled={mode === 'endless'}
-              onChange={(event) =>
-                setTimeoutValue(Math.max(1, Math.min(30, Number(event.target.value))))
-              }
-            />
-          </FieldInput>
-          <div className="grid grid-cols-2 gap-2">
-            <button
-              type="button"
-              className={buttonClassName}
-              disabled={!ready || active}
-              onClick={() => {
-                setLastRunMessage(message);
-                onStart(mode, timeout, { message });
-              }}
-            >
-              Запустить
-            </button>
-            <button type="button" className={buttonClassName} disabled={!active} onClick={onCancel}>
-              Отменить
-            </button>
+    <div className="grid min-h-0 flex-1 grid-cols-[190px_250px_170px] content-start justify-start gap-x-4 gap-y-5 overflow-auto text-sm max-[729px]:grid-cols-1">
+      <SimulationRunPanel
+        machineSelector={machineSelector}
+        mode={mode}
+        timeout={timeout}
+        ready={ready}
+        active={active}
+        error={error}
+        onModeChange={setMode}
+        onTimeoutChange={setTimeoutValue}
+        onStart={() => onStart(mode, timeout, { message })}
+        onCancel={onCancel}
+      />
+
+      <section className="min-w-0">
+        <h2 className="h2-header mb-2">Импульсы</h2>
+        <ReaderResult result={result} stale={stale} />
+      </section>
+
+      <section className="min-w-0 max-[983px]:col-span-2 max-[729px]:col-span-1">
+        <h2 className="h2-header mb-2">Входная строка</h2>
+        <div className="rounded-lg border border-border-primary p-3">
+          <textarea
+            aria-label="Входная строка"
+            className={twMerge(
+              controlClassName,
+              'h-32 min-h-32 max-w-none resize-y py-2 font-Fira-Mono leading-4'
+            )}
+            value={message}
+            placeholder="Введите строку"
+            onChange={(event) => setMessage(limitUnicodeCharacters(event.target.value, 10_000))}
+          />
+          <div className="mt-2 flex justify-end text-xs text-text-inactive">
+            <span>{countUnicodeCharacters(message)} / 10 000</span>
           </div>
-          {error && <p className="mt-3 text-sm text-error">{error}</p>}
-        </Section>
-        <Section title="Результат" className="flex-1">
-          <ReaderResult result={result} input={lastRunMessage} stale={stale} />
-        </Section>
-      </div>
+        </div>
+      </section>
     </div>
   );
 };
 
-export const Simulator: React.FC<SimulatorProps> = ({ initialSmId }) => {
+export const Simulator: React.FC<SimulatorProps> = ({
+  initialSmId,
+  onStatusChange,
+  onAutoSizeChange,
+}) => {
   const modelController = useModelContext();
   const interpreter = useInterpreter();
   const [activeTask, solutionMachineId, selectSolution] = useTasks((state) => [
@@ -691,6 +611,18 @@ export const Simulator: React.FC<SimulatorProps> = ({ initialSmId }) => {
     lastRunXml,
     currentXml
   );
+
+  useEffect(() => {
+    onStatusChange?.(interpreter.status);
+  }, [interpreter.status, onStatusChange]);
+
+  useEffect(() => {
+    onAutoSizeChange?.(
+      activeTask?.platformId === 'junior-gardener' ||
+        (!activeTask &&
+          (machine?.platform === 'junior-reader' || machine?.platform === 'junior-gardener'))
+    );
+  }, [activeTask, machine?.platform, onAutoSizeChange]);
 
   useEffect(() => {
     if (!activeTask) return;
@@ -752,13 +684,6 @@ export const Simulator: React.FC<SimulatorProps> = ({ initialSmId }) => {
 
   const submitTask = () => {
     if (!activeTask || !selectedSmId || !currentXml) return;
-    if (
-      !window.confirm(
-        'Будут последовательно запущены все тесты. Проверку нельзя отменить, закрыть Simulator или изменить диаграмму до завершения. Продолжить?'
-      )
-    ) {
-      return;
-    }
     interpreter.startSubmission({
       xml: currentXml,
       machineId: selectedSmId,
@@ -767,20 +692,36 @@ export const Simulator: React.FC<SimulatorProps> = ({ initialSmId }) => {
   };
 
   return (
-    <div className="flex h-full min-h-0 flex-col bg-bg-primary text-text-primary">
-      <SimulatorHeader
-        options={options}
-        selectedSmId={selectedSmId}
-        machine={machine}
-        status={interpreter.status}
-        active={interpreter.active}
-        onSelect={selectMachine}
-      />
+    <div
+      className={twMerge(
+        'flex h-full min-h-0 flex-col bg-bg-primary text-text-primary',
+        !onStatusChange && 'p-4'
+      )}
+    >
+      {!onStatusChange && (
+        <div className="mb-6 flex items-center gap-11 border-b border-border-primary pb-3 text-sm font-medium">
+          <span>Симулятор</span>
+          <span className="font-normal">
+            Статус: <span className="text-primary">{interpreter.status}</span>
+          </span>
+        </div>
+      )}
       {!machine && (
         <div className="p-6 text-text-inactive">
           {activeTask
             ? `В текущем документе нет машины для платформы ${activeTask.platformId}. Откройте или создайте совместимый документ.`
             : 'В текущем документе нет машин с поддержкой симуляции.'}
+        </div>
+      )}
+      {(activeTask ||
+        (machine?.platform !== 'junior-gardener' && machine?.platform !== 'junior-reader')) && (
+        <div className="mb-4 w-64 max-w-full">
+          <MachineSelector
+            options={options}
+            selectedSmId={selectedSmId}
+            active={interpreter.active}
+            onSelect={selectMachine}
+          />
         </div>
       )}
       {activeTask && (
@@ -799,6 +740,14 @@ export const Simulator: React.FC<SimulatorProps> = ({ initialSmId }) => {
       {!activeTask && machine?.platform === 'junior-gardener' && (
         <GardenerSimulator
           {...interpreter}
+          machineSelector={
+            <MachineSelector
+              options={options}
+              selectedSmId={selectedSmId}
+              active={interpreter.active}
+              onSelect={selectMachine}
+            />
+          }
           stale={resultStale}
           onStart={start}
           onCancel={interpreter.cancel}
@@ -807,6 +756,14 @@ export const Simulator: React.FC<SimulatorProps> = ({ initialSmId }) => {
       {!activeTask && machine?.platform === 'junior-reader' && (
         <ReaderSimulator
           {...interpreter}
+          machineSelector={
+            <MachineSelector
+              options={options}
+              selectedSmId={selectedSmId}
+              active={interpreter.active}
+              onSelect={selectMachine}
+            />
+          }
           stale={resultStale}
           onStart={start}
           onCancel={interpreter.cancel}

@@ -55,6 +55,10 @@ export const MovingModal: React.FC<ModalProps> = ({
   onCancel,
   ...props
 }) => {
+  const hasFooter = Boolean(
+    sideLabel || middleLabel || !hideCancelButton || extraLabel || onSubmit
+  );
+
   const handleCancel = (e: React.MouseEvent) => {
     // debugger;
     if (onCancel) return onCancel();
@@ -81,51 +85,53 @@ export const MovingModal: React.FC<ModalProps> = ({
       <form onSubmit={onSubmit} className="flex h-full min-h-0 flex-col">
         <div className="min-h-0 flex-1">{children}</div>
 
-        <div className="flex items-center justify-end gap-2 pt-3">
-          <button
-            type="button"
-            className={
-              sideClassName ?? 'btn-secondary border border-primary font-medium text-primary'
-            }
-            onClick={onSide}
-            hidden={!sideLabel}
-          >
-            {sideLabel}
-          </button>
-          <button
-            type="button"
-            className={middleClassName ?? 'btn-secondary'}
-            onClick={onMiddle}
-            hidden={!middleLabel}
-          >
-            {middleLabel}
-          </button>
-          <div className="flex-grow"></div>
-          <button
-            type="button"
-            className={cancelClassName ?? 'btn-secondary'}
-            onClick={handleCancel}
-            hidden={hideCancelButton}
-          >
-            {cancelLabel ?? 'Закрыть'}
-          </button>
-          <button
-            type="button"
-            className={extraClassName ?? 'btn-primary'}
-            hidden={!extraLabel}
-            onClick={onExtra}
-          >
-            {extraLabel ?? ''}
-          </button>
-          <button
-            type="submit"
-            className={submitClassName ?? 'btn-primary'}
-            hidden={!onSubmit}
-            disabled={submitDisabled}
-          >
-            {submitLabel ?? 'Сохранить'}
-          </button>
-        </div>
+        {hasFooter && (
+          <div className="flex items-center justify-end gap-2 pt-3">
+            <button
+              type="button"
+              className={
+                sideClassName ?? 'btn-secondary border border-primary font-medium text-primary'
+              }
+              onClick={onSide}
+              hidden={!sideLabel}
+            >
+              {sideLabel}
+            </button>
+            <button
+              type="button"
+              className={middleClassName ?? 'btn-secondary'}
+              onClick={onMiddle}
+              hidden={!middleLabel}
+            >
+              {middleLabel}
+            </button>
+            <div className="flex-grow"></div>
+            <button
+              type="button"
+              className={cancelClassName ?? 'btn-secondary'}
+              onClick={handleCancel}
+              hidden={hideCancelButton}
+            >
+              {cancelLabel ?? 'Закрыть'}
+            </button>
+            <button
+              type="button"
+              className={extraClassName ?? 'btn-primary'}
+              hidden={!extraLabel}
+              onClick={onExtra}
+            >
+              {extraLabel ?? ''}
+            </button>
+            <button
+              type="submit"
+              className={submitClassName ?? 'btn-primary'}
+              hidden={!onSubmit}
+              disabled={submitDisabled}
+            >
+              {submitLabel ?? 'Сохранить'}
+            </button>
+          </div>
+        )}
       </form>
     </Window>
   );

@@ -5,7 +5,7 @@ import { Controller, useForm } from 'react-hook-form';
 import { useSettings } from '@renderer/hooks';
 import { removeNonNumbers } from '@renderer/utils';
 
-import { MovingModal, Select, TextField } from '../../UI';
+import { MovingModal, ParameterSelect, TextField } from '../../UI';
 
 const options = [
   { value: 'remote', label: 'Удалённый' },
@@ -98,7 +98,7 @@ export const FlasherSelectModal: React.FC<FlasherSelectModalProps> = ({
             return (
               <label className="flex flex-col gap-2">
                 <span>Тип</span>
-                <Select
+                <ParameterSelect
                   containerClassName="w-36"
                   value={options.find((option) => option.value === value)}
                   onChange={handleChange}

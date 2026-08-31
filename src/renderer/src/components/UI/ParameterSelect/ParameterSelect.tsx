@@ -1,26 +1,73 @@
 import React from 'react';
 
-import ReactSelect, { GroupBase, MenuListProps, Props } from 'react-select';
+import { mergeRefs } from 'react-merge-refs';
+import ReactSelect, {
+  components,
+  GroupBase,
+  MenuListProps,
+  OptionProps,
+  Props,
+  SingleValueProps,
+} from 'react-select';
 import { twMerge } from 'tailwind-merge';
 
 import { ScrollArea } from '../ScrollArea';
+import { WithHint } from '../WithHint';
 
 import './style.css';
 
-export interface ParameterSelectOption<Value extends string | number = string | number> {
+export interface ParameterSelectOption<Value extends string | number = string> {
   value: Value;
   label: React.ReactNode;
+  name?: string;
+  hint?: string;
+  icon?: React.ReactNode;
 }
 
+const ParameterOption = <Value extends string | number>({
+  innerRef,
+  ...props
+}: OptionProps<ParameterSelectOption<Value>>) => {
+  const { hint, icon, label } = props.data;
+
+  return (
+    <WithHint hint={hint} placement="right" offset={7}>
+      {({ ref, ...hintProps }) => (
+        <components.Option innerRef={mergeRefs([innerRef, ref])} {...props} {...hintProps}>
+          <div className="flex items-center">
+            {icon}
+            {label}
+          </div>
+        </components.Option>
+      )}
+    </WithHint>
+  );
+};
+
+const ParameterSingleValue = <Value extends string | number>(
+  props: SingleValueProps<ParameterSelectOption<Value>>
+) => {
+  const { icon, label } = props.data;
+
+  return (
+    <components.SingleValue {...props}>
+      <div className="flex items-center">
+        {icon}
+        {label}
+      </div>
+    </components.SingleValue>
+  );
+};
+
 const ParameterMenuList = <
-  Value extends string | number,
-  Group extends GroupBase<ParameterSelectOption<Value>> = GroupBase<ParameterSelectOption<Value>>
+  Option extends ParameterSelectOption,
+  Group extends GroupBase<Option> = GroupBase<Option>
 >({
   children,
   innerRef,
   innerProps,
   maxHeight,
-}: MenuListProps<ParameterSelectOption<Value>, false, Group>) => {
+}: MenuListProps<Option, false, Group>) => {
   const { style, ...otherInnerProps } = innerProps;
 
   return (
@@ -36,9 +83,9 @@ const ParameterMenuList = <
 };
 
 type ParameterSelectProps<
-  Value extends string | number,
-  Group extends GroupBase<ParameterSelectOption<Value>> = GroupBase<ParameterSelectOption<Value>>
-> = Omit<Props<ParameterSelectOption<Value>, false, Group>, 'isMulti'> & {
+  Option extends ParameterSelectOption,
+  Group extends GroupBase<Option> = GroupBase<Option>
+> = Omit<Props<Option, false, Group>, 'isMulti'> & {
   error?: string;
   containerClassName?: string;
   menuWidth?: string | number;
@@ -46,15 +93,16 @@ type ParameterSelectProps<
 
 /** Compact select used for parameters with a fixed set of allowed values. */
 export function ParameterSelect<
-  Value extends string | number,
-  Group extends GroupBase<ParameterSelectOption<Value>> = GroupBase<ParameterSelectOption<Value>>
+  Option extends ParameterSelectOption,
+  Group extends GroupBase<Option> = GroupBase<Option>
 >({
   error,
   containerClassName,
   className,
-  menuWidth = '75px',
+  menuWidth,
+  components: customComponents,
   ...props
-}: ParameterSelectProps<Value, Group>) {
+}: ParameterSelectProps<Option, Group>) {
   return (
     <div className={twMerge('w-full', containerClassName)}>
       <ReactSelect
@@ -66,10 +114,18 @@ export function ParameterSelect<
         menuPosition="fixed"
         styles={{
           menuPortal: (base) => ({ ...base, zIndex: 9999 }),
-          menu: (base) => ({ ...base, right: 0, left: 'auto', width: menuWidth }),
+          menu: (base) =>
+            menuWidth === undefined
+              ? base
+              : { ...base, right: 0, left: 'auto', width: menuWidth },
           control: (base) => ({ ...base, minHeight: '32px', height: '32px' }),
         }}
-        components={{ MenuList: ParameterMenuList }}
+        components={{
+          MenuList: ParameterMenuList,
+          Option: ParameterOption as any,
+          SingleValue: ParameterSingleValue as any,
+          ...customComponents,
+        }}
         className={twMerge('w-full', className, error && 'error')}
         classNamePrefix="ParameterSelect"
       />

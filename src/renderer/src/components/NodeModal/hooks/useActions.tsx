@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react';
 
 import { ActionsModalData } from '@renderer/components';
-import { SelectOption } from '@renderer/components/UI';
+import { ParameterSelectOption } from '@renderer/components/UI';
 import { useModal } from '@renderer/hooks/useModal';
 import { serializeActions } from '@renderer/lib/data/GraphmlBuilder';
 import { CanvasController } from '@renderer/lib/data/ModelController/CanvasController';
@@ -159,7 +159,7 @@ export const useActions = (
     component: string,
     type: 'methods' | 'signals' | 'variables',
     iconClassName?: string
-  ): SelectOption[] => {
+  ): ParameterSelectOption[] => {
     if (!controller.platform[smId]) return [];
     const getAll =
       controller.platform[smId][

@@ -54,6 +54,10 @@
 }
 
 @layer components {
+  .h2-header {
+    @apply text-[12px] font-medium;
+  }
+
   .btn {
     @apply min-w-20 cursor-pointer select-none rounded-lg border border-transparent px-3 py-2 transition-all disabled:cursor-not-allowed disabled:opacity-30;
   }

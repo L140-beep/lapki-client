@@ -5,7 +5,7 @@ import throttle from 'lodash.throttle';
 import { twMerge } from 'tailwind-merge';
 
 import { AttributeConstSwitch } from '@renderer/components/AttributeConstSwitch';
-import { Select, SubButton, TabPanel, Tabs, TextField } from '@renderer/components/UI';
+import { ParameterSelect, SubButton, TabPanel, Tabs, TextField } from '@renderer/components/UI';
 import { AddButton } from '@renderer/components/UI/AddButton';
 import { useModelContext } from '@renderer/store/ModelContext';
 
@@ -177,7 +177,7 @@ export const Condition: React.FC<ConditionProps> = memo(function Condition(props
               </div>
               {isParamOneInput1 ? (
                 <div className="flex gap-2">
-                  <Select
+                  <ParameterSelect
                     containerClassName={twMerge('w-[209px]', isElse && 'opacity-50')}
                     options={componentOptionsParam1}
                     onChange={handleComponentParam1Change}
@@ -191,7 +191,7 @@ export const Condition: React.FC<ConditionProps> = memo(function Condition(props
                     placeholder="Выберите компонент..."
                     noOptionsMessage={() => 'Нет подходящих компонентов'}
                   />
-                  <Select
+                  <ParameterSelect
                     containerClassName={twMerge('w-[209px]', isElse && 'opacity-50')}
                     options={methodOptionsParam1}
                     onChange={handleMethodParam1Change}
@@ -219,7 +219,7 @@ export const Condition: React.FC<ConditionProps> = memo(function Condition(props
               )}
             </div>
 
-            <Select
+            <ParameterSelect
               containerClassName={twMerge('ml-[37px] w-[61px]', isElse && 'opacity-50')}
               placeholder="Выберите оператор"
               options={operand}
@@ -246,7 +246,7 @@ export const Condition: React.FC<ConditionProps> = memo(function Condition(props
               </div>
               {isParamOneInput2 ? (
                 <div className="flex gap-2">
-                  <Select
+                  <ParameterSelect
                     containerClassName={twMerge('w-[209px]', isElse && 'opacity-50')}
                     options={componentOptionsParam2}
                     onChange={handleComponentParam2Change}
@@ -260,7 +260,7 @@ export const Condition: React.FC<ConditionProps> = memo(function Condition(props
                     placeholder="Выберите компонент..."
                     noOptionsMessage={() => 'Нет подходящих компонентов'}
                   />
-                  <Select
+                  <ParameterSelect
                     containerClassName={twMerge('w-[209px]', isElse && 'opacity-50')}
                     options={methodOptionsParam2}
                     onChange={handleMethodParam2Change}
