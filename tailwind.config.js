@@ -36,6 +36,7 @@ export default {
           '--bg-h': '#434343',
           '--bg-a': '#545454',
           '--bg-c': '#1F1F1F',
+          '--close-button-hover': '#F1F1F1',
 
           '--b-c': '#f8f9fa',
           '--b-p': '#666666',
@@ -82,6 +83,7 @@ export default {
           '--bg-h': '#E6F4FF',
           '--bg-a': '#E6F4FF',
           '--bg-c': '#FFFFFF',
+          '--close-button-hover': '#F1F1F1',
 
           '--b-c': '#343a40',
           '--b-p': '#DEDEDE',
