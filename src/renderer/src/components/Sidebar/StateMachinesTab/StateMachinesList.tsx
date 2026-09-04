@@ -2,10 +2,9 @@ import { useEffect } from 'react';
 
 import { twMerge } from 'tailwind-merge';
 
-import { ReactComponent as ArrowIcon } from '@renderer/assets/icons/arrow-down.svg';
 import { ReactComponent as StateMachineIcon } from '@renderer/assets/icons/state_machine.svg';
 import { StateMachineEditModal } from '@renderer/components/StateMachineEditModal';
-import { AddButton } from '@renderer/components/UI/AddButton';
+import { PanelHeader } from '@renderer/components/UI/PanelHeader';
 import { useStateMachines } from '@renderer/hooks';
 import { getAvailablePlatforms } from '@renderer/lib/data/PlatformLoader';
 import { useModelContext } from '@renderer/store/ModelContext';
@@ -69,26 +68,16 @@ export const StateMachinesList: React.FC<StateMachinesListProps> = ({
     if (isCollapsed()) togglePanel();
   }, [elements]);
 
-  const header = () => {
-    return (
-      <div className="flex h-11 items-center">
-        <button className="flex items-center" onClick={() => togglePanel()}>
-          <ArrowIcon
-            className={twMerge(
-              'size-3 rotate-0 transition-transform',
-              isCollapsed() && '-rotate-90'
-            )}
-          />
-          <h3 className="ml-1 text-xs font-medium">Машины состояний</h3>
-        </button>
-        <AddButton disabled={isDisabled} onClick={onRequestAddStateMachine} />
-      </div>
-    );
-  };
   // TODO (L140-beep): Необходимо доделать
   return (
     <section className="flex h-full flex-col">
-      {header()}
+      <PanelHeader
+        title="Машины состояний"
+        isCollapsed={isCollapsed}
+        togglePanel={togglePanel}
+        requestAddAction={onRequestAddStateMachine}
+        isAddDisabled={isDisabled}
+      />
       {isInitialized ? (
         <div className="space-y-2 overflow-y-auto scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb">
           {Object.keys(elements).length === 1 ? (

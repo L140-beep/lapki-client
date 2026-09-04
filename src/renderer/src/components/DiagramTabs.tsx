@@ -4,7 +4,7 @@ import { twMerge } from 'tailwind-merge';
 
 import { ReactComponent as ConnectionStatus } from '@renderer/assets/icons/circle.svg';
 import { ReactComponent as CompilerIcon } from '@renderer/assets/icons/compiler.svg';
-import { ReactComponent as FlasherIcon } from '@renderer/assets/icons/flasher.svg';
+import { ReactComponent as FlasherIcon } from '@renderer/assets/icons/loader.svg';
 import { ReactComponent as SerialMonitorIcon } from '@renderer/assets/icons/serial_monitor.svg';
 import { ReactComponent as EditorIcon } from '@renderer/assets/icons/state_machine.svg';
 import { CompilerTab } from '@renderer/components/Sidebar/Compiler';
@@ -34,19 +34,19 @@ const humanizeCompilerResult = (status?: string): string => {
 const tabs = {
   editor: {
     title: 'Редактор',
-    Icon: <EditorIcon className="h-6 w-6 [&_*]:stroke-current" />,
+    Icon: <EditorIcon />,
     className: '',
     modalTitle: undefined,
   },
   compiler: {
     title: 'Компилятор',
-    Icon: <CompilerIcon className="h-6 w-6 [&_*]:stroke-current" />,
+    Icon: <CompilerIcon />,
     className: 'h-[406px] max-h-[calc(100vh-24px)] w-[1074px] max-w-[calc(100vw-24px)]',
     modalTitle: undefined,
   },
   flasher: {
     title: 'Загрузчик',
-    Icon: <FlasherIcon className="h-6 w-6 [&_*]:stroke-current" />,
+    Icon: <FlasherIcon />,
     className: 'h-[644px] max-h-[calc(100vh-24px)] w-[1074px] max-w-[calc(100vw-24px)]',
     modalTitle: (
       <div className="flex items-center gap-12">
@@ -63,7 +63,7 @@ const tabs = {
         <SerialMonitorStatus />
       </div>
     ),
-    Icon: <SerialMonitorIcon className="h-6 w-6 [&_*]:stroke-current" />,
+    Icon: <SerialMonitorIcon />,
     className: 'h-[740px] max-h-[calc(100vh-24px)] w-[1074px] max-w-[calc(100vw-24px)]',
   },
 };
@@ -126,9 +126,10 @@ export const DiagramTabs = () => {
               {(hintProps) => (
                 <button
                   type="button"
-                  className={`rounded p-1 text-icon-secondary transition-colors hover:text-icon-hover ${
-                    activeTab === name ? 'bg-icon-selected-bg text-white [&_*]:stroke-white' : ''
-                  }`}
+                  className={twMerge(
+                    'rounded p-1 text-icon-secondary transition-colors hover:text-icon-hover',
+                    activeTab === name && 'bg-icon-selected-bg text-white'
+                  )}
                   aria-label={title}
                   onClick={() => setActiveTab(name)}
                   {...hintProps}

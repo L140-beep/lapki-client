@@ -2,9 +2,9 @@ import { useState } from 'react';
 
 import { twMerge } from 'tailwind-merge';
 
-import { ReactComponent as ArrowIcon } from '@renderer/assets/icons/arrow-down.svg';
 import { Hierarchy } from '@renderer/components/Hierarchy';
 import { Filter } from '@renderer/components/Hierarchy/Filter';
+import { PanelHeader } from '@renderer/components/UI';
 import { useSettings } from '@renderer/hooks';
 import { useModelContext } from '@renderer/store/ModelContext';
 
@@ -42,20 +42,9 @@ export const StateMachinesHierarchy: React.FC<StateMachinesHierarchyProps> = ({
     setExpand(false);
   };
 
-  const header = () => {
-    return (
-      <button className="flex h-11 items-center" onClick={() => togglePanel()}>
-        <ArrowIcon
-          className={twMerge('size-3 rotate-0 transition-transform', isCollapsed() && '-rotate-90')}
-        />
-        <h3 className="ml-1 text-xs font-medium">Иерархия</h3>
-      </button>
-    );
-  };
-
   return (
     <div className={twMerge(theme !== 'light' && 'rct-dark', 'flex h-full flex-col')}>
-      {header()}
+      <PanelHeader title="Иерархия" isCollapsed={isCollapsed} togglePanel={togglePanel} />
       <Filter
         onExpandAll={onExpandAll}
         onCollapseAll={onCollapseAll}
@@ -69,9 +58,7 @@ export const StateMachinesHierarchy: React.FC<StateMachinesHierarchyProps> = ({
         }
       >
         {headControllerId === '' ? (
-          <p className="text-text-inactive">
-            <i>Нет активной диаграммы</i>
-          </p>
+          <p className="pl-[19px] text-text-inactive">Нет активной диаграммы</p>
         ) : (
           stateMachinesIds.map((smId) => (
             <Hierarchy

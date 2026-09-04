@@ -1,12 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
 
-import { twMerge } from 'tailwind-merge';
-
-import { ReactComponent as ArrowIcon } from '@renderer/assets/icons/arrow-down.svg';
 import { ComponentAddModal } from '@renderer/components/ComponentAddModal';
 import { ComponentDeleteModal } from '@renderer/components/ComponentDeleteModal';
 import { ComponentEditModal } from '@renderer/components/ComponentEditModal';
-import { AddButton } from '@renderer/components/UI/AddButton';
+import { PanelHeader } from '@renderer/components/UI/PanelHeader';
 import { ScrollArea } from '@renderer/components/UI/ScrollArea';
 import { useComponents } from '@renderer/hooks';
 import { PlatformManager } from '@renderer/lib/data/PlatformManager';
@@ -74,36 +71,21 @@ export const StateMachineComponentList: React.FC<StateMachineComponentListProps>
     if (isCollapsed()) togglePanel();
   }, [sortedComponents.length]);
 
-  const header = () => {
-    return (
-      <div className="flex h-11 items-center">
-        <button className="flex items-center" onClick={() => togglePanel()}>
-          <ArrowIcon
-            className={twMerge(
-              'size-3 rotate-0 transition-transform',
-              isCollapsed() && '-rotate-90'
-            )}
-          />
-          <h3 className="ml-1 text-xs font-medium">Компоненты</h3>
-        </button>
-        <AddButton disabled={isDisabled} onClick={() => onRequestAddComponent(smId, components)} />
-      </div>
-    );
-  };
-
   return (
     <div key={smId} className="flex h-full flex-col">
-      {header()}
+      <PanelHeader
+        title="Компоненты"
+        isCollapsed={isCollapsed}
+        togglePanel={togglePanel}
+        requestAddAction={() => onRequestAddComponent(smId, components)}
+        isAddDisabled={isDisabled}
+      />
       {isInitialized ? (
         <ScrollArea className="mb-2 flex-1" viewportClassName="select-none">
           {headControllerId === '' ? (
-            <p className="text-text-inactive">
-              <i>Нет активной диаграммы</i>
-            </p>
+            <p className="pl-[19px] text-text-inactive">Нет активной диаграммы</p>
           ) : sortedComponents.length === 0 ? (
-            <p className="text-text-inactive">
-              <i>Нет компонентов</i>
-            </p>
+            <p className="pl-[19px] text-text-inactive">Нет компонентов</p>
           ) : (
             sortedComponents.map((id) => {
               const name = components[id].name;

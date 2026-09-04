@@ -1,6 +1,6 @@
 import { twMerge } from 'tailwind-merge';
 
-import { ReactComponent as AddIcon } from '@renderer/assets/icons/new transition.svg';
+import { ReactComponent as AddIcon } from '@renderer/assets/icons/add.svg';
 
 type AddButtonProps = React.HTMLAttributes<HTMLButtonElement> & { disabled?: boolean };
 

@@ -64,7 +64,7 @@ export const Explorer: React.FC = () => {
             defaultSize={25.5}
             onCollapse={forceUpdate}
             onExpand={forceUpdate}
-            className="px-[11px]"
+            className="px-[12px]"
           >
             <StateMachinesList
               selectedSm={activeSm ?? null}
@@ -87,7 +87,7 @@ export const Explorer: React.FC = () => {
             defaultSize={38.2}
             onCollapse={forceUpdate}
             onExpand={forceUpdate}
-            className="px-[11px]"
+            className="px-[12px]"
           >
             <StateMachineComponentList
               smId={activeSm ?? ''}
@@ -109,7 +109,7 @@ export const Explorer: React.FC = () => {
             defaultSize={36.3}
             onCollapse={forceUpdate}
             onExpand={forceUpdate}
-            className="px-[11px]"
+            className="px-[12px]"
           >
             {isInitialized ? (
               <StateMachinesHierarchy

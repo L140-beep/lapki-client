@@ -92,7 +92,7 @@ export default {
 
           '--t-p': '#000',
           '--t-s': '#fff',
-          '--t-i': '#b3b2b2',
+          '--t-i': '#9D9D9D',
           '--t-d': 'rgb(156,163,175)',
           '--t-h': 'yellow',
 
