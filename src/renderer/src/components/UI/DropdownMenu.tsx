@@ -2,18 +2,11 @@ import { ButtonHTMLAttributes, HTMLAttributes, forwardRef } from 'react';
 
 import { twMerge } from 'tailwind-merge';
 
-export interface DropdownMenuProps extends HTMLAttributes<HTMLDivElement> {
-  variant?: 'popover' | 'inline';
-}
+export type DropdownMenuProps = HTMLAttributes<HTMLDivElement>;
 
 export const DropdownMenu = forwardRef<HTMLDivElement, DropdownMenuProps>(
-  ({ className, role = 'menu', variant = 'popover', ...props }, ref) => (
-    <div
-      ref={ref}
-      role={role}
-      className={twMerge(variant === 'popover' && 'dropdown-menu', className)}
-      {...props}
-    />
+  ({ className, role = 'menu', ...props }, ref) => (
+    <div ref={ref} role={role} className={twMerge('dropdown-menu', className)} {...props} />
   )
 );
 

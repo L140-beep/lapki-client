@@ -1,4 +1,5 @@
-import { Dispatch, useLayoutEffect } from 'react';
+import { useCallback, useLayoutEffect } from 'react';
+import type { Dispatch } from 'react';
 
 import { OpenRecentModal } from '@renderer/components/OpenRecentModal';
 import { PropertiesModal } from '@renderer/components/PropertiesModal';
@@ -61,37 +62,46 @@ export const useFileMenu = ({
   const [isRecentModalOpen, openRecentModal, closeRecentModal] = useModal(false);
   const visual = controller.useData('visual');
 
-  const handleNextTab = (_: KeyboardEvent) => {
-    nextTab(modelController);
-  };
+  const handleNextTab = useCallback(() => nextTab(modelController), [modelController, nextTab]);
 
-  const handlePrevTab = (_: KeyboardEvent) => {
-    prevTab(modelController);
-  };
+  const handlePrevTab = useCallback(() => prevTab(modelController), [modelController, prevTab]);
 
-  const handleKeyDown = (event: KeyboardEvent) => {
-    if (event.code !== 'Tab') return;
+  const handleKeyDown = useCallback(
+    (event: KeyboardEvent) => {
+      if (event.code !== 'Tab') return;
 
-    event.preventDefault();
-    event.stopPropagation();
-    if (event.ctrlKey && event.shiftKey) return handlePrevTab(event);
-    if (event.ctrlKey) return handleNextTab(event);
-  };
+      event.preventDefault();
+      event.stopPropagation();
+      if (event.ctrlKey && event.shiftKey) return handlePrevTab();
+      if (event.ctrlKey) return handleNextTab();
+    },
+    [handleNextTab, handlePrevTab]
+  );
 
-  const handleKeyUp = async (event: KeyboardEvent) => {
-    if (!event.ctrlKey) return;
+  const handleKeyUp = useCallback(
+    async (event: KeyboardEvent) => {
+      if (!event.ctrlKey) return;
 
-    if (event.code === 'KeyN') return onRequestNewFile();
-    if (event.code === 'KeyZ') return modelController.history.undo();
-    if (event.code === 'KeyY') return modelController.history.redo();
-    if (!event.shiftKey && event.code === 'KeyS') return await modelController.files.save();
-    if (event.shiftKey && event.code === 'KeyS') return await modelController.files.saveAs();
-    if (event.code === 'KeyO') return onRequestOpenFile();
-    if (event.code === 'KeyI') return onRequestImport(setOpenData);
-    if (event.shiftKey && event.code === 'F12') {
-      window.electron.ipcRenderer.invoke('devtools-switch');
-    }
-  };
+      if (event.code === 'KeyN') return onRequestNewFile();
+      if (event.code === 'KeyZ') return modelController.history.undo();
+      if (event.code === 'KeyY') return modelController.history.redo();
+      if (!event.shiftKey && event.code === 'KeyS') return await modelController.files.save();
+      if (event.shiftKey && event.code === 'KeyS') return await modelController.files.saveAs();
+      if (event.code === 'KeyO') return onRequestOpenFile();
+      if (event.code === 'KeyI') return onRequestImport(setOpenData);
+      if (event.shiftKey && event.code === 'F12') {
+        window.electron.ipcRenderer.invoke('devtools-switch');
+      }
+    },
+    [
+      modelController.files,
+      modelController.history,
+      onRequestImport,
+      onRequestNewFile,
+      onRequestOpenFile,
+      setOpenData,
+    ]
+  );
 
   useLayoutEffect(() => {
     window.addEventListener('keyup', handleKeyUp);
@@ -101,8 +111,7 @@ export const useFileMenu = ({
       window.removeEventListener('keyup', handleKeyUp);
       window.removeEventListener('keydown', handleKeyDown);
     };
-  });
-  console.log(noTextMode);
+  }, [handleKeyDown, handleKeyUp]);
 
   const items: FileMenuItem[] = [
     { id: 'new', text: 'Создать...', onClick: onRequestNewFile },

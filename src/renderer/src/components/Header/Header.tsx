@@ -1,17 +1,15 @@
-import React, { Dispatch, useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 import { toast } from 'sonner';
 
 import { useSettings } from '@renderer/hooks';
-import { useFileMenu } from '@renderer/hooks/useFileMenu';
+import type { FileMenuItem } from '@renderer/hooks/useFileMenu';
 import { useFlasherHooks } from '@renderer/hooks/useFlasherHooks';
 import { useModal } from '@renderer/hooks/useModal';
 import { useWindowManagerStore } from '@renderer/hooks/useWindowManagerStore';
 import { useDoc } from '@renderer/store/useDoc';
-import { useManagerMS } from '@renderer/store/useManagerMS';
 import { useSimulatorWindow } from '@renderer/store/useSimulatorWindow';
 import { useTasks } from '@renderer/store/useTasks';
-import { Elements } from '@renderer/types/diagram';
 
 import {
   AboutTheProgramModal,
@@ -21,52 +19,25 @@ import {
   FlasherSelectModal,
   FlasherSelectModalFormValues,
   History,
-  MenuDropdown,
   ResetSettingsModal,
   Setting,
 } from './components';
 
-import { CompilerConnection } from '../Modules/CompilerConnection';
+import { FileMenu } from '../FileMenu';
 import { Flasher } from '../Modules/Flasher';
 import { Simulator } from '../Simulator';
 import { MovingModal } from '../UI/Modal/MovingModal';
 
 import './style.css';
 
-export interface HeaderCallbacks {
-  onRequestNewFile: () => void;
-  onRequestOpenFile: () => void;
-  onRequestSaveFile: () => void;
-  onRequestSaveAsFile: () => void;
-  onRequestImportFile: (
-    setOpenData: Dispatch<[boolean, string | null, string | null, string]>
-  ) => void;
-}
-
 interface HeaderProps {
-  callbacks: HeaderCallbacks;
-  onCompilerImportData: (
-    importData: Elements,
-    openData: [boolean, string | null, string | null, string]
-  ) => void;
-  renderStartScreen?: (fileMenu: React.ReactNode) => React.ReactNode;
+  fileMenuItems: FileMenuItem[];
   initialSimulationSmId?: string;
 }
 
 type HeaderMenu = 'files' | 'settings' | 'history' | null;
 
-export const Header: React.FC<HeaderProps> = ({
-  callbacks: {
-    onRequestNewFile,
-    onRequestOpenFile,
-    onRequestSaveFile,
-    onRequestSaveAsFile,
-    onRequestImportFile,
-  },
-  onCompilerImportData,
-  renderStartScreen,
-  initialSimulationSmId,
-}) => {
+export const Header: React.FC<HeaderProps> = ({ fileMenuItems, initialSimulationSmId }) => {
   const rootRef = useRef<HTMLElement>(null);
   const [openMenu, setOpenMenu] = useState<HeaderMenu>(null);
   const [simulatorStatus, setSimulatorStatus] = useState('Идет подключение...');
@@ -89,26 +60,12 @@ export const Header: React.FC<HeaderProps> = ({
   ]);
   const [flasherSetting, setFlasherSetting] = useSettings('flasher');
   const [isFlasherSettingsOpen, openFlasherSettings, closeFlasherSettings] = useModal(false);
-  const [openData, setOpenData] = useState<
-    [boolean, string | null, string | null, string] | undefined
-  >(undefined);
-  const compilerStatus = useManagerMS((state) => state.compilerStatus);
   const [openDocumentation, openTasks, isDocOpen, visibleDocViews] = useDoc((state) => [
     state.onDocumentationToggle,
     state.onTasksToggle,
     state.isOpen,
     state.visibleViews,
   ]);
-  const { items: fileMenuItems, modals: fileMenuModals } = useFileMenu({
-    onRequestNewFile,
-    onRequestOpenFile,
-    onRequestSaveFile,
-    onRequestSaveAsFile,
-    onRequestImport: onRequestImportFile,
-    compilerStatus,
-    setOpenData,
-  });
-
   useFlasherHooks();
 
   useEffect(() => {
@@ -168,10 +125,6 @@ export const Header: React.FC<HeaderProps> = ({
     removeWindow('simulator');
   };
 
-  const fileMenu = (variant: 'popover' | 'start-screen' = 'popover', onItemSelect?: () => void) => (
-    <MenuDropdown variant={variant} onItemSelect={onItemSelect} items={fileMenuItems} />
-  );
-
   return (
     <>
       <header
@@ -188,7 +141,11 @@ export const Header: React.FC<HeaderProps> = ({
             Файл
           </button>
           <div className={`header-file-popover ${openMenu !== 'files' ? 'hidden' : ''}`}>
-            {fileMenu('popover', () => setOpenMenu(null))}
+            <FileMenu
+              items={fileMenuItems}
+              variant="dropdown"
+              onItemSelect={() => setOpenMenu(null)}
+            />
           </div>
         </div>
 
@@ -265,8 +222,6 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
       </header>
 
-      {renderStartScreen?.(fileMenu('start-screen'))}
-
       <MovingModal
         id="simulator"
         title={
@@ -292,9 +247,6 @@ export const Header: React.FC<HeaderProps> = ({
         />
       </MovingModal>
 
-      {fileMenuModals}
-
-      <CompilerConnection openData={openData} onImportData={onCompilerImportData} />
       <FlasherSelectModal
         isOpen={isFlasherSettingsOpen}
         onSubmit={handleFlasherModalSubmit}
