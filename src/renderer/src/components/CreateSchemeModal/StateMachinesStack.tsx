@@ -2,9 +2,10 @@ import { useLayoutEffect, useRef } from 'react';
 
 import { twMerge } from 'tailwind-merge';
 
-import { ReactComponent as DeleteIcon } from '@renderer/assets/icons/delete.svg';
 import { ScrollArea } from '@renderer/components/UI';
 import { Platform } from '@renderer/types/platform';
+
+import { DeleteButton } from '../UI/DeleteButton';
 export type StateMachinesStackItem = {
   id: string;
   platform: Platform;
@@ -59,14 +60,7 @@ export const StateMachinesStack: React.FC<StateMachinesStackProps> = ({
               <div className="truncate">{sm.id}</div>
               <div className="truncate text-text-inactive">{sm.platform.name}</div>
             </div>
-            <button
-              type="button"
-              aria-label={`Удалить ${sm.id}`}
-              className="ml-auto rounded p-1 opacity-0 transition-all group-hover:opacity-100 hover:bg-bg-active focus:opacity-100"
-              onClick={(e) => handleOnDelte(e, index)}
-            >
-              <DeleteIcon className="danger h-3 w-3" />
-            </button>
+            <DeleteButton onClick={(e) => handleOnDelte(e, index)} />
           </div>
         );
       })}

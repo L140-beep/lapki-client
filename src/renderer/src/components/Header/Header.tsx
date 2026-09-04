@@ -31,6 +31,8 @@ import { Flasher } from '../Modules/Flasher';
 import { Simulator } from '../Simulator';
 import { MovingModal } from '../UI/Modal/MovingModal';
 
+import './style.css';
+
 export interface HeaderCallbacks {
   onRequestNewFile: () => void;
   onRequestOpenFile: () => void;
@@ -166,12 +168,6 @@ export const Header: React.FC<HeaderProps> = ({
     removeWindow('simulator');
   };
 
-  const menuButtonClass =
-    'h-full rounded-lg px-3 text-xs text-text-primary transition-colors hover:bg-bg-hover focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary';
-  const popoverClass =
-    'absolute left-0 top-full z-[110] max-h-[calc(100vh-25px)] min-w-[260px] overflow-y-auto border border-border-primary bg-bg-secondary shadow-[0_2px_4px_rgba(0,0,0,0.2)]';
-  const settingsPopoverClass = 'absolute left-[11px] top-full z-[110] w-[160px] overflow-visible';
-  const filePopoverClass = 'absolute left-[11px] top-full z-[110] w-[144px]';
   const fileMenu = (variant: 'popover' | 'start-screen' = 'popover', onItemSelect?: () => void) => (
     <MenuDropdown variant={variant} onItemSelect={onItemSelect} items={fileMenuItems} />
   );
@@ -185,13 +181,13 @@ export const Header: React.FC<HeaderProps> = ({
         <div className="relative h-full">
           <button
             type="button"
-            className={menuButtonClass}
+            className="header-menu-button"
             aria-expanded={openMenu === 'files'}
             onClick={() => toggleMenu('files')}
           >
             Файл
           </button>
-          <div className={`${filePopoverClass} ${openMenu !== 'files' ? 'hidden' : ''}`}>
+          <div className={`header-file-popover ${openMenu !== 'files' ? 'hidden' : ''}`}>
             {fileMenu('popover', () => setOpenMenu(null))}
           </div>
         </div>
@@ -199,14 +195,14 @@ export const Header: React.FC<HeaderProps> = ({
         <div className="relative h-full">
           <button
             type="button"
-            className={menuButtonClass}
+            className="header-menu-button"
             aria-expanded={openMenu === 'settings'}
             onClick={() => toggleMenu('settings')}
           >
             Настройки
           </button>
           {openMenu === 'settings' && (
-            <div className={settingsPopoverClass}>
+            <div className="header-settings-popover">
               <Setting
                 openCompilerSettings={openCompilerSettings}
                 openAboutModal={openAboutModal}
@@ -222,7 +218,7 @@ export const Header: React.FC<HeaderProps> = ({
 
         <button
           type="button"
-          className={`${menuButtonClass} ${
+          className={`header-menu-button ${
             isDocOpen && visibleDocViews.documentation ? 'bg-bg-hover' : ''
           }`}
           aria-pressed={isDocOpen && visibleDocViews.documentation}
@@ -233,7 +229,7 @@ export const Header: React.FC<HeaderProps> = ({
 
         <button
           type="button"
-          className={`${menuButtonClass} ${
+          className={`header-menu-button ${
             isDocOpen && visibleDocViews.tasks ? 'bg-bg-hover' : ''
           }`}
           aria-pressed={isDocOpen && visibleDocViews.tasks}
@@ -244,7 +240,7 @@ export const Header: React.FC<HeaderProps> = ({
 
         <button
           type="button"
-          className={`${menuButtonClass} ${isSimulatorOpen ? 'bg-bg-hover' : ''}`}
+          className={`header-menu-button ${isSimulatorOpen ? 'bg-bg-hover' : ''}`}
           aria-pressed={isSimulatorOpen}
           onClick={openSimulatorWindow}
         >
@@ -254,7 +250,7 @@ export const Header: React.FC<HeaderProps> = ({
         <div className="relative h-full">
           <button
             type="button"
-            className={menuButtonClass}
+            className="header-menu-button"
             aria-expanded={openMenu === 'history'}
             disabled={submissionActive}
             onClick={() => toggleMenu('history')}
@@ -262,7 +258,7 @@ export const Header: React.FC<HeaderProps> = ({
             История изменений
           </button>
           {openMenu === 'history' && (
-            <div className={`${popoverClass} w-[340px] rounded-lg`}>
+            <div className="header-popover w-[340px] rounded-lg">
               <History />
             </div>
           )}

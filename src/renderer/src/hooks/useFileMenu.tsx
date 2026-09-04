@@ -1,8 +1,8 @@
 import { Dispatch, useLayoutEffect } from 'react';
 
+import { OpenRecentModal } from '@renderer/components/OpenRecentModal';
 import { PropertiesModal } from '@renderer/components/PropertiesModal';
 import { TextModeModal } from '@renderer/components/TextModeModal';
-import { OpenRecentModal } from '@renderer/components/OpenRecentModal';
 import { useModal } from '@renderer/hooks/useModal';
 import { useProperties } from '@renderer/hooks/useProperties';
 import { useModelContext } from '@renderer/store/ModelContext';
@@ -102,6 +102,7 @@ export const useFileMenu = ({
       window.removeEventListener('keydown', handleKeyDown);
     };
   });
+  console.log(noTextMode);
 
   const items: FileMenuItem[] = [
     { id: 'new', text: 'Создать...', onClick: onRequestNewFile },

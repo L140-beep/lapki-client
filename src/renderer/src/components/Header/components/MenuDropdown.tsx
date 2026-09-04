@@ -41,6 +41,7 @@ export const MenuDropdown: React.FC<MenuDropdownProps> = ({
                 isCompact
                   ? 'h-[25px] py-0 leading-none enabled:hover:bg-[#e4f2ff]'
                   : 'px-2 py-2 indent-4 text-base enabled:hover:bg-bg-hover',
+                isHidden && 'hidden',
                 className
               )}
               onClick={() => {
@@ -48,12 +49,10 @@ export const MenuDropdown: React.FC<MenuDropdownProps> = ({
                 onItemSelect?.();
               }}
               disabled={disabled}
-              hidden={isHidden}
             >
               <Badge show={badge ?? false}>{text}</Badge>
             </DropdownMenuItem>
           );
-
           return hint ? (
             <WithHint key={id} hint={hint}>
               {(hintProps) => React.cloneElement(button, hintProps)}
