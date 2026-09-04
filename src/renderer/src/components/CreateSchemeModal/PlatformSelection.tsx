@@ -83,7 +83,7 @@ export const PlatformSelection: React.FC<PlatformSelectionProps> = ({
   };
 
   return (
-    <div className="grid grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] gap-x-6 gap-y-[22px]">
+    <div className="grid min-h-[360px] w-[618px] grid-cols-[310px_284px] gap-x-6 gap-y-[22px]">
       <div
         onDragOver={(event) => event.preventDefault()}
         onDrop={() => handleDropPlatformOnStateMachines()}
@@ -139,7 +139,7 @@ export const PlatformSelection: React.FC<PlatformSelectionProps> = ({
           ))}
         </ScrollArea>
       </div>
-      <div className="col-span-2">
+      <div className="col-span-2 w-full">
         <h2 className="mb-[11px] font-medium">Описание</h2>
         <ScrollArea
           className={twMerge(

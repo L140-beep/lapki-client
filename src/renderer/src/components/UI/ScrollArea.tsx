@@ -2,6 +2,7 @@ import {
   forwardRef,
   type ForwardedRef,
   type HTMLAttributes,
+  type PointerEvent as ReactPointerEvent,
   useCallback,
   useLayoutEffect,
   useRef,
@@ -89,6 +90,59 @@ export const ScrollArea = forwardRef<HTMLDivElement, ScrollAreaProps>(
       return () => observer.disconnect();
     }, [updateScrollbar]);
 
+    const dragRef = useRef<{
+      startY: number;
+      startScrollTop: number;
+    } | null>(null);
+
+    const handleThumbPointerDown = (event: ReactPointerEvent<HTMLDivElement>) => {
+      const viewport = viewportRef.current;
+
+      if (!viewport) {
+        return;
+      }
+
+      event.preventDefault();
+      event.stopPropagation();
+
+      event.currentTarget.setPointerCapture(event.pointerId);
+
+      dragRef.current = {
+        startY: event.clientY,
+        startScrollTop: viewport.scrollTop,
+      };
+    };
+
+    const handleThumbPointerMove = (event: ReactPointerEvent<HTMLDivElement>) => {
+      const viewport = viewportRef.current;
+      const drag = dragRef.current;
+
+      if (!viewport || !drag) {
+        return;
+      }
+
+      const trackHeight = viewport.clientHeight - 10;
+      const maxThumbTop = trackHeight - thumb.height;
+      const maxScrollTop = viewport.scrollHeight - viewport.clientHeight;
+
+      if (maxThumbTop <= 0) {
+        return;
+      }
+
+      const pointerDelta = event.clientY - drag.startY;
+      const scrollDelta = pointerDelta * (maxScrollTop / maxThumbTop);
+
+      viewport.scrollTop = drag.startScrollTop + scrollDelta;
+    };
+
+    const handleThumbPointerUp = (event: ReactPointerEvent<HTMLDivElement>) => {
+      dragRef.current = null;
+
+      if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+        event.currentTarget.releasePointerCapture(event.pointerId);
+      }
+    };
+
     return (
       <div
         {...props}
@@ -119,11 +173,15 @@ export const ScrollArea = forwardRef<HTMLDivElement, ScrollAreaProps>(
               <div className="absolute inset-y-0 left-[10px] w-[2px] rounded-lg bg-scrollbar-track">
                 {/* Scrollbar thumb */}
                 <div
-                  className="absolute left-0 w-full rounded-lg bg-scrollbar-thumb"
+                  className="absolute left-0 w-full rounded-full bg-scrollbar-thumb"
                   style={{
                     height: `${thumb.height}px`,
                     transform: `translateY(${thumb.top}px)`,
                   }}
+                  onPointerDown={handleThumbPointerDown}
+                  onPointerMove={handleThumbPointerMove}
+                  onPointerUp={handleThumbPointerUp}
+                  onPointerCancel={handleThumbPointerUp}
                 />
               </div>
             </div>
