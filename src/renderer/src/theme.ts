@@ -11,10 +11,11 @@ const colorNames = {
   'matrix-inactive': '--m-i',
   'bg-primary': '--bg-p', // экран, самое левое меню с иконками, вкладки
   'bg-secondary': '--bg-s', // сайдбар, верхняя панель
+  'bg-canvas': '--bg-canvas',
   'bg-hover': '--bg-h',
   'bg-active': '--bg-a',
   'bg-control': '--bg-c',
-  'close-button-hover': '--close-button-hover',
+  'util-button-hover': '--util-button-hover',
 
   'border-contrast': '--b-c',
   'border-primary': '--b-p',
