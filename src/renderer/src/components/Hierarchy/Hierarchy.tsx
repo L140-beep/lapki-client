@@ -473,13 +473,7 @@ export const Hierarchy: React.FC<HierarchyProps> = ({
         onCollapseItem={handleCollapseItem}
         onSelectItems={handleSelectItems}
         renderItemArrow={({ item, context }) => (
-          <div
-            className={twMerge(
-              'rct-tree-item-arrow',
-              item.isFolder && 'rct-tree-item-arrow-isFolder'
-            )}
-            {...context.arrowProps}
-          >
+          <div className={twMerge('rct-tree-item-arrow items-center')} {...context.arrowProps}>
             {item.isFolder && (
               <ArrowIcon
                 className={twMerge(
