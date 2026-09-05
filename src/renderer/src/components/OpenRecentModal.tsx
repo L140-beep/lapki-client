@@ -102,7 +102,7 @@ export const OpenRecentModal: React.FC<OpenRecentModalProps> = ({
     <div className="grid grid-cols-[274px_minmax(0,1fr)] gap-6">
       <div className="h-[190px] rounded-lg border border-border-primary p-1.5">
         <ScrollArea className="h-full">
-          {recentFiles.splice(0).map((file, idx) => (
+          {recentFiles.map((file, idx) => (
             <button
               type="button"
               key={file.path}
