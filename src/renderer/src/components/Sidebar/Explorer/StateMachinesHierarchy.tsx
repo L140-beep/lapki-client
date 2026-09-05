@@ -4,7 +4,7 @@ import { twMerge } from 'tailwind-merge';
 
 import { Hierarchy } from '@renderer/components/Hierarchy';
 import { Filter } from '@renderer/components/Hierarchy/Filter';
-import { PanelHeader } from '@renderer/components/UI';
+import { PanelHeader, ScrollArea } from '@renderer/components/UI';
 import { useSettings } from '@renderer/hooks';
 import { useModelContext } from '@renderer/store/ModelContext';
 
@@ -43,7 +43,7 @@ export const StateMachinesHierarchy: React.FC<StateMachinesHierarchyProps> = ({
   };
 
   return (
-    <div className={twMerge(theme !== 'light' && 'rct-dark', 'flex h-full flex-col')}>
+    <div className={twMerge(theme !== 'light' && 'rct-dark', 'flex h-full min-h-0 flex-col')}>
       <PanelHeader title="Иерархия" isCollapsed={isCollapsed} togglePanel={togglePanel} />
       <Filter
         onExpandAll={onExpandAll}
@@ -52,11 +52,7 @@ export const StateMachinesHierarchy: React.FC<StateMachinesHierarchyProps> = ({
         onChangeSearch={handleChangeSearch}
         disabled={headControllerId === ''}
       />
-      <div
-        className={
-          'overflow-y-auto scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb'
-        }
-      >
+      <ScrollArea className="flex-1">
         {headControllerId === '' ? (
           <p className="pl-[19px] text-text-inactive">Нет активной диаграммы</p>
         ) : (
@@ -71,7 +67,7 @@ export const StateMachinesHierarchy: React.FC<StateMachinesHierarchyProps> = ({
             />
           ))
         )}
-      </div>
+      </ScrollArea>
     </div>
   );
 };

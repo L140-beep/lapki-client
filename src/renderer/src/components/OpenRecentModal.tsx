@@ -100,24 +100,25 @@ export const OpenRecentModal: React.FC<OpenRecentModalProps> = ({
 
   const renderFileList = () => (
     <div className="grid grid-cols-[274px_minmax(0,1fr)] gap-6">
-      <div className="h-[190px] rounded-lg border border-border-primary p-1.5">
-        <ScrollArea className="h-full">
-          {recentFiles.map((file, idx) => (
-            <button
-              type="button"
-              key={file.path}
-              className={twMerge(
-                'block w-full select-none rounded-lg px-3 py-1 text-left leading-[17px] transition-colors duration-75 hover:bg-bg-hover',
-                selectedFileIdx === idx && 'bg-bg-active hover:bg-bg-active'
-              )}
-              onClick={() => setSelectedFileIdx(idx)}
-              onDoubleClick={() => void submit(idx)}
-            >
-              {file.name}
-            </button>
-          ))}
-        </ScrollArea>
-      </div>
+      <ScrollArea
+        className="h-[190px] rounded-lg border border-border-primary"
+        viewportClassName="p-1.5"
+      >
+        {recentFiles.map((file, idx) => (
+          <button
+            type="button"
+            key={file.path}
+            className={twMerge(
+              'block w-full select-none rounded-lg px-3 py-1 text-left leading-[17px] transition-colors duration-75 hover:bg-bg-hover',
+              selectedFileIdx === idx && 'bg-bg-active hover:bg-bg-active'
+            )}
+            onClick={() => setSelectedFileIdx(idx)}
+            onDoubleClick={() => void submit(idx)}
+          >
+            {file.name}
+          </button>
+        ))}
+      </ScrollArea>
 
       <div>{renderDescription()}</div>
     </div>

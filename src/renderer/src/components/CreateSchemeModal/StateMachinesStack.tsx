@@ -1,8 +1,5 @@
-import { useLayoutEffect, useRef } from 'react';
-
 import { twMerge } from 'tailwind-merge';
 
-import { ScrollArea } from '@renderer/components/UI';
 import { Platform } from '@renderer/types/platform';
 
 import { DeleteButton } from '../UI/DeleteButton';
@@ -26,23 +23,13 @@ export const StateMachinesStack: React.FC<StateMachinesStackProps> = ({
   onSelect,
   onDelete,
 }) => {
-  const containerRef = useRef<HTMLDivElement>(null);
-  useLayoutEffect(() => {
-    if (!containerRef.current) return;
-    containerRef.current.scrollTop = containerRef.current.scrollHeight;
-  }, [selectedStateMachines]);
-
   const handleOnDelte = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>, index: number) => {
     e.stopPropagation();
     onDelete(index);
   };
 
   return (
-    <ScrollArea
-      className="h-full w-full"
-      viewportClassName="scroll-auto px-[7px] scrollbar-thumb-scrollbar-thumb"
-      ref={containerRef}
-    >
+    <>
       {selectedStateMachines.map((sm, index) => {
         return (
           <div
@@ -64,6 +51,6 @@ export const StateMachinesStack: React.FC<StateMachinesStackProps> = ({
           </div>
         );
       })}
-    </ScrollArea>
+    </>
   );
 };

@@ -12,8 +12,28 @@ import {
 import { twMerge } from 'tailwind-merge';
 
 export interface ScrollAreaProps extends HTMLAttributes<HTMLDivElement> {
+  /** Classes applied to the scrollable viewport. Use these for content padding and typography. */
   viewportClassName?: string;
 }
+
+/**
+ * A scrollable container with the application scrollbar.
+ *
+ * Usage:
+ * ```tsx
+ * <ScrollArea
+ *   className="h-56 rounded-lg border border-border-primary bg-bg-control"
+ *   viewportClassName="px-2"
+ * >
+ *   {content}
+ * </ScrollArea>
+ * ```
+ *
+ * Put sizing, borders, backgrounds and external spacing on `className`; put
+ * content padding and text styles on `viewportClassName`. Do not add a wrapper
+ * solely to decorate or size the scroll area. The forwarded ref and `onScroll`
+ * point to the viewport so callers can read or update its scroll position.
+ */
 
 const setRef = <T,>(ref: ForwardedRef<T>, value: T | null) => {
   if (typeof ref === 'function') {

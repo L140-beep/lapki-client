@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useLayoutEffect, useMemo, useRef, useState } from 'react';
 
 import { twMerge } from 'tailwind-merge';
 
@@ -45,6 +45,15 @@ export const PlatformSelection: React.FC<PlatformSelectionProps> = ({
 
   const [draggedStateMachineIndex, setDraggedStateMachineIndex] = useState<number | null>(null);
 
+  const selectedStateMachinesViewportRef = useRef<HTMLDivElement>(null);
+
+  useLayoutEffect(() => {
+    const viewport = selectedStateMachinesViewportRef.current;
+    if (!viewport) return;
+
+    viewport.scrollTop = viewport.scrollHeight;
+  }, [selectedStateMachines]);
+
   const platforms = getAvailablePlatforms();
   const selectedPlatform = useMemo(() => {
     if (selectedPlatformIdx !== null) {
@@ -89,7 +98,11 @@ export const PlatformSelection: React.FC<PlatformSelectionProps> = ({
         onDrop={() => handleDropPlatformOnStateMachines()}
       >
         <h2 className="mb-[11px] font-medium">Выбрано</h2>
-        <div className="h-[220px] rounded-lg border border-border-primary bg-bg-control">
+        <ScrollArea
+          className="h-[220px] w-full rounded-lg border border-border-primary bg-bg-control"
+          viewportClassName="px-[7px]"
+          ref={selectedStateMachinesViewportRef}
+        >
           {selectedStateMachines.length > 0 ? (
             <StateMachinesStack
               selectedStateMachines={selectedStateMachines}
@@ -100,7 +113,7 @@ export const PlatformSelection: React.FC<PlatformSelectionProps> = ({
               onDelete={handleOnDeletePlatform}
             />
           ) : (
-            <div className="p-2 leading-[15px] text-text-inactive">
+            <div className="px-px py-[3px] leading-[15px] text-text-inactive">
               <p>
                 Чтобы добавить платформу для документа, выберите её из списка справа и перетащите её
                 сюда, либо дважды нажмите на неё левой кнопкой мыши.
@@ -111,13 +124,13 @@ export const PlatformSelection: React.FC<PlatformSelectionProps> = ({
               </p>
             </div>
           )}
-        </div>
+        </ScrollArea>
       </div>
       <div>
         <h2 className="mb-[11px] font-medium">Платформы</h2>
         <ScrollArea
           className="h-[220px] w-full rounded-lg border border-border-primary bg-bg-control"
-          viewportClassName="px-[7px] scrollbar-thumb-scrollbar-thumb"
+          viewportClassName="px-[7px]"
           onDragOver={(event) => event.preventDefault()}
           onDrop={() => handleDropStateMachineOnPlatforms()}
         >
@@ -146,7 +159,7 @@ export const PlatformSelection: React.FC<PlatformSelectionProps> = ({
             'h-[60px] w-full',
             !selectedPlatform?.description && 'text-text-inactive'
           )}
-          viewportClassName="whitespace-pre-wrap leading-4 scrollbar-thumb-scrollbar-thumb"
+          viewportClassName="whitespace-pre-wrap leading-4"
         >
           {selectedPlatform?.description ||
             'Выберите платформу из одного из списков сверху, чтобы посмотреть описание платформы.'}

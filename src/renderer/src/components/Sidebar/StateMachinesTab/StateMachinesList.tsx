@@ -4,7 +4,7 @@ import { twMerge } from 'tailwind-merge';
 
 import { ReactComponent as StateMachineIcon } from '@renderer/assets/icons/state_machine.svg';
 import { StateMachineEditModal } from '@renderer/components/StateMachineEditModal';
-import { PanelHeader } from '@renderer/components/UI/PanelHeader';
+import { PanelHeader, ScrollArea } from '@renderer/components/UI';
 import { useStateMachines } from '@renderer/hooks';
 import { getAvailablePlatforms } from '@renderer/lib/data/PlatformLoader';
 import { useModelContext } from '@renderer/store/ModelContext';
@@ -70,7 +70,7 @@ export const StateMachinesList: React.FC<StateMachinesListProps> = ({
 
   // TODO (L140-beep): Необходимо доделать
   return (
-    <section className="flex h-full flex-col">
+    <section className="flex h-full min-h-0 flex-col">
       <PanelHeader
         title="Машины состояний"
         isCollapsed={isCollapsed}
@@ -79,7 +79,7 @@ export const StateMachinesList: React.FC<StateMachinesListProps> = ({
         isAddDisabled={isDisabled}
       />
       {isInitialized ? (
-        <div className="space-y-2 overflow-y-auto scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb">
+        <ScrollArea className="mb-2 flex-1" viewportClassName="space-y-2">
           {Object.keys(elements).length === 1 ? (
             <p className="pl-[19px] text-text-inactive">Нет машин состояний</p>
           ) : (
@@ -110,7 +110,7 @@ export const StateMachinesList: React.FC<StateMachinesListProps> = ({
                 )
             )
           )}
-        </div>
+        </ScrollArea>
       ) : (
         <div className="px-4">Недоступно до открытия документа</div>
       )}

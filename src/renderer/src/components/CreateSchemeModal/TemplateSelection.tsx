@@ -45,7 +45,7 @@ export const TemplateSelection: React.FC<TemplateSelectionProps> = ({
     <div className="grid w-[618px] grid-cols-[310px_284px] gap-x-6">
       <ScrollArea
         className="h-[140px] rounded-lg border border-border-primary bg-bg-control"
-        viewportClassName="px-[8px] scrollbar-thumb-scrollbar-thumb"
+        viewportClassName="px-[8px]"
       >
         {Object.entries(templates).flatMap(([type, names]) =>
           names.map((name) => (

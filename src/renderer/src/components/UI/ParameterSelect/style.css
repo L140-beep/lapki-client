@@ -31,7 +31,7 @@
 }
 
 .ParameterSelect__menu-list {
-  @apply bg-white text-text-primary scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb;
+  @apply bg-white text-text-primary;
 }
 
 .ParameterSelect__option {
