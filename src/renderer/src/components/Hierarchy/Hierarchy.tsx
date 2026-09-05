@@ -12,6 +12,7 @@ import {
 import { twMerge } from 'tailwind-merge';
 
 import './style-modern.css';
+import { ReactComponent as ArrowIcon } from '@renderer/assets/icons/arrow-down.svg';
 import { useSettings } from '@renderer/hooks';
 import { CanvasController } from '@renderer/lib/data/ModelController/CanvasController';
 import { MyMouseEvent } from '@renderer/lib/types/mouse';
@@ -471,6 +472,24 @@ export const Hierarchy: React.FC<HierarchyProps> = ({
         onExpandItem={handleExpandItem}
         onCollapseItem={handleCollapseItem}
         onSelectItems={handleSelectItems}
+        renderItemArrow={({ item, context }) => (
+          <div
+            className={twMerge(
+              'rct-tree-item-arrow',
+              item.isFolder && 'rct-tree-item-arrow-isFolder'
+            )}
+            {...context.arrowProps}
+          >
+            {item.isFolder && (
+              <ArrowIcon
+                className={twMerge(
+                  'transition-transform',
+                  context.isExpanded ? 'rotate-0' : '-rotate-90'
+                )}
+              />
+            )}
+          </div>
+        )}
         renderRenameInput={(props) => <InputRender props={props} />}
         renderItemTitle={(data) => (
           <TitleRender
