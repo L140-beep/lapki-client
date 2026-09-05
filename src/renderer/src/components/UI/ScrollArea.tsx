@@ -14,6 +14,8 @@ import { twMerge } from 'tailwind-merge';
 export interface ScrollAreaProps extends HTMLAttributes<HTMLDivElement> {
   /** Classes applied to the scrollable viewport. Use these for content padding and typography. */
   viewportClassName?: string;
+  /** Classes applied to the element that directly wraps `children`. Use these for content layout. */
+  contentClassName?: string;
 }
 
 /**
@@ -24,15 +26,17 @@ export interface ScrollAreaProps extends HTMLAttributes<HTMLDivElement> {
  * <ScrollArea
  *   className="h-56 rounded-lg border border-border-primary bg-bg-control"
  *   viewportClassName="px-2"
+ *   contentClassName="space-y-2"
  * >
  *   {content}
  * </ScrollArea>
  * ```
  *
  * Put sizing, borders, backgrounds and external spacing on `className`; put
- * content padding and text styles on `viewportClassName`. Do not add a wrapper
- * solely to decorate or size the scroll area. The forwarded ref and `onScroll`
- * point to the viewport so callers can read or update its scroll position.
+ * content padding and text styles on `viewportClassName`; put flex/grid/gap and
+ * sibling-spacing styles on `contentClassName`. Do not add a wrapper solely to
+ * decorate or size the scroll area. The forwarded ref and `onScroll` point to
+ * the viewport so callers can read or update its scroll position.
  */
 
 const setRef = <T,>(ref: ForwardedRef<T>, value: T | null) => {
@@ -44,7 +48,10 @@ const setRef = <T,>(ref: ForwardedRef<T>, value: T | null) => {
 };
 
 export const ScrollArea = forwardRef<HTMLDivElement, ScrollAreaProps>(
-  ({ children, className, viewportClassName, onScroll, ...props }, forwardedRef) => {
+  (
+    { children, className, viewportClassName, contentClassName, onScroll, ...props },
+    forwardedRef
+  ) => {
     const viewportRef = useRef<HTMLDivElement | null>(null);
     const contentRef = useRef<HTMLDivElement | null>(null);
 
@@ -184,7 +191,9 @@ export const ScrollArea = forwardRef<HTMLDivElement, ScrollAreaProps>(
               viewportClassName
             )}
           >
-            <div ref={contentRef}>{children}</div>
+            <div ref={contentRef} className={contentClassName}>
+              {children}
+            </div>
           </div>
 
           {hasOverflow && (
