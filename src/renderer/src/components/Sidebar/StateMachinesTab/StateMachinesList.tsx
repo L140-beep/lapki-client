@@ -15,6 +15,7 @@ import { StateMachineDeleteModal } from './StateMachineDeleteModal';
 import { Component } from '../Explorer/Component';
 
 interface StateMachinesListProps {
+  activeSm: string | null;
   selectedSm: string | null;
   setSmSelected: (newSmId: string | null) => void;
   isCollapsed: () => boolean;
@@ -22,6 +23,7 @@ interface StateMachinesListProps {
 }
 
 export const StateMachinesList: React.FC<StateMachinesListProps> = ({
+  activeSm,
   selectedSm,
   setSmSelected,
   isCollapsed,
@@ -93,12 +95,12 @@ export const StateMachinesList: React.FC<StateMachinesListProps> = ({
                   <Component
                     key={id}
                     name={sm.name || id}
-                    isSelected={id === selectedSm}
+                    isSelected={id === activeSm || id === selectedSm}
                     icon={
                       <StateMachineIcon
                         className={twMerge(
                           'size-6 [&_*]:stroke-[#6b6b6b]',
-                          id === selectedSm && '[&_*]:stroke-icon-hover'
+                          (id === activeSm || id === selectedSm) && '[&_*]:stroke-icon-hover'
                         )}
                       />
                     }
