@@ -81,9 +81,7 @@ export const StateMachinesList: React.FC<StateMachinesListProps> = ({
       {isInitialized ? (
         <div className="space-y-2 overflow-y-auto scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb">
           {Object.keys(elements).length === 1 ? (
-            <p className="text-text-inactive">
-              <i>Нет машин состояний</i>
-            </p>
+            <p className="pl-[19px] text-text-inactive">Нет машин состояний</p>
           ) : (
             [...Object.entries(elements)].map(
               ([id, sm]) =>
