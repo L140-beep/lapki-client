@@ -259,6 +259,7 @@ export const Hierarchy: React.FC<HierarchyProps> = ({
     notes,
     states,
     transitions,
+    shallowHistory,
   ]);
 
   // Синхронизация дерева и состояний
