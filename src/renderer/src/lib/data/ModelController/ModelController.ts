@@ -59,6 +59,7 @@ import {
 } from '@renderer/types/diagram';
 
 import { CanvasController, CanvasControllerEvents } from './CanvasController';
+import { getStateMachineDeletionFallbackId } from './StateMachineNavigation';
 import { UserInputValidator } from './UserInputValidator';
 
 import { EditorModel } from '../EditorModel';
@@ -703,12 +704,26 @@ export class ModelController extends EventEmitter<ModelControllerEvents> {
 
   deleteStateMachine(smId: string, canUndo = true) {
     const sm = { ...this.model.data.elements.stateMachines[smId] };
-    // Сделать общий канвас канвасом по умолчанию?
+    const stateMachineIds = Object.keys(this.model.data.elements.stateMachines).filter(
+      (id) => id !== ''
+    );
     const specificCanvas = Object.values(this.controllers).find(
       (controller) => controller.stateMachinesSub[smId] && controller.type === 'specific'
     );
 
     if (!specificCanvas) throw new Error('No controller for specific canvas!');
+
+    if (this.model.data.headControllerId === specificCanvas.id) {
+      const fallbackSmId = getStateMachineDeletionFallbackId(stateMachineIds, smId);
+      const fallbackCanvas = fallbackSmId
+        ? Object.values(this.controllers).find(
+            (controller) =>
+              controller.type === 'specific' && controller.stateMachinesSub[fallbackSmId]
+          )
+        : this.controllers[''];
+
+      this.changeHeadControllerId(fallbackCanvas?.id ?? '');
+    }
 
     this.unwatch(specificCanvas);
     delete this.controllers[specificCanvas.id];
