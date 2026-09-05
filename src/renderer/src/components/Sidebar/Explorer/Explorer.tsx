@@ -67,7 +67,7 @@ export const Explorer: React.FC = () => {
             className="px-[12px]"
           >
             <StateMachinesList
-              selectedSm={activeSm ?? null}
+              selectedSm={selectedSm}
               setSmSelected={setSmSelected}
               isCollapsed={() => stateMachinesPanelRef.current?.isCollapsed() ?? false}
               togglePanel={() => togglePanel(stateMachinesPanelRef)}
