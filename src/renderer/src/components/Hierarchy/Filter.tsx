@@ -30,12 +30,11 @@ export const Filter: React.FC<FilterProps> = (props) => {
   };
 
   return (
-    <div className="mb-2 flex items-end gap-2">
-      <label className="flex items-center border-b border-border-primary">
-        {/* <SearchIcon className="h-6 w-6" /> */}
+    <div className="mb-3 flex items-end gap-2">
+      <label className="flex h-[32px] items-center rounded-lg border border-border-primary">
         <TextInput
           ref={inputRef}
-          className="border-none p-1 py-[2px]"
+          className="border-none py-[2px] pr-3"
           placeholder="Поиск..."
           value={search}
           onChange={handleChangeSearch}
@@ -43,7 +42,7 @@ export const Filter: React.FC<FilterProps> = (props) => {
         />
         <button
           className={twMerge(
-            'invisible cursor-pointer rounded-full p-[6px] opacity-0 transition-opacity hover:bg-bg-hover',
+            'invisible mr-1 cursor-pointer rounded-[3px] p-[3px] opacity-0 transition-opacity hover:bg-util-button-hover',
             search && 'visible opacity-100'
           )}
           onClick={handleClear}
@@ -52,22 +51,6 @@ export const Filter: React.FC<FilterProps> = (props) => {
           <ClearIcon className="h-[10px] w-[10px]" />
         </button>
       </label>
-
-      <button
-        type="button"
-        className="rounded text-border-primary hover:text-text-primary"
-        onClick={onExpandAll}
-      >
-        <ExpandIcon />
-      </button>
-
-      <button
-        type="button"
-        className="rounded text-border-primary hover:text-text-primary"
-        onClick={onCollapseAll}
-      >
-        <CollapseIcon />
-      </button>
     </div>
   );
 };

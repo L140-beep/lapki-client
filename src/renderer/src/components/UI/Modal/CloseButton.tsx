@@ -11,7 +11,7 @@ interface CloseButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 export const CloseButton: React.FC<CloseButtonProps> = ({ className, iconClassName, ...props }) => (
   <button
     type="button"
-    className={twMerge('hover:bg-util-button-hover rounded-[3px] transition-colors', className)}
+    className={twMerge('rounded-[3px] transition-colors hover:bg-util-button-hover', className)}
     {...props}
   >
     <Close className={twMerge(iconClassName)} />

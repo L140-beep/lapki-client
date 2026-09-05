@@ -48,7 +48,7 @@ export default {
           '--t-s': '#fff',
           '--t-i': '#a3a2a2',
           '--t-d': 'rgb(156,163,175)',
-          '--t-h': 'yellow',
+          '--t-h': '#186AA9',
 
           '--c-e-t': 'vs-dark',
 
@@ -96,7 +96,7 @@ export default {
           '--t-s': '#fff',
           '--t-i': '#9D9D9D',
           '--t-d': 'rgb(156,163,175)',
-          '--t-h': 'yellow',
+          '--t-h': '#186AA9',
 
           '--c-e-t': 'vs-light',
 
