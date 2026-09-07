@@ -14,9 +14,9 @@ import {
   Transition,
 } from '@renderer/types/diagram';
 
-import { ActionsModal, ActionsModalData } from './ActionsModal/ActionsModal';
+import { ActionsModal } from './ActionsModal/ActionsModal';
 import { Actions, Condition, Trigger } from './components';
-import { useTrigger, useCondition, useActions, useActionsModal, useViewStack } from './hooks';
+import { useTrigger, useCondition, useActions, useActionEditor, useViewStack } from './hooks';
 
 import { MovingModal } from '../UI/Modal/MovingModal';
 
@@ -47,8 +47,6 @@ export const TransitionModal: React.FC<TransitionModalProps> = ({ smId, controll
     targetId: string;
   } | null>();
   const [isInitialTransition, setIsInitialTransition] = useState<boolean>(false);
-  const [actionIndex, setActionIndex] = useState<number | null>(null);
-  const [actionData, setActionData] = useState<ActionsModalData | undefined>();
 
   const viewStack = useViewStack<TransitionView>({
     view: 'editTransition',
@@ -61,16 +59,6 @@ export const TransitionModal: React.FC<TransitionModalProps> = ({ smId, controll
   const actions = useActions(smId, controller, (transition?.label?.do as Action[]) ?? []);
   const [color, setColor] = useState<string | undefined>();
 
-  const openActionsView = (index: number | null) => {
-    setActionIndex(index);
-    setActionData(
-      index !== null && actions.actions[index]
-        ? { smId, action: actions.actions[index], isEditingEvent: false }
-        : undefined
-    );
-    viewStack.push({ view: 'actions', title: 'Выберите действие' });
-  };
-
   const handleActionSubmit = (data: Action, index?: number | null) => {
     actions.setActions((currentActions) => {
       if (index === null || index === undefined) return [...currentActions, data];
@@ -82,13 +70,12 @@ export const TransitionModal: React.FC<TransitionModalProps> = ({ smId, controll
     viewStack.pop();
   };
 
-  const actionsModal = useActionsModal(
-    smId,
-    controller,
-    actionIndex,
-    handleActionSubmit,
-    actionData
-  );
+  const actionEditor = useActionEditor(smId, controller, handleActionSubmit);
+
+  const openActionsView = (index: number | null) => {
+    actionEditor.open({ index, action: index === null ? undefined : actions.actions[index] });
+    viewStack.push({ view: 'actions', title: 'Выберите действие' });
+  };
 
   // Если создается новый переход и это переход из состояния выбора то показывать триггер не нужно
   const showTrigger = useMemo(() => {
@@ -304,8 +291,7 @@ export const TransitionModal: React.FC<TransitionModalProps> = ({ smId, controll
     setTransitionId(null);
     setNewTransition(null);
     setIsInitialTransition(false);
-    setActionIndex(null);
-    setActionData(undefined);
+    actionEditor.reset();
     viewStack.reset();
   };
 
@@ -352,7 +338,7 @@ export const TransitionModal: React.FC<TransitionModalProps> = ({ smId, controll
 
   const handleModalSubmit = (e: React.FormEvent) => {
     if (viewStack.currentView === 'actions') {
-      actionsModal.handleSubmit(e);
+      actionEditor.handleSubmit(e);
       return;
     }
 
@@ -398,7 +384,7 @@ export const TransitionModal: React.FC<TransitionModalProps> = ({ smId, controll
           </div>
 
           <div className="h-full min-h-0" hidden={viewStack.currentView !== 'actions'}>
-            <ActionsModal {...actionsModal} />
+            <ActionsModal {...actionEditor.modalProps} />
           </div>
         </div>
       </MovingModal>

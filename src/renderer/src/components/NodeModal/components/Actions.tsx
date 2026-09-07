@@ -6,7 +6,7 @@ import throttle from 'lodash.throttle';
 import { ReactComponent as AddIcon } from '@renderer/assets/icons/add.svg';
 import { TabPanel, Tabs } from '@renderer/components/UI';
 import { AddButton } from '@renderer/components/UI/AddButton';
-import { EventData } from '@renderer/types/diagram';
+import { Action as ActionData, EventData } from '@renderer/types/diagram';
 
 import { Action } from './Action';
 
@@ -15,6 +15,8 @@ import { useActions } from '../hooks';
 type ActionsProps = ReturnType<typeof useActions> & {
   event: EventData | null | undefined;
   disabled?: boolean;
+  onAddAction: () => void;
+  onChangeAction: (action: ActionData) => void;
 };
 
 /**
