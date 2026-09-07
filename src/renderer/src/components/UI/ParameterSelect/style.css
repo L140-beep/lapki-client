@@ -11,7 +11,7 @@
 }
 
 .ParameterSelect__indicator {
-  @apply p-1 text-border-primary !important;
+  @apply px-[10px] py-1 text-border-primary !important;
 }
 
 .ParameterSelect__indicator-separator {
