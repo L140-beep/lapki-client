@@ -187,29 +187,42 @@ export const StateModal: React.FC<StateModalProps> = ({ smId, controller }) => {
     ): [number, EventData] | [undefined, null] => {
       if (currentEventIndex === undefined) return [undefined, null];
 
-      const isZero = currentEventIndex === 0;
-      const emptyEvents = events.length === 1;
+      if (events.length === 1) return [undefined, null];
+      if (currentEventIndex < events.length - 1) {
+        return [currentEventIndex, events[currentEventIndex + 1]];
+      }
 
-      if (isZero && emptyEvents) return [undefined, null];
-      if (isZero && !emptyEvents) return [1, events[1]];
-      if (!isZero) return [currentEventIndex - 1, events[currentEventIndex - 1]];
-
-      return [undefined, null];
+      return [currentEventIndex - 1, events[currentEventIndex - 1]];
     },
     []
   );
 
-  const removeEvent = () => {
+  const removeSelected = () => {
     if (!state || currentEventIndex === undefined) return;
+
+    if (selectedActionIndex !== null) {
+      const isDeleted = modelController.deleteEvent({
+        smId,
+        stateId: state.id,
+        event: { eventIdx: currentEventIndex, actionIdx: selectedActionIndex },
+      });
+      if (!isDeleted) return;
+
+      setCurrentEvent(state.data.events[currentEventIndex]);
+      setSelectedActionIndex(null);
+      actionEditor.reset();
+      viewStack.reset({ view: 'editEvent', title: 'Редактор события' });
+      return;
+    }
+
     const [newIndex, newEvent] = nextEvent(currentEventIndex, state.data.events);
-    const events =
-      state.data.events.length === 1
-        ? []
-        : [
-            ...state.data.events.slice(0, currentEventIndex),
-            ...state.data.events.slice(currentEventIndex + 1),
-          ];
-    modelController.changeState({ smId, id: state.id, events }, true);
+    const isDeleted = modelController.deleteEvent({
+      smId,
+      stateId: state.id,
+      event: { eventIdx: currentEventIndex, actionIdx: null },
+    });
+    if (!isDeleted) return;
+
     // Выбираем соседнее событие после удаления
     setCurrentEvent(newEvent);
     setCurrentEventIndex(newIndex);
@@ -304,7 +317,7 @@ export const StateModal: React.FC<StateModalProps> = ({ smId, controller }) => {
             onSelectEvent={handleSelectEvent}
             onSelectAction={handleSelectAction}
             onAddEvent={addEvent}
-            onRemoveEvent={removeEvent}
+            onRemoveSelected={removeSelected}
           />
         </div>
 

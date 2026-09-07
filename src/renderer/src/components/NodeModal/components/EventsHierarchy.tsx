@@ -23,7 +23,7 @@ interface EventsHierarchyProps {
   onSelectEvent: (eventIndex: number) => void;
   onSelectAction: (eventIndex: number, actionIndex: number) => void;
   onAddEvent: () => void;
-  onRemoveEvent: () => void;
+  onRemoveSelected: () => void;
 }
 
 // Левая панель иерархии событий и действий в StateModal.
@@ -38,7 +38,7 @@ export const EventsHierarchy: React.FC<EventsHierarchyProps> = ({
   onSelectEvent,
   onSelectAction,
   onAddEvent,
-  onRemoveEvent,
+  onRemoveSelected,
 }) => {
   const modelController = useModelContext();
   const visualData = modelController.model.useData(smId, 'elements.visual');
@@ -76,13 +76,19 @@ export const EventsHierarchy: React.FC<EventsHierarchyProps> = ({
     return event.do as Action[];
   };
 
+  const selectedEvent = selectedEventIndex === undefined ? undefined : events[selectedEventIndex];
+  const selectedActions = selectedEvent ? getEventActions(selectedEvent) : [];
+  const hasSelectedElement =
+    selectedEvent !== undefined &&
+    (selectedActionIndex === null || selectedActions[selectedActionIndex] !== undefined);
+
   return (
     <div className="flex h-full min-h-[290px] flex-col rounded border border-border-primary p-3">
       <div className="flex flex-row justify-between">
         <span className="font-medium">События и действия</span>
         <div className="mb-2 flex gap-3">
           <AddButton onClick={onAddEvent} />
-          <DeleteButton disabled={selectedEventIndex === undefined} onClick={onRemoveEvent} />
+          <DeleteButton disabled={!hasSelectedElement} onClick={onRemoveSelected} />
         </div>
       </div>
       {/* Список событий с действиями */}
