@@ -47,7 +47,7 @@ export const ComponentFormFieldLabel: React.FC<ComponentFormFieldLabelProps> = (
             <div>
               <input
                 className={twMerge(
-                  'h-8 w-full rounded-lg border border-border-primary bg-transparent px-2 py-1 text-text-primary outline-none focus:border-text-primary',
+                  'h-8 w-full rounded-lg border border-text-inactive bg-transparent px-2 py-1 text-text-primary outline-none focus:border-text-primary',
                   error && '!border-error text-error',
                   className
                 )}

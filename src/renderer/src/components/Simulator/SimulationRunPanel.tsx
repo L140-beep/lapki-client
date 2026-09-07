@@ -25,7 +25,7 @@ interface SimulationRunPanelProps {
 }
 
 const controlClassName =
-  'h-8 w-full rounded-lg border border-border-primary bg-bg-primary px-3 text-xs text-text-primary outline-none focus:border-primary';
+  'h-8 w-full rounded-lg border border-text-inactive bg-bg-primary px-3 text-xs text-text-primary outline-none focus:border-primary';
 
 const buttonClassName =
   'h-8 rounded-lg px-3 text-xs transition-colors enabled:bg-primary enabled:text-text-secondary disabled:cursor-not-allowed disabled:bg-bg-active disabled:text-text-disabled';
