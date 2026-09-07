@@ -120,34 +120,35 @@ export const Actions: React.FC<ActionsProps> = (props) => {
             <ScrollArea
               className="w-full rounded-lg border border-border-primary py-0"
               viewportClassName="whitespace-nowrap"
-              contentClassName="min-h-full min-w-full"
+              contentClassName="h-full min-w-full"
             >
-              {actions.length === 0 && (
+              {actions.length === 0 ? (
                 <div className="flex h-full w-full select-none flex-row items-center justify-center text-center align-middle text-text-inactive">
                   <span className="mr-2">Чтобы добавить действие, нажмите</span>
                   <div>
                     <AddIcon className="btn-secondary h-5 w-5 min-w-0 cursor-default rounded border border-text-inactive p-[0.5px] enabled:hover:opacity-80 enabled:active:opacity-60" />
                   </div>
                 </div>
+              ) : (
+                <div className="min-w-full">
+                  {actions.map((data, i) => (
+                    <Action
+                      key={i}
+                      smId={smId}
+                      isSelected={selectedActionIndex === i}
+                      onSelect={() => setSelectedActionIndex(i)}
+                      onChange={() => !disabled && onChangeAction(data)}
+                      onDelete={() => handleClickDelete(i)}
+                      onDragStart={() => handleDrag(i)}
+                      onDrop={() => handleDrop(i)}
+                      data={{
+                        ...data,
+                        componentName: getComponentName(data.component) ?? data.component,
+                      }}
+                    />
+                  ))}
+                </div>
               )}
-              <div className="min-w-full">
-                {actions.map((data, i) => (
-                  <Action
-                    key={i}
-                    smId={smId}
-                    isSelected={selectedActionIndex === i}
-                    onSelect={() => setSelectedActionIndex(i)}
-                    onChange={() => !disabled && onChangeAction(data)}
-                    onDelete={() => handleClickDelete(i)}
-                    onDragStart={() => handleDrag(i)}
-                    onDrop={() => handleDrop(i)}
-                    data={{
-                      ...data,
-                      componentName: getComponentName(data.component) ?? data.component,
-                    }}
-                  />
-                ))}
-              </div>
             </ScrollArea>
           </div>
         </TabPanel>
