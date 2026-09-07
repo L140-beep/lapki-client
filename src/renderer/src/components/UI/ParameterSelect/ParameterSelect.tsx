@@ -89,7 +89,7 @@ const ParameterMenuList = <
     <ScrollArea
       {...otherInnerProps}
       ref={innerRef}
-      className="ParameterSelect__menu-list"
+      className="ParameterSelect__menu-list py-0"
       viewportClassName="mr-0"
       style={{ ...style, maxHeight }}
     >
