@@ -123,7 +123,10 @@ export const Modal: React.FC<ModalProps> = ({
           <div className="flex-grow"></div>
           <button
             type="button"
-            className={cancelClassName ?? 'btn-secondary'}
+            className={twMerge(
+              'inline-flex items-center justify-center leading-[14px]',
+              cancelClassName ?? 'btn-secondary'
+            )}
             onClick={handleCancel}
             hidden={hideCancelButton}
           >
@@ -139,7 +142,10 @@ export const Modal: React.FC<ModalProps> = ({
           </button>
           <button
             type="submit"
-            className={submitClassName ?? 'btn-primary'}
+            className={twMerge(
+              'inline-flex items-center justify-center leading-[14px]',
+              submitClassName ?? 'btn-primary'
+            )}
             hidden={!onSubmit}
             disabled={submitDisabled}
           >
