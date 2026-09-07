@@ -373,29 +373,33 @@ export const TransitionModal: React.FC<TransitionModalProps> = ({ smId, controll
         hideCancelButton={!viewStack.canGoBack}
         className="min-h-[440px] w-[546px]"
       >
-        <div hidden={viewStack.currentView !== 'editTransition'}>
-          <div className="flex flex-col gap-4">
-            {!isInitialTransition && showTrigger && (
-              <Trigger event={(transition?.label as EventData) ?? null} {...trigger} />
-            )}
-            {!isInitialTransition && <Condition {...condition} />}
-            {!isInitialTransition && (
-              <Actions
-                event={(transition?.label as EventData) ?? null}
-                {...actions}
-                onAddAction={() => openActionsView(null)}
-                onChangeAction={(action) => {
-                  const index = actions.actions.indexOf(action);
-                  openActionsView(index === -1 ? null : index);
-                }}
-              />
-            )}
-            {error && <div className="text-error">{error}</div>}
+        <div className="min-h-[290px]">
+          <div className="h-full" hidden={viewStack.currentView !== 'editTransition'}>
+            <div className="flex h-full min-h-0 flex-col gap-4">
+              {!isInitialTransition && showTrigger && (
+                <Trigger event={(transition?.label as EventData) ?? null} {...trigger} />
+              )}
+              {!isInitialTransition && <Condition {...condition} />}
+              {!isInitialTransition && (
+                <div className="min-h-0 flex-1">
+                  <Actions
+                    event={(transition?.label as EventData) ?? null}
+                    {...actions}
+                    onAddAction={() => openActionsView(null)}
+                    onChangeAction={(action) => {
+                      const index = actions.actions.indexOf(action);
+                      openActionsView(index === -1 ? null : index);
+                    }}
+                  />
+                </div>
+              )}
+              {error && <div className="text-error">{error}</div>}
+            </div>
           </div>
-        </div>
 
-        <div className="h-full min-h-0" hidden={viewStack.currentView !== 'actions'}>
-          <ActionsModal {...actionsModal} />
+          <div className="h-full min-h-0" hidden={viewStack.currentView !== 'actions'}>
+            <ActionsModal {...actionsModal} />
+          </div>
         </div>
       </MovingModal>
     </>
