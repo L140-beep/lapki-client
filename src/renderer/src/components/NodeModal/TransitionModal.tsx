@@ -367,7 +367,7 @@ export const TransitionModal: React.FC<TransitionModalProps> = ({ smId, controll
               )}
               {!isInitialTransition && <Condition {...condition} />}
               {!isInitialTransition && (
-                <div className="min-h-0 flex-1">
+                <div className="min-h-[290px] flex-1">
                   <Actions
                     event={(transition?.label as EventData) ?? null}
                     {...actions}
