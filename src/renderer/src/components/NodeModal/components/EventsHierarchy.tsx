@@ -139,9 +139,9 @@ export const EventsHierarchy: React.FC<EventsHierarchyProps> = ({
                       </div>
 
                       {/* Текст события */}
-                      <div className="flex min-w-0 flex-1 flex-row gap-2">
+                      <div className="flex min-w-0 flex-1 flex-row items-center gap-2">
                         <EventIcon className="flex-shrink-0" />
-                        <div className="min-w-0 truncate">
+                        <div className="min-w-0 truncate leading-5">
                           <span className="font-medium">{getTriggerText(event)}</span>
                           {event.condition && <span>{getConditionText(event.condition)}</span>}
                         </div>
