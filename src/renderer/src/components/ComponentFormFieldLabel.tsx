@@ -10,6 +10,8 @@ interface ComponentFormFieldLabelProps extends ComponentProps<'input'> {
   hint?: string;
   error?: string;
   as?: 'label' | 'div';
+  leadingContent?: ReactNode;
+  sharedGrid?: boolean;
   labelClassName?: string;
   childrenDivClassname?: string;
 }
@@ -23,14 +25,28 @@ export const ComponentFormFieldLabel: React.FC<ComponentFormFieldLabelProps> = (
   childrenDivClassname,
   children,
   as = 'label',
+  leadingContent,
+  sharedGrid = false,
   ...props
 }) => {
   const Component = as;
 
   return (
-    <div className="w-full">
-      <Component className="grid w-full min-w-0 grid-cols-[max-content,minmax(0,1fr)] items-center justify-start gap-2">
-        <div className={twMerge('flex w-20 gap-1', labelClassName)}>
+    <div className={twMerge('w-full', sharedGrid && 'contents')}>
+      <Component
+        className={twMerge(
+          'grid w-full min-w-0 grid-cols-[max-content,minmax(0,1fr)] items-center justify-start gap-2',
+          sharedGrid && 'contents'
+        )}
+      >
+        <div
+          className={twMerge(
+            'flex w-20 items-center gap-1',
+            sharedGrid && 'w-auto',
+            labelClassName
+          )}
+        >
+          {leadingContent}
           <span className="self-center">{label}</span>
           {hint && (
             <WithHint hint={hint}>
