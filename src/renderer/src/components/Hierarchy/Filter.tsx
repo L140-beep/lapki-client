@@ -31,7 +31,7 @@ export const Filter: React.FC<FilterProps> = (props) => {
 
   return (
     <div className="flex items-end gap-2 pb-[7px]">
-      <label className="flex h-[32px] items-center rounded-lg border border-border-primary">
+      <label className="flex h-[32px] items-center rounded-lg border border-border-primary transition-colors focus-within:border-text-inactive">
         <TextInput
           ref={inputRef}
           className="border-none py-[2px] pr-3"
