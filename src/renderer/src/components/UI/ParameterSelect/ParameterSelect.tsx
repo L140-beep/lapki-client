@@ -3,6 +3,7 @@ import React from 'react';
 import { mergeRefs } from 'react-merge-refs';
 import ReactSelect, {
   components,
+  DropdownIndicatorProps,
   GroupBase,
   MenuListProps,
   OptionProps,
@@ -10,6 +11,8 @@ import ReactSelect, {
   SingleValueProps,
 } from 'react-select';
 import { twMerge } from 'tailwind-merge';
+
+import { ReactComponent as ArrowIcon } from '@renderer/assets/icons/arrow-down.svg';
 
 import { ScrollArea } from '../ScrollArea';
 import { WithHint } from '../WithHint';
@@ -58,6 +61,17 @@ const ParameterSingleValue = <Value extends string | number>(
     </components.SingleValue>
   );
 };
+
+const ParameterDropdownIndicator = <
+  Option extends ParameterSelectOption,
+  Group extends GroupBase<Option> = GroupBase<Option>
+>(
+  props: DropdownIndicatorProps<Option, false, Group>
+) => (
+  <components.DropdownIndicator {...props}>
+    <ArrowIcon />
+  </components.DropdownIndicator>
+);
 
 const ParameterMenuList = <
   Option extends ParameterSelectOption,
@@ -116,12 +130,12 @@ export function ParameterSelect<
         styles={{
           menuPortal: (base) => ({ ...base, zIndex: 9999 }),
           menu: (base) =>
-            menuWidth === undefined
-              ? base
-              : { ...base, right: 0, left: 'auto', width: menuWidth },
+            menuWidth === undefined ? base : { ...base, right: 0, left: 'auto', width: menuWidth },
           control: (base) => ({ ...base, minHeight: '32px', height: '32px' }),
         }}
         components={{
+          DropdownIndicator: ParameterDropdownIndicator,
+          IndicatorSeparator: null,
           MenuList: ParameterMenuList,
           Option: ParameterOption as any,
           SingleValue: ParameterSingleValue as any,
