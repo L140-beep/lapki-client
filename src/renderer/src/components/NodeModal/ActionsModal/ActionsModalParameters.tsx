@@ -122,7 +122,7 @@ export const ActionsModalParameters: React.FC<ActionsModalParametersProps> = ({
   return (
     <ScrollArea className="min-h-0 flex-1">
       <div className="flex min-w-0 flex-col gap-2">
-        <h3 className="mb-1 text-xs">Параметры</h3>
+        <h3 className="mb-1 text-xs font-medium">Параметры</h3>
         {protoParameters.map((proto, idx) => {
           const { name, description = '', type = '', range } = proto;
           const parameter = parameters[name] ?? { value: '', order: idx };
