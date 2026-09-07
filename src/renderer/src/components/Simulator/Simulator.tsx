@@ -89,10 +89,10 @@ const orientationOptions: { value: GardenerOrientation; label: string }[] = [
 ];
 
 const controlClassName =
-  'h-8 w-full rounded-lg border border-text-inactive bg-bg-primary px-3 text-xs text-text-primary outline-none focus:border-primary';
+  'h-8 w-full rounded-lg border border-border-primary bg-bg-primary px-3 text-xs text-text-primary outline-none focus:border-text-inactive';
 
 const gardenerNumericControlClassName =
-  'h-8 w-full rounded-lg border border-text-inactive bg-bg-primary px-3 text-xs text-text-primary outline-none';
+  'h-8 w-full rounded-lg border border-border-primary bg-bg-primary px-3 text-xs text-text-primary outline-none focus:border-text-inactive';
 
 const PLAYBACK_INTERVAL_MS = 500;
 

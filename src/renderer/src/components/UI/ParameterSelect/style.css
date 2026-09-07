@@ -1,5 +1,5 @@
 .ParameterSelect__control {
-  @apply h-8 rounded-lg border-text-inactive bg-transparent shadow-none !important;
+  @apply h-8 rounded-lg border-border-primary bg-transparent shadow-none !important;
 }
 
 .ParameterSelect__value-container {
@@ -19,7 +19,7 @@
 }
 
 .ParameterSelect__control--is-focused {
-  @apply border-text-primary !important;
+  @apply border-text-inactive !important;
 }
 
 .ParameterSelect__single-value {
