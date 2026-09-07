@@ -367,17 +367,15 @@ export const TransitionModal: React.FC<TransitionModalProps> = ({ smId, controll
               )}
               {!isInitialTransition && <Condition {...condition} />}
               {!isInitialTransition && (
-                <div className="min-h-0 flex-1">
-                  <Actions
-                    event={(transition?.label as EventData) ?? null}
-                    {...actions}
-                    onAddAction={() => openActionsView(null)}
-                    onChangeAction={(action) => {
-                      const index = actions.actions.indexOf(action);
-                      openActionsView(index === -1 ? null : index);
-                    }}
-                  />
-                </div>
+                <Actions
+                  event={(transition?.label as EventData) ?? null}
+                  {...actions}
+                  onAddAction={() => openActionsView(null)}
+                  onChangeAction={(action) => {
+                    const index = actions.actions.indexOf(action);
+                    openActionsView(index === -1 ? null : index);
+                  }}
+                />
               )}
               {error && <div className="text-error">{error}</div>}
             </div>
