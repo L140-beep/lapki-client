@@ -67,7 +67,7 @@
   }
 
   .btn-secondary {
-    @apply btn border border-text-primary enabled:hover:opacity-80 enabled:active:opacity-60;
+    @apply btn border border-primary text-primary enabled:hover:opacity-80 enabled:active:opacity-60;
   }
 
   .danger {
