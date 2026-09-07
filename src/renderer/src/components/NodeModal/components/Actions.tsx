@@ -4,7 +4,7 @@ import CodeMirror, { Transaction, EditorState, ReactCodeMirrorRef } from '@uiw/r
 import throttle from 'lodash.throttle';
 
 import { ReactComponent as AddIcon } from '@renderer/assets/icons/add.svg';
-import { TabPanel, Tabs } from '@renderer/components/UI';
+import { ScrollArea, TabPanel, Tabs } from '@renderer/components/UI';
 import { AddButton } from '@renderer/components/UI/AddButton';
 import { Action as ActionData, EventData } from '@renderer/types/diagram';
 
@@ -96,7 +96,7 @@ export const Actions: React.FC<ActionsProps> = (props) => {
   };
 
   return (
-    <div className="flex h-full min-h-44 flex-1 flex-col">
+    <div className="flex h-full min-h-[290px] flex-1 flex-col">
       <div className="mb-2 flex items-end gap-2">
         <p className="font-medium">Делай</p>
 
@@ -117,7 +117,11 @@ export const Actions: React.FC<ActionsProps> = (props) => {
             onDoubleClick={disabled ? undefined : onAddAction}
             className="flex h-full min-h-0  flex-1 gap-2"
           >
-            <div className="flex h-full min-h-0 w-full flex-1 flex-col overflow-x-auto overflow-y-auto whitespace-nowrap rounded-lg border border-border-primary scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb">
+            <ScrollArea
+              className="w-full rounded-lg border border-border-primary py-0"
+              viewportClassName="whitespace-nowrap"
+              contentClassName="min-h-full min-w-full"
+            >
               {actions.length === 0 && (
                 <div className="flex h-full w-full select-none flex-row items-center justify-center text-center align-middle text-text-inactive">
                   <span className="mr-2">Чтобы добавить действие, нажмите</span>
@@ -144,7 +148,7 @@ export const Actions: React.FC<ActionsProps> = (props) => {
                   />
                 ))}
               </div>
-            </div>
+            </ScrollArea>
           </div>
         </TabPanel>
 
