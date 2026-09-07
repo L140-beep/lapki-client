@@ -81,11 +81,7 @@ export const StateMachinesList: React.FC<StateMachinesListProps> = ({
         isAddDisabled={isDisabled}
       />
       {isInitialized ? (
-        <ScrollArea
-          className="mb-2 flex-1"
-          viewportClassName="select-none"
-          contentClassName="space-y-2"
-        >
+        <ScrollArea className="mb-2 flex-1" viewportClassName="select-none">
           {Object.keys(elements).length === 1 ? (
             <p className="pl-[19px] text-text-inactive">Нет машин состояний</p>
           ) : (

@@ -30,7 +30,7 @@ export const Filter: React.FC<FilterProps> = (props) => {
   };
 
   return (
-    <div className="mb-3 flex items-end gap-2">
+    <div className="flex items-end gap-2 pb-[7px]">
       <label className="flex h-[32px] items-center rounded-lg border border-border-primary">
         <TextInput
           ref={inputRef}
