@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 
 import { mergeRefs } from 'react-merge-refs';
 import ReactSelect, {
@@ -13,6 +13,7 @@ import ReactSelect, {
 import { twMerge } from 'tailwind-merge';
 
 import { ReactComponent as ArrowIcon } from '@renderer/assets/icons/arrow-down.svg';
+import { usePortalZIndex } from '@renderer/hooks';
 
 import { ScrollArea } from '../ScrollArea';
 import { WithHint } from '../WithHint';
@@ -118,8 +119,11 @@ export function ParameterSelect<
   components: customComponents,
   ...props
 }: ParameterSelectProps<Option, Group>) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const zIndex = usePortalZIndex(containerRef);
+
   return (
-    <div className={twMerge('w-full', containerClassName)}>
+    <div ref={containerRef} className={twMerge('w-full', containerClassName)}>
       <ReactSelect
         placeholder="Выберите..."
         isClearable={false}
@@ -128,7 +132,7 @@ export function ParameterSelect<
         menuPortalTarget={document.body}
         menuPosition="fixed"
         styles={{
-          menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+          menuPortal: (base) => ({ ...base, zIndex }),
           menu: (base) =>
             menuWidth === 'content'
               ? { ...base, right: 0, left: 'auto', width: 'max-content' }
