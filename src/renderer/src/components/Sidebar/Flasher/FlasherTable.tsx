@@ -343,7 +343,7 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
             <ParameterSelect
               options={typeId ? stateMachineOptions.get(typeId) : allAddressOptions}
               containerClassName={selectSmSubColumn}
-              menuWidth="250px"
+              menuWidth="content"
               menuPosition="fixed"
               isSearchable={false}
               placeholder="Выберите..."

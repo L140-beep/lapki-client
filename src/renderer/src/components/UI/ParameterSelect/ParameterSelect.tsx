@@ -103,7 +103,7 @@ type ParameterSelectProps<
 > = Omit<Props<Option, false, Group>, 'isMulti'> & {
   error?: string;
   containerClassName?: string;
-  menuWidth?: string | number;
+  menuWidth?: 'content' | 'full';
 };
 
 /** Compact select used for parameters with a fixed set of allowed values. */
@@ -114,7 +114,7 @@ export function ParameterSelect<
   error,
   containerClassName,
   className,
-  menuWidth,
+  menuWidth = 'full',
   components: customComponents,
   ...props
 }: ParameterSelectProps<Option, Group>) {
@@ -130,7 +130,9 @@ export function ParameterSelect<
         styles={{
           menuPortal: (base) => ({ ...base, zIndex: 9999 }),
           menu: (base) =>
-            menuWidth === undefined ? base : { ...base, right: 0, left: 'auto', width: menuWidth },
+            menuWidth === 'content'
+              ? { ...base, right: 0, left: 'auto', width: 'max-content' }
+              : base,
           control: (base) => ({ ...base, minHeight: '32px', height: '32px' }),
         }}
         components={{
