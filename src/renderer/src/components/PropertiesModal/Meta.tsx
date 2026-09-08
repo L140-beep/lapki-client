@@ -41,7 +41,7 @@ export const Meta: React.FC<MetaProps> = ({ form }) => {
                 error={!!errors?.meta?.[index]?.name}
                 placeholder="Название"
               />
-              <p className="text-sm text-error">{errors?.meta?.[index]?.name?.message}</p>
+              <p className="text-xs text-error">{errors?.meta?.[index]?.name?.message}</p>
             </label>
 
             <label className="flex w-full flex-col">
@@ -52,7 +52,7 @@ export const Meta: React.FC<MetaProps> = ({ form }) => {
                 placeholder="Значение"
                 className="w-full max-w-full"
               />
-              <p className="text-sm text-error">{errors?.meta?.[index]?.value?.message}</p>
+              <p className="text-xs text-error">{errors?.meta?.[index]?.value?.message}</p>
             </label>
             <button
               type="button"

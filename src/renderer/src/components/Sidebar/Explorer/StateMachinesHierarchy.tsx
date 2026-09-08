@@ -25,29 +25,17 @@ export const StateMachinesHierarchy: React.FC<StateMachinesHierarchyProps> = ({
   );
   const [theme] = useSettings('theme');
   const [search, setSearch] = useState('');
-  const [expand, setExpand] = useState(true);
-  const [collapse, setCollapse] = useState(true);
+  const expand = true;
+  const collapse = true;
   const handleChangeSearch = (value: string) => {
     if (!value) value = '';
     setSearch(value);
-  };
-
-  const onExpandAll = () => {
-    setExpand(true);
-    setCollapse(false);
-  };
-
-  const onCollapseAll = () => {
-    setCollapse(true);
-    setExpand(false);
   };
 
   return (
     <div className={twMerge(theme !== 'light' && 'rct-dark', 'flex h-full min-h-0 flex-col')}>
       <PanelHeader title="Иерархия" isCollapsed={isCollapsed} togglePanel={togglePanel} />
       <Filter
-        onExpandAll={onExpandAll}
-        onCollapseAll={onCollapseAll}
         search={search}
         onChangeSearch={handleChangeSearch}
         disabled={headControllerId === ''}

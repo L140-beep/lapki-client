@@ -72,7 +72,7 @@ export const ComponentFormFieldLabel: React.FC<ComponentFormFieldLabelProps> = (
               />
             </div>
           )}
-          <p className="text-sm text-error">{error}</p>
+          <p className="text-xs text-error">{error}</p>
         </div>
       </Component>
     </div>

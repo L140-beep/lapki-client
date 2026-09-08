@@ -130,8 +130,8 @@ export const Autosave: React.FC<AutosaveProps> = ({ isOpen, onClose, ...props })
           </WithHint>
         </div>
 
-        {errors.interval && <p className="text-error">{errors.interval.message}</p>}
-        {errors.disabled && <p className="text-warning">{errors.disabled.message}</p>}
+        {errors.interval && <p className="text-xs text-error">{errors.interval.message}</p>}
+        {errors.disabled && <p className="text-xs text-warning">{errors.disabled.message}</p>}
       </div>
     </MovingModal>
   );

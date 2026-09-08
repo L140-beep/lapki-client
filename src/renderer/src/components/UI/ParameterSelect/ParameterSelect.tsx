@@ -150,7 +150,7 @@ export function ParameterSelect<
         className={twMerge('w-full', className, error && 'error')}
         classNamePrefix="ParameterSelect"
       />
-      <p className={twMerge('text-sm text-error', error && 'mt-1')}>{error}</p>
+      <p className={twMerge('text-xs text-error', error && 'mt-1')}>{error}</p>
     </div>
   );
 }

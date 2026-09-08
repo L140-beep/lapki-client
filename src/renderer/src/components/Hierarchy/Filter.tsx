@@ -3,21 +3,17 @@ import React, { useRef } from 'react';
 import { twMerge } from 'tailwind-merge';
 
 import { ReactComponent as ClearIcon } from '@renderer/assets/icons/close.svg';
-import { ReactComponent as CollapseIcon } from '@renderer/assets/icons/collapse-all.svg';
-import { ReactComponent as ExpandIcon } from '@renderer/assets/icons/expand-all.svg';
 
 import { TextInput } from '../UI';
 
 interface FilterProps {
-  onExpandAll: () => void;
-  onCollapseAll: () => void;
   search: string;
   onChangeSearch: (value: string) => void;
   disabled?: boolean;
 }
 
 export const Filter: React.FC<FilterProps> = (props) => {
-  const { onExpandAll, onCollapseAll, search, onChangeSearch, disabled } = props;
+  const { search, onChangeSearch, disabled } = props;
   const inputRef = useRef<HTMLInputElement>(null);
 
   const handleChangeSearch = (e: React.ChangeEvent<HTMLInputElement>) => {

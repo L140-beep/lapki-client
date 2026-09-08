@@ -31,7 +31,7 @@ export const EditEventModal: React.FC<EditEventModalProps> = (props) => {
           },
         }}
       />
-      {error && <div className="text-error">{error}</div>}
+      {error && <div className="text-xs text-error">{error}</div>}
     </div>
   );
 };
