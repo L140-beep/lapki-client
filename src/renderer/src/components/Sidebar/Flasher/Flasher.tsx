@@ -950,7 +950,6 @@ export const FlasherTab: React.FC = () => {
         <p className="h2-header mb-3">Устройства на прошивку</p>
         <div className="mb-5 flex h-4 items-center gap-3">
           <Checkbox
-            className="h-4 min-h-4 w-4 min-w-4 rounded-sm"
             checked={allDevicesSelected}
             disabled={flashTableData.length === 0}
             aria-label="Выбрать все устройства"

@@ -319,7 +319,6 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
       <tr key={tableItem.targetId}>
         <td>
           <Checkbox
-            className="h-4 w-4 min-w-4 rounded-sm"
             checked={checked}
             onCheckedChange={() => onCheckedChangeHandle(tableItem)}
           />

@@ -214,7 +214,7 @@ export const CompilerTab: React.FC = () => {
         <ScrollArea className="mb-4 max-h-[112px] py-0" contentClassName="flex flex-col gap-2">
           <label className="flex cursor-pointer items-center gap-3">
             <Checkbox
-              className="h-3 w-3 min-w-3 rounded-none bg-bg-primary"
+              className="bg-bg-primary"
               checked={allSelected}
               onCheckedChange={(checked) => handleSelectAll(checked === true)}
             />
@@ -223,7 +223,7 @@ export const CompilerTab: React.FC = () => {
           {stateMachineEntries.map(([id, stateMachine]) => (
             <label key={id} className="flex cursor-pointer items-center gap-3">
               <Checkbox
-                className="h-3 w-3 min-w-3 rounded-none bg-bg-primary"
+                className="bg-bg-primary"
                 checked={selectedStateMachines[id] ?? false}
                 onCheckedChange={(checked) => handleStateMachineSelection(id, checked === true)}
               />
