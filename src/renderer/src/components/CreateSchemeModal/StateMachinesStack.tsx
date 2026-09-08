@@ -44,8 +44,7 @@ export const StateMachinesStack: React.FC<StateMachinesStackProps> = ({
             onClick={() => onSelect(index)}
           >
             <div className="min-w-0 leading-4">
-              <div className="truncate">{sm.id}</div>
-              <div className="truncate text-text-inactive">{sm.platform.name}</div>
+              <div className="truncate">{sm.platform.name}</div>
             </div>
             <DeleteButton onClick={(e) => handleOnDelte(e, index)} />
           </div>
