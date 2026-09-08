@@ -31,7 +31,9 @@ const nameColumn = 'w-1/4';
 const typeColumn = 'w-1/4';
 const addressColumn = 'w-1/4';
 const selectSmSubColumn = 'h-full w-full min-w-0';
+const checkColumnSize = 28;
 const selectFileColumnSize = 24;
+const dataColumnWidth = `calc((100% - ${checkColumnSize + selectFileColumnSize}px) / 4)`;
 // высота клеток
 const cellHeight = 'min-h-9';
 const cellBorder = 'border-b border-r border-border-primary';
@@ -401,11 +403,11 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
       {tableData.length > 0 ? (
         <table className="w-full table-fixed border-separate border-spacing-0">
           <colgroup>
-            <col className={checkColumn} />
-            <col className={nameColumn} />
-            <col className={typeColumn} />
-            <col className={addressColumn} />
-            <col />
+            <col style={{ width: checkColumnSize }} />
+            <col style={{ width: dataColumnWidth }} />
+            <col style={{ width: dataColumnWidth }} />
+            <col style={{ width: dataColumnWidth }} />
+            <col style={{ width: dataColumnWidth }} />
             <col style={{ width: selectFileColumnSize }} />
           </colgroup>
           <thead className={twMerge(stickyStyle)}>{headerRender()}</thead>
