@@ -31,10 +31,11 @@ const nameColumn = 'w-1/4';
 const typeColumn = 'w-1/4';
 const addressColumn = 'w-1/4';
 const firmwareSourceColumn = 'w-1/4';
-const selectSmSubColumn = 'w-full min-w-0';
+const selectSmSubColumn = 'h-full w-full min-w-0';
 const selectFileSubColumn = 'w-7 min-w-7';
 // высота клеток
 const cellHeight = 'min-h-9';
+const cellBorder = 'border-b border-r border-border-primary';
 
 // список плат МС-ТЮК, которые следует строго проверять на соответствие версий.
 const strictVersionCheck = ['mtrx'];
@@ -244,7 +245,8 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
         className={twMerge(
           mergeClassName,
           cellHeight,
-          'border border-border-primary px-[9px] py-[6px] text-center text-text-primary outline-none transition-colors'
+          cellBorder,
+          'px-[9px] py-[6px] text-center text-text-primary outline-none transition-colors'
         )}
         colSpan={colspan}
       >
@@ -257,10 +259,17 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
     return (
       <tr className={twMerge(stickyStyle, 'items-center justify-start font-medium')}>
         <td className={twMerge(stickyStyle, checkColumn)} />
-        {cellRender('Наименование', twMerge(stickyStyle, nameColumn))}
-        {cellRender('Тип', twMerge(stickyStyle, typeColumn))}
-        {cellRender('Адрес', twMerge(stickyStyle, addressColumn))}
-        {cellRender('Что прошиваем', twMerge(stickyStyle, firmwareSourceColumn), 2)}
+        {cellRender(
+          'Наименование',
+          twMerge(stickyStyle, nameColumn, 'rounded-tl-[6px] border-l border-t')
+        )}
+        {cellRender('Тип', twMerge(stickyStyle, typeColumn, 'border-t'))}
+        {cellRender('Адрес', twMerge(stickyStyle, addressColumn, 'border-t'))}
+        {cellRender(
+          'Что прошиваем',
+          twMerge(stickyStyle, firmwareSourceColumn, 'rounded-tr-[6px] border-t'),
+          2
+        )}
       </tr>
     );
   };
@@ -320,17 +329,17 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
         <td>
           <Checkbox checked={checked} onCheckedChange={() => onCheckedChangeHandle(tableItem)} />
         </td>
-        {devInfoDisplay(displayName, nameColumn)}
+        {devInfoDisplay(displayName, twMerge(nameColumn, 'border-l'))}
         {devInfoDisplay(displayType, typeColumn)}
         {devInfoDisplay(displayAddress, addressColumn)}
         {/* (Roundabout1) TODO: центрировать текст опций в выпадающем списке и текстовом поле */}
-        <td>
+        <td className={twMerge(cellHeight, cellBorder, 'h-9')}>
           {tableItem.isFile ? (
             <div
               className={twMerge(
                 selectSmSubColumn,
                 cellHeight,
-                'rounded border border-border-primary bg-transparent px-[9px] py-[6px] text-text-primary outline-none transition-colors'
+                'bg-transparent px-[9px] py-[6px] text-text-primary outline-none transition-colors'
               )}
             >
               {fileBaseName.get(tableItem.targetId) ?? 'Ошибка!'}
@@ -338,7 +347,10 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
           ) : (
             <ParameterSelect
               options={typeId ? stateMachineOptions.get(typeId) : allAddressOptions}
-              containerClassName={selectSmSubColumn}
+              containerClassName={twMerge(
+                selectSmSubColumn,
+                '[&>div]:h-full [&>div>div]:!h-full [&>div>div]:!min-h-0 [&>div>div]:!rounded-none [&>div>div]:!border-0'
+              )}
               menuWidth="content"
               menuPosition="fixed"
               isSearchable={false}
@@ -355,7 +367,7 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
             />
           )}
         </td>
-        <td>
+        <td className={twMerge(selectFileSubColumn, cellHeight, cellBorder, 'h-9')}>
           <WithHint
             hint={
               tableItem.isFile
@@ -368,11 +380,7 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
               <button
                 {...hintProps}
                 type="button"
-                className={twMerge(
-                  'rounded border border-border-primary',
-                  selectFileSubColumn,
-                  cellHeight
-                )}
+                className="h-full w-full"
                 onClick={() =>
                   tableItem.isFile ? handleRemoveFileSource(tableItem) : handleSelectFile(tableItem)
                 }
@@ -391,7 +399,9 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
       {tableData.length > 0 ? (
         <table className="w-full table-fixed border-separate border-spacing-0">
           <thead className={twMerge(stickyStyle)}>{headerRender()}</thead>
-          <tbody>{tableData.map((tableItem) => rowRender(tableItem))}</tbody>
+          <tbody className="[&>tr:last-child>td:last-child]:rounded-br-[6px] [&>tr:last-child>td:nth-child(2)]:rounded-bl-[6px]">
+            {tableData.map((tableItem) => rowRender(tableItem))}
+          </tbody>
         </table>
       ) : (
         <div className="flex min-h-20 flex-col items-center justify-center">
