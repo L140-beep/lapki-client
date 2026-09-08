@@ -27,13 +27,9 @@ interface FlasherTableProps {
 // поэтому при изменение стобцов приходится всё в ручную пересчитывать
 const checkColumn = 'w-7 min-w-7';
 const stickyStyle = 'sticky top-0 z-10';
-const nameColumn = 'w-1/4';
-const typeColumn = 'w-1/4';
-const addressColumn = 'w-1/4';
 const selectSmSubColumn = 'h-full w-full min-w-0';
 const checkColumnSize = 28;
 const selectFileColumnSize = 24;
-const dataColumnWidth = `calc((100% - ${checkColumnSize + selectFileColumnSize}px) / 4)`;
 // высота клеток
 const cellHeight = 'min-h-9';
 const cellBorder = 'border-b border-r border-border-primary';
@@ -260,12 +256,9 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
     return (
       <tr className={twMerge(stickyStyle, 'items-center justify-start font-medium')}>
         <td className={twMerge(stickyStyle, checkColumn)} />
-        {cellRender(
-          'Наименование',
-          twMerge(stickyStyle, nameColumn, 'rounded-tl-[6px] border-l border-t')
-        )}
-        {cellRender('Тип', twMerge(stickyStyle, typeColumn, 'border-t'))}
-        {cellRender('Адрес', twMerge(stickyStyle, addressColumn, 'border-t'))}
+        {cellRender('Наименование', twMerge(stickyStyle, 'rounded-tl-[6px] border-l border-t'))}
+        {cellRender('Тип', twMerge(stickyStyle, 'border-t'))}
+        {cellRender('Адрес', twMerge(stickyStyle, 'border-t'))}
         {cellRender('Что прошиваем', twMerge(stickyStyle, 'rounded-tr-[6px] border-t'), 2)}
       </tr>
     );
@@ -326,9 +319,9 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
         <td>
           <Checkbox checked={checked} onCheckedChange={() => onCheckedChangeHandle(tableItem)} />
         </td>
-        {devInfoDisplay(displayName, twMerge(nameColumn, 'border-l'))}
-        {devInfoDisplay(displayType, typeColumn)}
-        {devInfoDisplay(displayAddress, addressColumn)}
+        {devInfoDisplay(displayName, 'border-l')}
+        {devInfoDisplay(displayType, '')}
+        {devInfoDisplay(displayAddress, '')}
         {/* (Roundabout1) TODO: центрировать текст опций в выпадающем списке и текстовом поле */}
         <td className={twMerge(cellHeight, cellBorder, 'h-9')}>
           {tableItem.isFile ? (
@@ -404,10 +397,10 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
         <table className="w-full table-fixed border-separate border-spacing-0">
           <colgroup>
             <col style={{ width: checkColumnSize }} />
-            <col style={{ width: dataColumnWidth }} />
-            <col style={{ width: dataColumnWidth }} />
-            <col style={{ width: dataColumnWidth }} />
-            <col style={{ width: dataColumnWidth }} />
+            <col />
+            <col />
+            <col />
+            <col />
             <col style={{ width: selectFileColumnSize }} />
           </colgroup>
           <thead className={twMerge(stickyStyle)}>{headerRender()}</thead>
