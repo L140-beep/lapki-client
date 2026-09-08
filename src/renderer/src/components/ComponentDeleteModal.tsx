@@ -50,7 +50,7 @@ export const ComponentDeleteModal: React.FC<ComponentDeleteModalProps> = ({
       title="Удаление компонента"
       submitLabel="Удалить"
       onSubmit={handleSubmit}
-      submitClassName="btn-secondary border-red-500 danger"
+      submitClassName="btn-secondary border-danger danger"
       cancelClassName="hidden"
     >
       <p>

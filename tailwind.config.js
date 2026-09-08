@@ -25,6 +25,7 @@ export default {
           '--p-h': '#225EF9',
           '--p-a': '#2A62F4',
           '--e': 'red',
+          '--danger': '#FF4848',
           '--s': 'lime',
           '--w': '#E4A11B',
 
@@ -73,6 +74,7 @@ export default {
           '--p-h': '#225EF9',
           '--p-a': '#2A62F4',
           '--e': 'red',
+          '--danger': '#FF4848',
           '--s': 'lime',
           '--w': '#E4A11B',
 

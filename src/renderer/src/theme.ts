@@ -2,6 +2,7 @@ const colorNames = {
   codeEditorTheme: '--c-e-t',
   primary: '--p',
   error: '--e',
+  danger: '--danger',
   success: '--s',
   warning: '--w',
 

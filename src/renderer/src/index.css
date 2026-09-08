@@ -71,7 +71,7 @@
   }
 
   .danger {
-    @apply text-red-500;
+    @apply text-danger;
   }
 
   .dropdown-menu {
