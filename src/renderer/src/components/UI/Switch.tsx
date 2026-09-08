@@ -8,7 +8,7 @@ export const Switch: React.FC<RSwitch.SwitchProps> = (props) => {
   return (
     <RSwitch.Root
       className={twMerge(
-        'relative box-border h-[18px] w-[30px] cursor-pointer rounded-full bg-switch-inactive-bg p-[2px] outline-none data-[state=checked]:bg-icon-selected-bg',
+        'relative box-border block h-[18px] min-h-[18px] w-[30px] min-w-[30px] shrink-0 cursor-pointer rounded-full bg-switch-inactive-bg p-[2px] outline-none data-[state=checked]:bg-icon-selected-bg',
         className && className
       )}
       style={{ WebkitTapHighlightColor: 'rgba(0, 0, 0, 0)' }}
