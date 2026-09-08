@@ -702,7 +702,7 @@ export const FlasherTab: React.FC = () => {
             …
           </button>
           {isActionsMenuOpen && (
-            <DropdownMenu className="absolute left-0 top-[36px] z-30 w-[212px] p-1">
+            <DropdownMenu className="absolute left-0 top-[36px] z-30 w-[212px]">
               <DropdownMenuItem
                 disabled={flashResult.size === 0}
                 onClick={() => runMenuAction(handleAddFlashResultTab)}
