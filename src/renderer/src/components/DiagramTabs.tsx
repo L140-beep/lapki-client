@@ -41,7 +41,7 @@ const tabs = {
   compiler: {
     title: 'Компилятор',
     Icon: <CompilerIcon />,
-    className: 'min-h-[406px] max-h-[calc(100vh-24px)] w-[1074px] max-w-[calc(100vw-24px)]',
+    className: 'h-[406px] max-h-[calc(100vh-24px)] w-[1074px] max-w-[calc(100vw-24px)]',
     modalTitle: undefined,
   },
   flasher: {
