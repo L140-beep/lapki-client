@@ -83,10 +83,10 @@ export const EventsHierarchy: React.FC<EventsHierarchyProps> = ({
     (selectedActionIndex === null || selectedActions[selectedActionIndex] !== undefined);
 
   return (
-    <div className="flex h-full min-h-[290px] flex-col rounded border border-border-primary p-3">
-      <div className="flex flex-row justify-between">
+    <div className="flex h-full min-h-[290px] flex-col rounded-lg border border-border-primary p-3">
+      <div className="flex flex-row justify-between pb-3">
         <span className="font-medium">События и действия</span>
-        <div className="mb-2 flex gap-3">
+        <div className="flex gap-3">
           <AddButton onClick={onAddEvent} />
           <DeleteButton disabled={!hasSelectedElement} onClick={onRemoveSelected} />
         </div>
@@ -112,8 +112,9 @@ export const EventsHierarchy: React.FC<EventsHierarchyProps> = ({
                     <div
                       {...hintProps}
                       className={twMerge(
-                        'flex cursor-pointer select-none items-center gap-1 rounded-lg px-1 hover:bg-bg-hover',
-                        isEventSelected && selectedActionIndex === null && 'bg-bg-active'
+                        'mt-1.5 flex cursor-pointer select-none items-center gap-1 rounded-lg px-1 hover:bg-bg-hover',
+                        isEventSelected && selectedActionIndex === null && 'bg-bg-active',
+                        eventIdx === 0 && 'my-0'
                       )}
                       onClick={() => onSelectEvent(eventIdx)}
                     >
@@ -156,7 +157,7 @@ export const EventsHierarchy: React.FC<EventsHierarchyProps> = ({
                     <div
                       key={actionIdx}
                       className={twMerge(
-                        'flex cursor-pointer select-none flex-row items-center gap-1 truncate rounded-lg pl-7 pr-2 text-text-primary hover:bg-bg-hover',
+                        'mt-1.5 flex cursor-pointer select-none flex-row items-center gap-1 truncate rounded-lg pl-7 pr-2 text-text-primary hover:bg-bg-hover',
                         selectedEventIndex === eventIdx &&
                           selectedActionIndex === actionIdx &&
                           'bg-bg-active'
