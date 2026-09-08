@@ -32,7 +32,7 @@ const typeColumn = 'w-1/4';
 const addressColumn = 'w-1/4';
 const firmwareSourceColumn = 'w-1/4';
 const selectSmSubColumn = 'h-full w-full min-w-0';
-const selectFileSubColumn = 'w-8 min-w-8';
+const selectFileColumnSize = 24;
 // высота клеток
 const cellHeight = 'min-h-9';
 const cellBorder = 'border-b border-r border-border-primary';
@@ -367,7 +367,14 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
             />
           )}
         </td>
-        <td className={twMerge(selectFileSubColumn, 'h-9')}>
+        <td
+          className="h-9"
+          style={{
+            width: selectFileColumnSize,
+            minWidth: selectFileColumnSize,
+            maxWidth: selectFileColumnSize,
+          }}
+        >
           <WithHint
             hint={
               tableItem.isFile
@@ -380,12 +387,12 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
               <button
                 {...hintProps}
                 type="button"
-                className="block size-8 p-0"
+                className="block size-6 p-0"
                 onClick={() =>
                   tableItem.isFile ? handleRemoveFileSource(tableItem) : handleSelectFile(tableItem)
                 }
               >
-                {tableItem.isFile ? '✖' : <SelectFileIcon className="size-8 opacity-70" />}
+                {tableItem.isFile ? '✖' : <SelectFileIcon className="size-6 opacity-70" />}
               </button>
             )}
           </WithHint>
@@ -404,7 +411,7 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
             <col className={typeColumn} />
             <col className={addressColumn} />
             <col />
-            <col className={selectFileSubColumn} />
+            <col style={{ width: selectFileColumnSize }} />
           </colgroup>
           <thead className={twMerge(stickyStyle)}>{headerRender()}</thead>
           <tbody className="[&>tr:last-child>td:nth-child(2)]:rounded-bl-[6px] [&>tr:last-child>td:nth-child(5)]:rounded-br-[6px]">
