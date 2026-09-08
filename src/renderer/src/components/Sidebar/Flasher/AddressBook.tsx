@@ -72,15 +72,6 @@ export const AddressBookModal: React.FC<AddressBookModalProps> = ({
         onSubmit={handleSubmit}
         submitDisabled={selectedEntry === undefined}
         submitLabel="Добавить"
-        className="top-[18px] box-border flex max-h-[calc(100vh-36px)] w-[calc(100%-40px)] max-w-[720px] flex-col overflow-hidden bg-bg-primary p-6"
-        headerClassName="mb-[23px] min-h-[39px] pb-3"
-        titleClassName="text-xs font-medium"
-        closeClassName="p-2"
-        closeIconClassName="h-2.5 w-2.5"
-        formClassName="flex min-h-0 flex-1 flex-col"
-        contentClassName="mb-0 min-h-0 flex-1"
-        actionsClassName="mt-6"
-        submitClassName="btn-primary h-8 min-w-0 px-3 py-1.5"
         hideCancelButton
       >
         <section className="flex h-full min-h-0 flex-col">
