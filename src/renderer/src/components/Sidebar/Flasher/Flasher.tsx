@@ -45,7 +45,8 @@ export const FlasherStatus: React.FC = () => {
 
   return (
     <span className="font-normal">
-      Статус: <span className="text-primary">{connectionStatus}</span>
+      <span className="font-medium">Статус: </span>
+      <span className="text-primary">{connectionStatus}</span>
       {secondsUntilReconnect !== null && (
         <span> (до повторного подключения: {secondsUntilReconnect} сек.)</span>
       )}

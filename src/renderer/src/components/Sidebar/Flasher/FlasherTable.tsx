@@ -26,7 +26,7 @@ interface FlasherTableProps {
 // tailwind почему-то не реагирует на название классов, в которые подставленны переменные (`w-[${v}vw]`),
 // поэтому при изменение стобцов приходится всё в ручную пересчитывать
 const checkColumn = 'w-7 min-w-7';
-const stickyStyle = 'sticky top-0 z-10 bg-bg-secondary';
+const stickyStyle = 'sticky top-0 z-10';
 const nameColumn = 'w-1/4';
 const typeColumn = 'w-1/4';
 const addressColumn = 'w-1/4';
@@ -244,7 +244,7 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
         className={twMerge(
           mergeClassName,
           cellHeight,
-          'rounded border border-border-primary px-[9px] py-[6px] text-center text-text-primary outline-none transition-colors'
+          'border border-border-primary px-[9px] py-[6px] text-center text-text-primary outline-none transition-colors'
         )}
         colSpan={colspan}
       >
@@ -255,7 +255,7 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
 
   const headerRender = () => {
     return (
-      <tr className={twMerge(stickyStyle, 'items-center justify-start font-semibold')}>
+      <tr className={twMerge(stickyStyle, 'items-center justify-start font-medium')}>
         <td className={twMerge(stickyStyle, checkColumn)} />
         {cellRender('Наименование', twMerge(stickyStyle, nameColumn))}
         {cellRender('Тип', twMerge(stickyStyle, typeColumn))}
@@ -318,10 +318,7 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
     return (
       <tr key={tableItem.targetId}>
         <td>
-          <Checkbox
-            checked={checked}
-            onCheckedChange={() => onCheckedChangeHandle(tableItem)}
-          />
+          <Checkbox checked={checked} onCheckedChange={() => onCheckedChangeHandle(tableItem)} />
         </td>
         {devInfoDisplay(displayName, nameColumn)}
         {devInfoDisplay(displayType, typeColumn)}
@@ -393,9 +390,7 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
     <ScrollArea {...props} className="max-h-60 py-0" viewportClassName="mr-[6px]">
       {tableData.length > 0 ? (
         <table className="w-full table-fixed border-separate border-spacing-0">
-          <thead className={twMerge(stickyStyle, 'bg-secondary font-semibold')}>
-            {headerRender()}
-          </thead>
+          <thead className={twMerge(stickyStyle)}>{headerRender()}</thead>
           <tbody>{tableData.map((tableItem) => rowRender(tableItem))}</tbody>
         </table>
       ) : (
