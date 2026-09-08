@@ -55,8 +55,10 @@ export const ScrollArea = forwardRef<HTMLDivElement, ScrollAreaProps>(
     const viewportRef = useRef<HTMLDivElement | null>(null);
     const contentRef = useRef<HTMLDivElement | null>(null);
 
-    const [hasOverflow, setHasOverflow] = useState(false);
-    const [thumb, setThumb] = useState({ height: 0, top: 0 });
+    const [hasVerticalOverflow, setHasVerticalOverflow] = useState(false);
+    const [hasHorizontalOverflow, setHasHorizontalOverflow] = useState(false);
+    const [verticalThumb, setVerticalThumb] = useState({ height: 0, top: 0 });
+    const [horizontalThumb, setHorizontalThumb] = useState({ width: 0, left: 0 });
 
     const updateScrollbar = useCallback(() => {
       const viewport = viewportRef.current;
@@ -65,31 +67,50 @@ export const ScrollArea = forwardRef<HTMLDivElement, ScrollAreaProps>(
         return;
       }
 
-      const { clientHeight, scrollHeight, scrollTop } = viewport;
-      const nextHasOverflow = scrollHeight > clientHeight;
+      const { clientHeight, clientWidth, scrollHeight, scrollLeft, scrollTop, scrollWidth } =
+        viewport;
+      const nextHasVerticalOverflow = scrollHeight > clientHeight;
+      const nextHasHorizontalOverflow = scrollWidth > clientWidth;
 
-      setHasOverflow(nextHasOverflow);
+      setHasVerticalOverflow(nextHasVerticalOverflow);
+      setHasHorizontalOverflow(nextHasHorizontalOverflow);
 
-      if (!nextHasOverflow) {
-        setThumb({ height: 0, top: 0 });
-        return;
+      if (!nextHasVerticalOverflow) {
+        setVerticalThumb({ height: 0, top: 0 });
+      } else {
+        // 5px сверху + 5px снизу для дорожки.
+        const trackHeight = Math.max(0, clientHeight - 10);
+
+        const height = Math.min(
+          trackHeight,
+          Math.max(20, (clientHeight / scrollHeight) * trackHeight)
+        );
+
+        const maxScrollTop = scrollHeight - clientHeight;
+        const maxThumbTop = trackHeight - height;
+
+        setVerticalThumb({
+          height,
+          top: (scrollTop / maxScrollTop) * maxThumbTop,
+        });
       }
 
-      // 5px сверху + 5px снизу для дорожки.
-      const trackHeight = Math.max(0, clientHeight - 10);
+      if (!nextHasHorizontalOverflow) {
+        setHorizontalThumb({ width: 0, left: 0 });
+      } else {
+        // 5px слева + 5px справа для дорожки.
+        const trackWidth = Math.max(0, clientWidth - 10);
 
-      const height = Math.min(
-        trackHeight,
-        Math.max(20, (clientHeight / scrollHeight) * trackHeight)
-      );
+        const width = Math.min(trackWidth, Math.max(20, (clientWidth / scrollWidth) * trackWidth));
 
-      const maxScrollTop = scrollHeight - clientHeight;
-      const maxThumbTop = trackHeight - height;
+        const maxScrollLeft = scrollWidth - clientWidth;
+        const maxThumbLeft = trackWidth - width;
 
-      setThumb({
-        height,
-        top: (scrollTop / maxScrollTop) * maxThumbTop,
-      });
+        setHorizontalThumb({
+          width,
+          left: (scrollLeft / maxScrollLeft) * maxThumbLeft,
+        });
+      }
     }, []);
 
     const handleViewportRef = useCallback(
@@ -129,9 +150,14 @@ export const ScrollArea = forwardRef<HTMLDivElement, ScrollAreaProps>(
       };
     }, [updateScrollbar]);
 
-    const dragRef = useRef<{
+    const verticalDragRef = useRef<{
       startY: number;
       startScrollTop: number;
+    } | null>(null);
+
+    const horizontalDragRef = useRef<{
+      startX: number;
+      startScrollLeft: number;
     } | null>(null);
 
     const handleThumbPointerDown = (event: ReactPointerEvent<HTMLDivElement>) => {
@@ -146,7 +172,7 @@ export const ScrollArea = forwardRef<HTMLDivElement, ScrollAreaProps>(
 
       event.currentTarget.setPointerCapture(event.pointerId);
 
-      dragRef.current = {
+      verticalDragRef.current = {
         startY: event.clientY,
         startScrollTop: viewport.scrollTop,
       };
@@ -154,14 +180,14 @@ export const ScrollArea = forwardRef<HTMLDivElement, ScrollAreaProps>(
 
     const handleThumbPointerMove = (event: ReactPointerEvent<HTMLDivElement>) => {
       const viewport = viewportRef.current;
-      const drag = dragRef.current;
+      const drag = verticalDragRef.current;
 
       if (!viewport || !drag) {
         return;
       }
 
       const trackHeight = viewport.clientHeight - 10;
-      const maxThumbTop = trackHeight - thumb.height;
+      const maxThumbTop = trackHeight - verticalThumb.height;
       const maxScrollTop = viewport.scrollHeight - viewport.clientHeight;
 
       if (maxThumbTop <= 0) {
@@ -175,7 +201,55 @@ export const ScrollArea = forwardRef<HTMLDivElement, ScrollAreaProps>(
     };
 
     const handleThumbPointerUp = (event: ReactPointerEvent<HTMLDivElement>) => {
-      dragRef.current = null;
+      verticalDragRef.current = null;
+
+      if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+        event.currentTarget.releasePointerCapture(event.pointerId);
+      }
+    };
+
+    const handleHorizontalThumbPointerDown = (event: ReactPointerEvent<HTMLDivElement>) => {
+      const viewport = viewportRef.current;
+
+      if (!viewport) {
+        return;
+      }
+
+      event.preventDefault();
+      event.stopPropagation();
+
+      event.currentTarget.setPointerCapture(event.pointerId);
+
+      horizontalDragRef.current = {
+        startX: event.clientX,
+        startScrollLeft: viewport.scrollLeft,
+      };
+    };
+
+    const handleHorizontalThumbPointerMove = (event: ReactPointerEvent<HTMLDivElement>) => {
+      const viewport = viewportRef.current;
+      const drag = horizontalDragRef.current;
+
+      if (!viewport || !drag) {
+        return;
+      }
+
+      const trackWidth = viewport.clientWidth - 10;
+      const maxThumbLeft = trackWidth - horizontalThumb.width;
+      const maxScrollLeft = viewport.scrollWidth - viewport.clientWidth;
+
+      if (maxThumbLeft <= 0) {
+        return;
+      }
+
+      const pointerDelta = event.clientX - drag.startX;
+      const scrollDelta = pointerDelta * (maxScrollLeft / maxThumbLeft);
+
+      viewport.scrollLeft = drag.startScrollLeft + scrollDelta;
+    };
+
+    const handleHorizontalThumbPointerUp = (event: ReactPointerEvent<HTMLDivElement>) => {
+      horizontalDragRef.current = null;
 
       if (event.currentTarget.hasPointerCapture(event.pointerId)) {
         event.currentTarget.releasePointerCapture(event.pointerId);
@@ -208,7 +282,7 @@ export const ScrollArea = forwardRef<HTMLDivElement, ScrollAreaProps>(
             </div>
           </div>
 
-          {hasOverflow && (
+          {hasVerticalOverflow && (
             <div className="relative my-[5px] w-[18px] shrink-0">
               {/* Scrollbar track */}
               <div className="absolute inset-y-0 left-[10px] w-[2px] rounded-lg bg-scrollbar-track">
@@ -216,8 +290,8 @@ export const ScrollArea = forwardRef<HTMLDivElement, ScrollAreaProps>(
                 <div
                   className="absolute left-0 w-full rounded-full bg-scrollbar-thumb"
                   style={{
-                    height: `${thumb.height}px`,
-                    transform: `translateY(${thumb.top}px)`,
+                    height: `${verticalThumb.height}px`,
+                    transform: `translateY(${verticalThumb.top}px)`,
                   }}
                   onPointerDown={handleThumbPointerDown}
                   onPointerMove={handleThumbPointerMove}
@@ -228,6 +302,30 @@ export const ScrollArea = forwardRef<HTMLDivElement, ScrollAreaProps>(
             </div>
           )}
         </div>
+
+        {hasHorizontalOverflow && (
+          <div className="flex h-[18px] shrink-0">
+            <div className="relative mx-[5px] min-w-0 flex-1">
+              {/* Scrollbar track */}
+              <div className="absolute inset-x-0 top-[10px] h-[2px] rounded-lg bg-scrollbar-track">
+                {/* Scrollbar thumb */}
+                <div
+                  className="absolute top-0 h-full rounded-full bg-scrollbar-thumb"
+                  style={{
+                    width: `${horizontalThumb.width}px`,
+                    transform: `translateX(${horizontalThumb.left}px)`,
+                  }}
+                  onPointerDown={handleHorizontalThumbPointerDown}
+                  onPointerMove={handleHorizontalThumbPointerMove}
+                  onPointerUp={handleHorizontalThumbPointerUp}
+                  onPointerCancel={handleHorizontalThumbPointerUp}
+                />
+              </div>
+            </div>
+
+            {hasVerticalOverflow && <div className="w-[18px] shrink-0" />}
+          </div>
+        )}
       </div>
     );
   }
