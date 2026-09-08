@@ -41,8 +41,7 @@ const tabs = {
   compiler: {
     title: 'Компилятор',
     Icon: <CompilerIcon />,
-    className:
-      'min-h-[406px] max-h-[calc(100vh-24px)] w-[1074px] max-w-[calc(100vw-24px)]',
+    className: 'min-h-[406px] max-h-[calc(100vh-24px)] w-[1074px] max-w-[calc(100vw-24px)]',
     modalTitle: undefined,
   },
   flasher: {
@@ -155,8 +154,8 @@ export const DiagramTabs = () => {
         >
           <div
             className={twMerge(
-              'overflow-auto',
-              activeTab === 'compiler' ? 'min-h-full' : 'h-full'
+              'h-full overflow-auto',
+              activeTab === 'compiler' && 'min-h-0 overflow-hidden'
             )}
           >
             {renderTab()}

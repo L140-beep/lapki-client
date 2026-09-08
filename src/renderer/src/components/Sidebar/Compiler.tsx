@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 
+import { twMerge } from 'tailwind-merge';
+
 import { CodeEditor } from '@renderer/components/CodeEditor';
 import { Compiler } from '@renderer/components/Modules/Compiler';
 import { Checkbox, ScrollArea } from '@renderer/components/UI';
@@ -208,7 +210,7 @@ export const CompilerTab: React.FC = () => {
   const activeSourceTab = sourceTabs.find(({ id }) => id === activeContentTab);
 
   return (
-    <section className="flex min-h-full gap-8">
+    <section className="flex h-full min-h-0 gap-8">
       <div className="flex w-[222px] shrink-0 flex-col">
         <h2 className="h2-header mb-3">Машины состояний</h2>
         <ScrollArea className="mb-4 h-auto py-0" contentClassName="flex flex-col gap-2">
@@ -272,7 +274,7 @@ export const CompilerTab: React.FC = () => {
         <div className="mt-auto">{showReconnectTime()}</div>
       </div>
 
-      <div className="flex min-w-0 flex-1 flex-col">
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col">
         <div className="mb-3 flex min-h-5 items-center gap-5 overflow-x-auto">
           {sourceTabs.length === 0 ? (
             <h2 className="h2-header">Журнал компиляции</h2>
@@ -307,7 +309,12 @@ export const CompilerTab: React.FC = () => {
             </>
           )}
         </div>
-        <div className="min-h-0 flex-1 overflow-auto rounded-lg border border-border-primary bg-bg-primary font-Fira text-xs leading-4">
+        <div
+          className={twMerge(
+            'h-0 min-h-0 flex-1 rounded-lg border border-border-primary bg-bg-primary font-Fira text-xs leading-4',
+            activeSourceTab ? 'overflow-hidden' : 'overflow-auto'
+          )}
+        >
           {activeSourceTab ? (
             <CodeEditor
               key={activeSourceTab.id}
