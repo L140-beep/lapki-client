@@ -392,7 +392,12 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
   };
 
   return (
-    <ScrollArea {...props} className="max-h-60 py-0" viewportClassName="mr-[6px]">
+    <ScrollArea
+      {...props}
+      className="max-h-60 py-0"
+      viewportClassName="mr-[6px]"
+      horizontalScroll={false}
+    >
       {tableData.length > 0 ? (
         <table className="w-full table-fixed border-separate border-spacing-0">
           <colgroup>

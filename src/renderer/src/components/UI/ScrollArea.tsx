@@ -16,6 +16,8 @@ export interface ScrollAreaProps extends HTMLAttributes<HTMLDivElement> {
   viewportClassName?: string;
   /** Classes applied to the element that directly wraps `children`. Use these for content layout. */
   contentClassName?: string;
+  /** Whether content may overflow and scroll horizontally. */
+  horizontalScroll?: boolean;
 }
 
 /**
@@ -49,7 +51,15 @@ const setRef = <T,>(ref: ForwardedRef<T>, value: T | null) => {
 
 export const ScrollArea = forwardRef<HTMLDivElement, ScrollAreaProps>(
   (
-    { children, className, viewportClassName, contentClassName, onScroll, ...props },
+    {
+      children,
+      className,
+      viewportClassName,
+      contentClassName,
+      horizontalScroll = true,
+      onScroll,
+      ...props
+    },
     forwardedRef
   ) => {
     const viewportRef = useRef<HTMLDivElement | null>(null);
@@ -70,7 +80,7 @@ export const ScrollArea = forwardRef<HTMLDivElement, ScrollAreaProps>(
       const { clientHeight, clientWidth, scrollHeight, scrollLeft, scrollTop, scrollWidth } =
         viewport;
       const nextHasVerticalOverflow = scrollHeight > clientHeight;
-      const nextHasHorizontalOverflow = scrollWidth > clientWidth;
+      const nextHasHorizontalOverflow = horizontalScroll && scrollWidth > clientWidth;
 
       setHasVerticalOverflow(nextHasVerticalOverflow);
       setHasHorizontalOverflow(nextHasHorizontalOverflow);
@@ -111,7 +121,7 @@ export const ScrollArea = forwardRef<HTMLDivElement, ScrollAreaProps>(
           left: (scrollLeft / maxScrollLeft) * maxThumbLeft,
         });
       }
-    }, []);
+    }, [horizontalScroll]);
 
     const handleViewportRef = useCallback(
       (node: HTMLDivElement | null) => {
@@ -272,7 +282,8 @@ export const ScrollArea = forwardRef<HTMLDivElement, ScrollAreaProps>(
               onScroll?.(event);
             }}
             className={twMerge(
-              'min-h-0 min-w-0 flex-1 overflow-auto',
+              'min-h-0 min-w-0 flex-1',
+              horizontalScroll ? 'overflow-auto' : 'overflow-y-auto overflow-x-hidden',
               '[scrollbar-width:none] [&::-webkit-scrollbar]:hidden',
               viewportClassName
             )}
