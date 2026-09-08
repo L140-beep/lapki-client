@@ -30,7 +30,6 @@ const stickyStyle = 'sticky top-0 z-10';
 const nameColumn = 'w-1/4';
 const typeColumn = 'w-1/4';
 const addressColumn = 'w-1/4';
-const firmwareSourceColumn = 'w-1/4';
 const selectSmSubColumn = 'h-full w-full min-w-0';
 const selectFileColumnSize = 24;
 // высота клеток
@@ -265,11 +264,7 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
         )}
         {cellRender('Тип', twMerge(stickyStyle, typeColumn, 'border-t'))}
         {cellRender('Адрес', twMerge(stickyStyle, addressColumn, 'border-t'))}
-        {cellRender(
-          'Что прошиваем',
-          twMerge(stickyStyle, firmwareSourceColumn, 'rounded-tr-[6px] border-t'),
-          2
-        )}
+        {cellRender('Что прошиваем', twMerge(stickyStyle, 'rounded-tr-[6px] border-t'), 2)}
       </tr>
     );
   };
