@@ -398,6 +398,14 @@ export const FlasherTable: React.FC<FlasherTableProps> = ({
     <ScrollArea {...props} className="max-h-60 py-0" viewportClassName="mr-[6px]">
       {tableData.length > 0 ? (
         <table className="w-full table-fixed border-separate border-spacing-0">
+          <colgroup>
+            <col className={checkColumn} />
+            <col className={nameColumn} />
+            <col className={typeColumn} />
+            <col className={addressColumn} />
+            <col />
+            <col className={selectFileSubColumn} />
+          </colgroup>
           <thead className={twMerge(stickyStyle)}>{headerRender()}</thead>
           <tbody className="[&>tr:last-child>td:nth-child(2)]:rounded-bl-[6px] [&>tr:last-child>td:nth-child(5)]:rounded-br-[6px]">
             {tableData.map((tableItem) => rowRender(tableItem))}
