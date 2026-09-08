@@ -14,7 +14,7 @@ export const Switch: React.FC<RSwitch.SwitchProps> = (props) => {
       style={{ WebkitTapHighlightColor: 'rgba(0, 0, 0, 0)' }}
       {...other}
     >
-      <RSwitch.Thumb className="block size-[14px] translate-x-0.5 rounded-full bg-text-inactive bg-white transition duration-100 will-change-transform data-[state=checked]:translate-x-[15px]" />
+      <RSwitch.Thumb className="block size-[14px] translate-x-0.5 rounded-full bg-text-inactive bg-white transition duration-100 will-change-transform data-[state=checked]:translate-x-[14px]" />
     </RSwitch.Root>
   );
 };
