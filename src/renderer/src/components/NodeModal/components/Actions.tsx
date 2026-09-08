@@ -47,6 +47,7 @@ export const Actions: React.FC<ActionsProps> = (props) => {
   const [dragIndex, setDragIndex] = useState<number | null>(null);
 
   const editorRef = useRef<ReactCodeMirrorRef | null>(null);
+  const actionsViewportRef = useRef<HTMLDivElement | null>(null);
 
   const handleTabChange = (tab: number) => {
     onTabChange(tab);
@@ -75,6 +76,9 @@ export const Actions: React.FC<ActionsProps> = (props) => {
   };
 
   useLayoutEffect(() => {
+    if (actionsViewportRef.current) {
+      actionsViewportRef.current.scrollTop = 0;
+    }
     event && parse(smId, event.do);
     // setActions(event && typeof event.do !== 'string' ? event.do : []);
   }, [event, setActions]);
@@ -118,6 +122,7 @@ export const Actions: React.FC<ActionsProps> = (props) => {
             className="flex h-full min-h-0  flex-1 gap-2"
           >
             <ScrollArea
+              ref={actionsViewportRef}
               className="w-full rounded-lg border border-border-primary py-0"
               viewportClassName="whitespace-nowrap"
               contentClassName="h-full min-w-full"

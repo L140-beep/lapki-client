@@ -110,11 +110,23 @@ export const ScrollArea = forwardRef<HTMLDivElement, ScrollAreaProps>(
 
       updateScrollbar();
 
-      const observer = new ResizeObserver(updateScrollbar);
-      observer.observe(viewport);
-      observer.observe(content);
+      const resizeObserver = new ResizeObserver(updateScrollbar);
+      resizeObserver.observe(viewport);
+      resizeObserver.observe(content);
 
-      return () => observer.disconnect();
+      // The content wrapper may have a fixed height while its descendants change
+      // the viewport's scrollHeight, so ResizeObserver alone is not sufficient.
+      const mutationObserver = new MutationObserver(updateScrollbar);
+      mutationObserver.observe(content, {
+        childList: true,
+        characterData: true,
+        subtree: true,
+      });
+
+      return () => {
+        resizeObserver.disconnect();
+        mutationObserver.disconnect();
+      };
     }, [updateScrollbar]);
 
     const dragRef = useRef<{
