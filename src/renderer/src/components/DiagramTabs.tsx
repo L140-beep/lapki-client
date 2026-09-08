@@ -107,7 +107,7 @@ export const DiagramTabs = () => {
         <span
           className={twMerge(
             'font-normal text-primary',
-            compilerData?.result === 'NOTOK' && 'text-error'
+            compilerData?.result === 'NOTOK' && 'text-danger'
           )}
         >
           {humanizeCompilerResult(compilerData?.result)}
@@ -153,10 +153,7 @@ export const DiagramTabs = () => {
           className={tab.className}
         >
           <div
-            className={twMerge(
-              'overflow-auto',
-              activeTab === 'compiler' ? 'min-h-full' : 'h-full'
-            )}
+            className={twMerge('overflow-auto', activeTab === 'compiler' ? 'min-h-full' : 'h-full')}
           >
             {renderTab()}
           </div>
