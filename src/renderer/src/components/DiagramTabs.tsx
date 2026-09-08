@@ -41,7 +41,8 @@ const tabs = {
   compiler: {
     title: 'Компилятор',
     Icon: <CompilerIcon />,
-    className: 'h-[406px] max-h-[calc(100vh-24px)] w-[1074px] max-w-[calc(100vw-24px)]',
+    className:
+      'min-h-[406px] max-h-[calc(100vh-24px)] w-[1074px] max-w-[calc(100vw-24px)]',
     modalTitle: undefined,
   },
   flasher: {
@@ -152,7 +153,14 @@ export const DiagramTabs = () => {
           hideCancelButton
           className={tab.className}
         >
-          <div className="h-full overflow-auto">{renderTab()}</div>
+          <div
+            className={twMerge(
+              'overflow-auto',
+              activeTab === 'compiler' ? 'min-h-full' : 'h-full'
+            )}
+          >
+            {renderTab()}
+          </div>
         </MovingModal>
       )}
     </>

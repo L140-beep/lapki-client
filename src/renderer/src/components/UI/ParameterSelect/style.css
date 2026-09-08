@@ -52,5 +52,5 @@
 }
 
 .ParameterSelect__placeholder {
-  @apply text-border-contrast !important;
+  @apply text-text-inactive !important;
 }
