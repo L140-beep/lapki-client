@@ -26,7 +26,7 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({ initialValue, language }
 
   return (
     <CodeMirror
-      className="h-full scrollbar-thin scrollbar-track-current [&_.cm-editor]:h-full [&_.cm-editor]:!font-Fira"
+      className="h-full [&_.cm-editor]:h-full [&_.cm-editor]:!font-Fira [&_.cm-scroller]:scrollbar-thin [&_.cm-scroller]:scrollbar-track-scrollbar-track [&_.cm-scroller]:scrollbar-thumb-scrollbar-thumb"
       extensions={langExtensions[language]}
       value={initialValue}
       theme={theme ?? 'light'}
