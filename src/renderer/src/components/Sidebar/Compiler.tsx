@@ -275,7 +275,7 @@ export const CompilerTab: React.FC = () => {
       </div>
 
       <div className="flex min-h-0 min-w-0 flex-1 flex-col [contain:size]">
-        <div className="mb-3 flex min-h-5 items-center gap-5 overflow-x-auto">
+        <div className="mb-3 flex min-h-5 items-center gap-5 overflow-x-auto scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb [&::-webkit-scrollbar]:!h-[2px]">
           {sourceTabs.length === 0 ? (
             <h2 className="h2-header">Журнал компиляции</h2>
           ) : (
