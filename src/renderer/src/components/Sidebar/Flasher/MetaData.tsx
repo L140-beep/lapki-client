@@ -77,11 +77,17 @@ cybergene REF_PROTOCOL: ${meta.RefCgProtocol}`;
         </div>
       )}
       {!meta && <p className="mb-1 text-xl opacity-60">Метаданных нет</p>}
-      <Modal isOpen={isHelpOpen} onRequestClose={onHelpClose} title={'Справка'}>
+      <Modal
+        isOpen={isHelpOpen}
+        onRequestClose={onHelpClose}
+        title={'Справка'}
+        hideCancelButton
+        submitClassName="hidden"
+      >
         <div>
-          Метаданные — это техническая информация, полученная с платы. С помощью метаданных
-          определяется тип платы. Эти данные могут быть полезны для разработчиков, в случае, если с
-          платой что-то не так.
+          <span className="font-medium">Метаданные</span> — это техническая информация, полученная с
+          платы. С помощью метаданных определяется тип платы. Эти данные могут быть полезны для
+          разработчиков, в случае, если с платой что-то не так.
         </div>
 
         <br />
