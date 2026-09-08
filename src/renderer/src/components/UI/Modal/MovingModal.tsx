@@ -99,7 +99,7 @@ export const MovingModal: React.FC<ModalProps> = ({
             </button>
             <button
               type="button"
-              className={middleClassName ?? 'btn-secondary'}
+              className={middleClassName ?? 'btn-secondary font-medium'}
               onClick={onMiddle}
               hidden={!middleLabel}
             >
@@ -108,7 +108,7 @@ export const MovingModal: React.FC<ModalProps> = ({
             <div className="flex-grow"></div>
             <button
               type="button"
-              className={cancelClassName ?? 'btn-secondary'}
+              className={cancelClassName ?? 'btn-secondary font-medium'}
               onClick={handleCancel}
               hidden={hideCancelButton}
             >

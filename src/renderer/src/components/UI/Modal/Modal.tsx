@@ -114,7 +114,7 @@ export const Modal: React.FC<ModalProps> = ({
           </button>
           <button
             type="button"
-            className={middleClassName ?? 'btn-secondary'}
+            className={middleClassName ?? 'btn-secondary font-medium'}
             onClick={onMiddle}
             hidden={!middleLabel}
           >
@@ -125,7 +125,7 @@ export const Modal: React.FC<ModalProps> = ({
             type="button"
             className={twMerge(
               'inline-flex items-center justify-center leading-[14px]',
-              cancelClassName ?? 'btn-secondary'
+              cancelClassName ?? 'btn-secondary font-medium'
             )}
             onClick={handleCancel}
             hidden={hideCancelButton}
