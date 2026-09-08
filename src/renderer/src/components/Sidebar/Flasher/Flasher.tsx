@@ -941,7 +941,7 @@ export const FlasherTab: React.FC = () => {
         </button>
         <button
           type="button"
-          className="min-w-0 whitespace-nowrap px-0 py-1.5 text-primary transition-opacity hover:opacity-75"
+          className="min-w-0 whitespace-nowrap px-0 py-1.5 text-primary transition-opacity"
           onClick={handleOpenAddressBook}
         >
           Адресная книга
@@ -962,7 +962,7 @@ export const FlasherTab: React.FC = () => {
           />
           <button
             type="button"
-            className="danger transition-opacity enabled:hover:opacity-70 disabled:opacity-30"
+            className="danger transition-opacity disabled:opacity-30"
             disabled={selectedDevicesCount === 0}
             aria-label="Удалить выбранные устройства"
             onClick={handleRemoveDevs}
