@@ -210,7 +210,7 @@ export const CompilerTab: React.FC = () => {
   const activeSourceTab = sourceTabs.find(({ id }) => id === activeContentTab);
 
   return (
-    <section className="flex min-h-full gap-8">
+    <section className="flex gap-8">
       <div className="flex w-[222px] shrink-0 flex-col">
         <h2 className="h2-header mb-3">Машины состояний</h2>
         <ScrollArea className="mb-4 h-auto py-0" contentClassName="flex flex-col gap-2">
