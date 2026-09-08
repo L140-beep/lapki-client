@@ -136,7 +136,7 @@ export const Actions: React.FC<ActionsProps> = (props) => {
                   <div className="mt-1">или нажмите дважды по этому полю</div>
                 </div>
               ) : (
-                <div className="min-w-full">
+                <div className="grid w-max min-w-full">
                   {actions.map((data, i) => (
                     <Action
                       key={i}
