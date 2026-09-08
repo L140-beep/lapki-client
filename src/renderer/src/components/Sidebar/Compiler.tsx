@@ -245,20 +245,18 @@ export const CompilerTab: React.FC = () => {
           </button>
         </div>
 
-        {bearlogaSmId !== undefined ? (
-          <div className="mb-3 flex">
+        <div className="flex flex-col items-start gap-4 pl-3 font-medium">
+          {bearlogaSmId !== undefined ? (
             <button
               type="button"
               disabled={compileDisabled}
-              className="text-left text-primary hover:underline disabled:cursor-not-allowed disabled:opacity-30"
+              className="text-left text-primary hover:underline disabled:cursor-not-allowed disabled:text-text-disabled disabled:no-underline"
               onClick={handleExportBearloga}
             >
               Экспорт в Берлогу
             </button>
-          </div>
-        ) : undefined}
+          ) : undefined}
 
-        <div className="flex flex-col items-start gap-4 pl-3">
           {buttons.map(({ name, handler, disabled: buttonDisabled }) => (
             <button
               key={name}
@@ -309,7 +307,7 @@ export const CompilerTab: React.FC = () => {
             </>
           )}
         </div>
-        <div className="min-h-0 flex-1 overflow-auto rounded-lg border border-border-primary bg-bg-primary font-Fira-Mono text-xs leading-4">
+        <div className="min-h-0 flex-1 overflow-auto rounded-lg border border-border-primary bg-bg-primary font-Fira text-xs leading-4">
           {activeSourceTab ? (
             <CodeEditor
               key={activeSourceTab.id}
