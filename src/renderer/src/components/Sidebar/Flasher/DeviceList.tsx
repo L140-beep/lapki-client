@@ -102,7 +102,7 @@ export const DeviceList: React.FC<DeviceListProps> = ({
             <div className="mb-[11px] flex items-center gap-3 font-medium">
               <span>Устройства</span>
               <button
-                className="text-primary transition-opacity enabled:hover:opacity-75 disabled:cursor-not-allowed disabled:opacity-60"
+                className="text-primary transition-opacity disabled:cursor-not-allowed disabled:opacity-60"
                 onClick={handleGetList}
                 disabled={connectionStatus !== ClientStatus.CONNECTED}
                 type="button"
@@ -170,14 +170,6 @@ export const DeviceList: React.FC<DeviceListProps> = ({
       onRequestClose={onClose}
       submitLabel={submitLabel}
       onSubmit={handleSubmit}
-      className="top-[18px] box-border w-[calc(100%-40px)] max-w-[666px] bg-bg-primary p-6"
-      headerClassName="mb-[23px] min-h-[39px] pb-3"
-      titleClassName="text-xs font-medium"
-      closeClassName="p-2"
-      closeIconClassName="h-2.5 w-2.5"
-      contentClassName="mb-0"
-      actionsClassName="mt-6"
-      submitClassName="btn-primary h-8 min-w-[77px] px-3 py-1.5"
       hideCancelButton
       submitDisabled={!currentDeviceID}
     >

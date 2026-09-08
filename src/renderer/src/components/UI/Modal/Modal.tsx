@@ -125,10 +125,10 @@ export const Modal: React.FC<ModalProps> = ({
             type="button"
             className={twMerge(
               'inline-flex items-center justify-center leading-[14px]',
-              cancelClassName ?? 'btn-secondary font-medium'
+              cancelClassName ?? 'btn-secondary font-medium',
+              hideCancelButton && 'hidden'
             )}
             onClick={handleCancel}
-            hidden={hideCancelButton}
           >
             {cancelLabel ?? 'Закрыть'}
           </button>
