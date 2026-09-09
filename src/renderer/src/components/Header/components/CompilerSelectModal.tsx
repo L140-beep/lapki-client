@@ -91,7 +91,7 @@ export const CompilerSelectModal: React.FC<CompilerSelectModalProps> = ({ onClos
             };
 
             return (
-              <label className="flex flex-col gap-2">
+              <label className="flex flex-col gap-3">
                 <span className="h2-header">Тип</span>
                 <ParameterSelect
                   containerClassName="w-36"
