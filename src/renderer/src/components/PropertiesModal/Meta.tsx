@@ -105,11 +105,10 @@ export const Meta: React.FC<MetaProps> = ({
                         rowErrors.value && 'border-error text-error'
                       )}
                     >
-                      <textarea
+                      <input
                         aria-invalid={!!rowErrors.value}
                         aria-label="Значение метаданных"
-                        className="block min-h-6 w-full min-w-[250px] resize-y bg-transparent text-inherit outline-none placeholder:text-text-inactive"
-                        rows={1}
+                        className="block min-h-6 w-full min-w-[250px] bg-transparent text-inherit outline-none placeholder:text-text-inactive"
                         value={row.value}
                         placeholder="Значение"
                         onChange={(event) => onChange(row.id, 'value', event.target.value)}
