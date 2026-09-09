@@ -71,8 +71,8 @@ export const AddressBookModal: React.FC<AddressBookModalProps> = ({
         title="Адресная книга"
         onSubmit={handleSubmit}
         submitDisabled={selectedEntry === undefined}
-        submitLabel="Добавить в таблицу прошивок"
-        className="top-[18px] box-border flex h-[430px] max-h-[calc(100vh-36px)] w-[calc(100%-40px)] max-w-[720px] flex-col bg-bg-primary p-6"
+        submitLabel="Добавить"
+        className="top-[18px] box-border flex max-h-[calc(100vh-36px)] w-[calc(100%-40px)] max-w-[720px] flex-col overflow-hidden bg-bg-primary p-6"
         headerClassName="mb-[23px] min-h-[39px] pb-3"
         titleClassName="text-xs font-medium"
         closeClassName="p-2"
@@ -104,7 +104,13 @@ export const AddressBookModal: React.FC<AddressBookModalProps> = ({
             ) : addressBookSetting.length === 0 ? (
               <p className="px-3 py-2 text-text-inactive">Нет записей в книге</p>
             ) : (
-              <table className="w-fit table-auto border-separate border-spacing-0">
+              <table className="w-full table-fixed border-separate border-spacing-0">
+                <colgroup>
+                  <col />
+                  <col className="w-40" />
+                  <col />
+                  <col className="w-[78px]" />
+                </colgroup>
                 <thead className="sticky top-0 z-10 font-medium">
                   <tr>
                     <td className="min-h-9 rounded-tl-[6px] border-b border-l border-r border-t border-border-primary bg-bg-primary px-[9px] py-[6px] text-center text-text-primary">
