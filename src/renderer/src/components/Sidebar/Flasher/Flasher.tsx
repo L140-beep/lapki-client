@@ -169,7 +169,6 @@ export const FlasherTab: React.FC = () => {
         }}
         submitLabel="Выбрать"
         devices={devs}
-        listExtraLabel={`Выбранное устройство: ${deviceMs ? deviceMs.displayName() : 'не указано'}`}
       />
     );
   };
