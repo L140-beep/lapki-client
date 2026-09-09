@@ -110,16 +110,16 @@ export const CompilerSelectModal: React.FC<CompilerSelectModalProps> = ({ onClos
         <div className="flex gap-3">
           <TextField
             maxLength={80}
-            containerClassName="w-36 gap-2 h2-header"
-            className="disabled:cursor-not-allowed disabled:bg-bg-secondary disabled:text-text-inactive disabled:opacity-70"
+            containerClassName="w-36 gap-3 h2-header"
+            className="rounded-lg disabled:cursor-not-allowed disabled:bg-inactive-input disabled:text-text-inactive"
             label="Хост"
             {...register(watch('type') === 'local' ? 'localHost' : 'remoteHost')}
             placeholder="Напишите адрес хоста"
             disabled={isSecondaryFieldsDisabled}
           />
           <TextField
-            containerClassName="w-36 gap-2 h2-header"
-            className="disabled:cursor-not-allowed disabled:bg-bg-secondary disabled:text-text-inactive disabled:opacity-70"
+            containerClassName="w-36 gap-3 h2-header"
+            className="rounded-lg disabled:cursor-not-allowed disabled:bg-inactive-input disabled:text-text-inactive"
             label="Порт"
             {...register(watch('type') === 'local' ? 'localPort' : 'remotePort', {
               valueAsNumber: true,

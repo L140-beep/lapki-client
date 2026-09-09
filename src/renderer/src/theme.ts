@@ -16,6 +16,7 @@ const colorNames = {
   'bg-hover': '--bg-h',
   'bg-active': '--bg-a',
   'bg-control': '--bg-c',
+  'inactive-input': '--inactive-input',
   'util-button-hover': '--util-button-hover',
 
   'border-contrast': '--b-c',
