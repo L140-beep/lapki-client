@@ -44,6 +44,7 @@ cybergene REF_PROTOCOL: ${meta.RefCgProtocol}`;
       title={`Метаданные: ${ManagerMS.displayAddressInfo(addressData)}`}
       isOpen={isOpen}
       onRequestClose={onClose}
+      className="w-fit min-w-[360px]"
       onSubmit={(e) => handleSubmit(e)}
       submitDisabled={!meta}
       submitLabel="Скопировать"
