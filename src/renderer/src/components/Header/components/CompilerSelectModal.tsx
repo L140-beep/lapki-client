@@ -111,7 +111,7 @@ export const CompilerSelectModal: React.FC<CompilerSelectModalProps> = ({ onClos
           <TextField
             maxLength={80}
             containerClassName="w-36 gap-3 h2-header"
-            className="rounded-lg disabled:cursor-not-allowed disabled:bg-inactive-input disabled:text-text-inactive"
+            className="rounded-lg font-normal disabled:cursor-not-allowed disabled:bg-inactive-input disabled:text-text-inactive"
             label="Хост"
             {...register(watch('type') === 'local' ? 'localHost' : 'remoteHost')}
             placeholder="Напишите адрес хоста"
@@ -119,7 +119,7 @@ export const CompilerSelectModal: React.FC<CompilerSelectModalProps> = ({ onClos
           />
           <TextField
             containerClassName="w-36 gap-3 h2-header"
-            className="rounded-lg disabled:cursor-not-allowed disabled:bg-inactive-input disabled:text-text-inactive"
+            className="rounded-lg font-normal disabled:cursor-not-allowed disabled:bg-inactive-input disabled:text-text-inactive"
             label="Порт"
             {...register(watch('type') === 'local' ? 'localPort' : 'remotePort', {
               valueAsNumber: true,
