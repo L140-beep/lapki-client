@@ -44,7 +44,7 @@ export const SchemeScreenContextMenu: React.FC<SchemeScreenContextMenuProps> = (
 
   const [isOpen, open, close] = useModal(false);
   const [menuVariant, setMenuVariant] = useState<MenuVariant | null>(null);
-  const { propertiesModalProps, setSelectedSmId, openPropertiesModal } = useProperties(controller);
+  const { propertiesModalProps, setSelectedSmId, openPropertiesModal } = useProperties();
   const { refs, floatingStyles } = useFloating({
     placement: 'bottom',
     middleware: [offset(), flip(), shift({ padding: 5 })],
