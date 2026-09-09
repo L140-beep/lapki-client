@@ -86,7 +86,7 @@ export const MovingModal: React.FC<ModalProps> = ({
         <div className="min-h-0 flex-1">{children}</div>
 
         {hasFooter && (
-          <div className="flex items-center justify-end gap-2 pt-3">
+          <div className="flex items-center justify-end gap-2 pt-6">
             <button
               type="button"
               className={
