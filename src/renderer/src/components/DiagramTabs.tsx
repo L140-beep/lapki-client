@@ -49,7 +49,7 @@ const tabs = {
     Icon: <FlasherIcon />,
     className: 'h-[644px] max-h-[calc(100vh-24px)] w-[1074px] max-w-[calc(100vw-24px)]',
     modalTitle: (
-      <div className="flex items-center gap-12">
+      <div className="flex items-center gap-11">
         <span>Загрузчик</span>
         <FlasherStatus />
       </div>
@@ -58,7 +58,7 @@ const tabs = {
   serialMonitor: {
     title: 'Монитор порта',
     modalTitle: (
-      <div className="flex items-center gap-12">
+      <div className="flex items-center gap-11">
         <span>Монитор порта</span>
         <SerialMonitorStatus />
       </div>
