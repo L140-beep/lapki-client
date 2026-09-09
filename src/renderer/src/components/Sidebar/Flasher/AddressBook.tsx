@@ -84,8 +84,8 @@ export const AddressBookModal: React.FC<AddressBookModalProps> = ({
         hideCancelButton
       >
         <section className="flex h-full min-h-0 flex-col">
-          <div className="mb-3 flex shrink-0 justify-end">
-            <WithHint hint="Добавить" placement="left">
+          <div className="mb-3 flex shrink-0 justify-start">
+            <WithHint hint="Добавить" placement="right">
               {(hintProps) => (
                 <span {...hintProps}>
                   <AddButton
@@ -104,22 +104,16 @@ export const AddressBookModal: React.FC<AddressBookModalProps> = ({
             ) : addressBookSetting.length === 0 ? (
               <p className="px-3 py-2 text-text-inactive">Нет записей в книге</p>
             ) : (
-              <table className="w-full table-fixed border-separate border-spacing-0">
-                <colgroup>
-                  <col />
-                  <col className="w-40" />
-                  <col />
-                  <col className="w-[78px]" />
-                </colgroup>
+              <table className="w-fit table-auto border-separate border-spacing-0">
                 <thead className="sticky top-0 z-10 font-medium">
                   <tr>
-                    <td className="min-h-9 rounded-tl-[6px] border-b border-l border-r border-t border-border-primary bg-bg-primary px-[9px] py-[6px] text-text-primary">
+                    <td className="min-h-9 rounded-tl-[6px] border-b border-l border-r border-t border-border-primary bg-bg-primary px-[9px] py-[6px] text-center text-text-primary">
                       Название
                     </td>
-                    <td className="min-h-9 border-b border-r border-t border-border-primary bg-bg-primary px-[9px] py-[6px] text-text-primary">
+                    <td className="min-h-9 border-b border-r border-t border-border-primary bg-bg-primary px-[9px] py-[6px] text-center text-text-primary">
                       Адрес
                     </td>
-                    <td className="min-h-9 rounded-tr-[6px] border-b border-r border-t border-border-primary bg-bg-primary px-[9px] py-[6px] text-text-primary">
+                    <td className="min-h-9 rounded-tr-[6px] border-b border-r border-t border-border-primary bg-bg-primary px-[9px] py-[6px] text-center text-text-primary">
                       Тип
                     </td>
                     <td aria-hidden />
