@@ -76,7 +76,7 @@ export const MovingModal: React.FC<ModalProps> = ({
         className
       )}
       header={
-        <div className="relative mb-6 flex w-full items-center justify-between border-b border-border-primary pb-3">
+        <div className="relative mb-6 flex w-full items-center justify-between border-b border-border-primary pb-6">
           <h1 className="text-[12px] font-medium">{title}</h1>
           <CloseButton onClick={props.onRequestClose} />
         </div>
