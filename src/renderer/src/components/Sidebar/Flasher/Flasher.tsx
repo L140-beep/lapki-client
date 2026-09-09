@@ -66,16 +66,8 @@ export const FlasherTab: React.FC = () => {
     addressAndMeta,
     setAddressAndMeta,
   } = useManagerMS();
-  const {
-    addressBookSetting,
-    onEdit,
-    getID,
-    getEntryById,
-    onAdd,
-    onRemove,
-    onSwapEntries,
-    idCounter,
-  } = useAddressBook();
+  const { addressBookSetting, onEdit, getID, getEntryById, onAdd, onRemove, idCounter } =
+    useAddressBook();
   const {
     connectionStatus,
     flashResult,
@@ -1010,7 +1002,6 @@ export const FlasherTab: React.FC = () => {
           }
           onRemove(index);
         }}
-        onSwapEntries={onSwapEntries}
         addressEnrtyEdit={addressEnrtyEdit}
         openAddressEnrtyAdd={openAddressEnrtyAdd}
       />
