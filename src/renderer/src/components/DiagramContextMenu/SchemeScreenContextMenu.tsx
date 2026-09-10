@@ -195,7 +195,7 @@ export const SchemeScreenContextMenu: React.FC<SchemeScreenContextMenuProps> = (
     <div
       ref={refs.setFloating}
       style={floatingStyles}
-      className={twMerge('z-50 w-80 rounded bg-bg-secondary p-2 shadow-xl', !isOpen && 'hidden')}
+      className={twMerge('dropdown-menu z-50 w-80', !isOpen && 'hidden')}
     >
       {content}
       <ComponentDeleteModal {...componentFuncs.deleteProps} />

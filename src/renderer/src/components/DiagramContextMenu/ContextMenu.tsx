@@ -30,10 +30,7 @@ export const MenuItem: React.FC<MenuItemProps> = ({
 
   return (
     <div
-      className={twMerge(
-        'flex w-full items-center gap-2 rounded px-4 py-2 transition-colors hover:cursor-pointer hover:bg-bg-hover active:bg-bg-active',
-        className
-      )}
+      className={twMerge('context-menu-item gap-2', className)}
       onClick={(e) => {
         onClick?.(e);
 
@@ -56,7 +53,7 @@ export const SubMenu: React.FC<SubMenuProps> = ({ className, position, ...props 
   return (
     <div
       className={twMerge(
-        'absolute top-0 hidden w-80 flex-col rounded bg-bg-secondary p-2 shadow-xl group-hover:flex',
+        'dropdown-menu absolute top-0 hidden w-80 flex-col group-hover:flex',
         className,
         position === 'left' ? 'left-full' : 'right-full'
       )}
