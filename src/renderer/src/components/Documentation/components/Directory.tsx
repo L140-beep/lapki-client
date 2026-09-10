@@ -23,7 +23,7 @@ export const Directory: React.FC<DirectoryProps> = ({ item, onItemClick }) => {
 
   return (
     <Item onClick={onDirectoryClicked}>
-      <span className="block truncate pb-2 pl-0 pr-2 pt-2 transition hover:bg-[#E6F4FF]">
+      <span className="block truncate rounded-lg pb-2 pl-0 pr-2 pt-2 transition hover:bg-[#E6F4FF]">
         <DirectoryIcon className="mr-2 inline-block h-5 w-5" />
         {item.name}
       </span>
