@@ -102,7 +102,7 @@ export const ComponentReferenceV: React.FC<ComponentReferenceProps> = ({ platfor
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       <ParameterSelect
-        className="w-full"
+        className="w-full [&_.ParameterSelect__indicator]:!text-black"
         options={componentOptions}
         value={componentOptions.find((o) => o.value === cursor) ?? null}
         onChange={onCompClick}
