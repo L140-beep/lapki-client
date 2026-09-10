@@ -265,8 +265,14 @@ export const TaskBook: React.FC<TaskBookProps> = ({
                     </div>
                   </button>
 
-                  {isSelected && (
-                    <>
+                  <div
+                    className={twMerge(
+                      'grid transition-[grid-template-rows] duration-200 ease-out',
+                      isSelected ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'
+                    )}
+                    aria-hidden={!isSelected}
+                  >
+                    <div className="min-h-0 overflow-hidden">
                       <div className="mx-3 border-t border-border-primary" />
                       <div className="p-3">
                         <MarkdownDescription task={task} assetRootUrl={catalog.assetRootUrl} />
@@ -275,14 +281,15 @@ export const TaskBook: React.FC<TaskBookProps> = ({
                             type="button"
                             className="btn-primary"
                             disabled={submissionActive}
+                            tabIndex={isSelected ? undefined : -1}
                             onClick={isActive ? finishTask : solve}
                           >
                             {isActive ? 'Завершить задачу' : 'Решать задачу'}
                           </button>
                         </div>
                       </div>
-                    </>
-                  )}
+                    </div>
+                  </div>
                 </article>
               );
             })}
