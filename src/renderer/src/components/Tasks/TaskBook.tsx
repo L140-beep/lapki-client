@@ -37,9 +37,21 @@ const MarkdownDescription: React.FC<{
   assetRootUrl: string;
 }> = ({ task, assetRootUrl }) => {
   const imagePattern = /^!\[([^\]]*)\]\(([^)]+)\)$/;
+  const descriptionLines = task.description.split('\n');
+  const firstContentLineIndex = descriptionLines.findIndex((line) => line.trim());
+  const hasTitle = descriptionLines[firstContentLineIndex]?.trim().startsWith('# ');
+  const bodyStartIndex = hasTitle
+    ? descriptionLines.findIndex(
+        (line, index) => index > firstContentLineIndex && line.trim() !== ''
+      )
+    : 0;
+  const bodyLines = hasTitle
+    ? descriptionLines.slice(bodyStartIndex === -1 ? descriptionLines.length : bodyStartIndex)
+    : descriptionLines;
+
   return (
     <div className="space-y-2 text-xs leading-5">
-      {task.description.split('\n').map((rawLine, index) => {
+      {bodyLines.map((rawLine, index) => {
         const line = rawLine.trim();
         const image = line.match(imagePattern);
         if (image) {
