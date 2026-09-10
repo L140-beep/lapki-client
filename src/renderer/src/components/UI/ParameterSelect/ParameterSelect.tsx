@@ -104,7 +104,7 @@ export function ParameterSelect<
   error,
   containerClassName,
   className,
-  indicatorClassName,
+  indicatorClassName = 'text-black',
   menuWidth = 'full',
   components: customComponents,
   ...props
