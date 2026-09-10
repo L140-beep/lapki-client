@@ -28,10 +28,12 @@ const ShowHtml: React.FC<ShowProps> = ({ item }) => {
     );
   }
 
+  const typographyOverride = '<style>html, body, body * { font-size: 12px !important; }</style>';
+
   return (
     <iframe
       className="h-full max-h-[calc(100%-49.6px-41.6px)] w-full overflow-y-auto scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb"
-      srcDoc={`<base href="${url}${path}" />` + data}
+      srcDoc={`<base href="${url}${path}" />${typographyOverride}${data}`}
     ></iframe>
   );
 };

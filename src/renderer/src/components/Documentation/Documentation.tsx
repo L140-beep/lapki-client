@@ -99,7 +99,7 @@ const DocumentationSection: React.FC<DocumentationSectionProps> = ({
   return (
     <section
       className={twMerge(
-        'flex h-full select-none flex-col bg-bg-primary px-2 text-xs',
+        'flex h-full select-none flex-col bg-bg-primary px-3 text-xs font-light',
         !isCollapsed && 'pt-4'
       )}
     >
@@ -131,11 +131,11 @@ const DocumentationSection: React.FC<DocumentationSectionProps> = ({
       </div>
       {!isCollapsed && (
         <>
-          <div className="grid grid-cols-3 gap-1 pb-2">
+          <div className="grid grid-cols-3 gap-3">
             <button
               className={twMerge(
-                'rounded border border-primary p-2',
-                activeTab === -1 && 'bg-primary text-text-secondary'
+                'rounded-lg border border-primary bg-inactive-button px-3 py-[5px] font-light',
+                activeTab === -1 && 'bg-[#E6F4FF] font-medium'
               )}
               onClick={() => setActiveTab(-1)}
             >
@@ -143,8 +143,8 @@ const DocumentationSection: React.FC<DocumentationSectionProps> = ({
             </button>
             <button
               className={twMerge(
-                'rounded border border-primary p-2',
-                activeTab === 0 && 'bg-primary text-text-secondary'
+                'rounded-lg border border-primary bg-inactive-button px-3 py-[5px] font-light',
+                activeTab === 0 && 'bg-[#E6F4FF] font-medium'
               )}
               onClick={() => setActiveTab(0)}
             >
@@ -152,8 +152,8 @@ const DocumentationSection: React.FC<DocumentationSectionProps> = ({
             </button>
             <button
               className={twMerge(
-                'rounded border border-primary p-2 disabled:cursor-not-allowed disabled:opacity-30',
-                activeTab === 1 && 'bg-primary text-text-secondary'
+                'rounded-lg border border-primary bg-inactive-button px-3 py-[5px] font-light disabled:cursor-not-allowed',
+                activeTab === 1 && 'bg-[#E6F4FF] font-medium'
               )}
               onClick={() => setActiveTab(1)}
               disabled={!currentItem}

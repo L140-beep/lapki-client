@@ -69,7 +69,7 @@ export const Navigation: React.FC<NavigationProps> = ({ data, onItemClick, curre
   return (
     <div className="m-2 flex justify-between gap-2">
       <button
-        className="btn-secondary flex w-full items-center justify-center gap-1"
+        className="btn-secondary flex w-full items-center justify-center gap-1 font-light"
         disabled={backDisabled}
         onClick={handleBackClick}
       >
@@ -77,7 +77,7 @@ export const Navigation: React.FC<NavigationProps> = ({ data, onItemClick, curre
         Назад
       </button>
       <button
-        className="btn-secondary flex w-full items-center justify-center gap-1"
+        className="btn-secondary flex w-full items-center justify-center gap-1 font-light"
         onClick={handleForwardClick}
       >
         {forwardLabel}
