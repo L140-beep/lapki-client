@@ -171,7 +171,7 @@ const DocumentationSection: React.FC<DocumentationSectionProps> = ({
             <div className={twMerge('h-full', activeTab !== 1 && 'hidden')}>
               {currentItem && (
                 <>
-                  <Show item={currentItem} />
+                  <Show key={currentItem.url} item={currentItem} />
                   <Navigation
                     data={data}
                     onItemClick={onItemClick}
