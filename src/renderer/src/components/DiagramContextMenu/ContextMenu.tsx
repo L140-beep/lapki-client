@@ -49,7 +49,10 @@ export const SubMenuContainer: React.FC<SubMenuContainerProps> = ({ className, .
 };
 
 export const SubMenuArrow: React.FC = () => (
-  <ArrowIcon aria-hidden="true" className="ml-auto size-2.5 shrink-0 -rotate-90" />
+  <ArrowIcon
+    aria-hidden="true"
+    className="context-menu-arrow ml-auto size-2.5 shrink-0 -rotate-90"
+  />
 );
 
 interface SubMenuProps extends ComponentProps<'div'> {
