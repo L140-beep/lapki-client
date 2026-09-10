@@ -201,6 +201,7 @@ export const TaskBook: React.FC<TaskBookProps> = ({
             search={search}
             onChangeSearch={setSearch}
             disabled={!catalogLoaded}
+            fullWidth
           />
 
           {!catalogLoaded && <p className="text-xs text-text-inactive">Загрузка задач...</p>}
@@ -253,19 +254,22 @@ export const TaskBook: React.FC<TaskBookProps> = ({
                   </button>
 
                   {isSelected && (
-                    <div className="border-t border-border-primary p-3">
-                      <MarkdownDescription task={task} assetRootUrl={catalog.assetRootUrl} />
-                      <div className="mt-4 flex gap-2">
-                        <button
-                          type="button"
-                          className="btn-primary"
-                          disabled={submissionActive}
-                          onClick={isActive ? finishTask : solve}
-                        >
-                          {isActive ? 'Завершить задачу' : 'Решать задачу'}
-                        </button>
+                    <>
+                      <div className="mx-3 border-t border-border-primary" />
+                      <div className="p-3">
+                        <MarkdownDescription task={task} assetRootUrl={catalog.assetRootUrl} />
+                        <div className="mt-4 flex gap-2">
+                          <button
+                            type="button"
+                            className="btn-primary"
+                            disabled={submissionActive}
+                            onClick={isActive ? finishTask : solve}
+                          >
+                            {isActive ? 'Завершить задачу' : 'Решать задачу'}
+                          </button>
+                        </div>
                       </div>
-                    </div>
+                    </>
                   )}
                 </article>
               );

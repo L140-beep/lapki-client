@@ -11,10 +11,11 @@ interface FilterProps {
   onChangeSearch: (value: string) => void;
   disabled?: boolean;
   className?: string;
+  fullWidth?: boolean;
 }
 
 export const Filter: React.FC<FilterProps> = (props) => {
-  const { search, onChangeSearch, disabled, className } = props;
+  const { search, onChangeSearch, disabled, className, fullWidth } = props;
   const inputRef = useRef<HTMLInputElement>(null);
 
   const handleChangeSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -27,11 +28,16 @@ export const Filter: React.FC<FilterProps> = (props) => {
   };
 
   return (
-    <div className={twMerge('flex items-end gap-2 pb-[7px]', className)}>
-      <label className="flex h-[32px] items-center rounded-lg border border-border-primary transition-colors focus-within:border-text-inactive">
+    <div className={twMerge('flex items-end gap-2 pb-[7px]', fullWidth && 'w-full', className)}>
+      <label
+        className={twMerge(
+          'flex h-[32px] items-center rounded-lg border border-border-primary transition-colors focus-within:border-text-inactive',
+          fullWidth && 'w-full'
+        )}
+      >
         <TextInput
           ref={inputRef}
-          className="border-none py-[2px] pr-3"
+          className={twMerge('border-none py-[2px] pr-3', fullWidth && 'max-w-none')}
           placeholder="Поиск..."
           value={search}
           onChange={handleChangeSearch}
