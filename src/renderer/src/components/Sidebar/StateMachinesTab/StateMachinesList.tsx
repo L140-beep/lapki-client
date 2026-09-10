@@ -144,7 +144,7 @@ export const StateMachinesList: React.FC<StateMachinesListProps> = ({
         isDuplicateName={isDuplicateName}
         selectPlatformDisabled={false}
       />
-      <StateMachineDeleteModal {...{ ...deleteProps, idx: selectedSm ?? undefined }} />
+      <StateMachineDeleteModal {...deleteProps} />
     </section>
   );
 };

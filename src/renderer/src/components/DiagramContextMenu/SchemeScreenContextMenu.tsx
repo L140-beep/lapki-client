@@ -24,6 +24,7 @@ import { ContextMenu, MenuItem } from './ContextMenu';
 import { ComponentDeleteModal } from '../ComponentDeleteModal';
 import { ComponentEditModal } from '../ComponentEditModal';
 import { PropertiesModal } from '../PropertiesModal';
+import { StateMachineDeleteModal } from '../Sidebar/StateMachinesTab';
 import { StateMachineEditModal } from '../StateMachineEditModal';
 
 type MenuVariant =
@@ -199,6 +200,7 @@ export const SchemeScreenContextMenu: React.FC<SchemeScreenContextMenuProps> = (
       {content}
       <ComponentDeleteModal {...componentFuncs.deleteProps} />
       <ComponentEditModal {...componentFuncs.editProps} />
+      <StateMachineDeleteModal {...sMFuncs.deleteProps} />
       <StateMachineEditModal
         variant="create"
         form={sMFuncs.addProps.addForm}
