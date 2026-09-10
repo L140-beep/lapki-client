@@ -53,8 +53,8 @@ export const Reference: React.FC = () => {
   return (
     <div className="flex h-full min-h-0 flex-col gap-2 pt-3 text-xs">
       <ParameterSelect
-        className="[&_.ParameterSelect__indicator]:!text-black"
         containerClassName="w-full"
+        indicatorClassName="text-black"
         options={platformOptions}
         onChange={(opt) => handlePlatformChange(opt?.value ?? '')}
         value={platformOptions.find((o) => o.value === selectedPlatform?.idx)}

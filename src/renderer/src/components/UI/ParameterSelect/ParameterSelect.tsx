@@ -3,7 +3,6 @@ import React, { useRef } from 'react';
 import { mergeRefs } from 'react-merge-refs';
 import ReactSelect, {
   components,
-  DropdownIndicatorProps,
   GroupBase,
   MenuListProps,
   OptionProps,
@@ -63,17 +62,6 @@ const ParameterSingleValue = <Value extends string | number>(
   );
 };
 
-const ParameterDropdownIndicator = <
-  Option extends ParameterSelectOption,
-  Group extends GroupBase<Option> = GroupBase<Option>
->(
-  props: DropdownIndicatorProps<Option, false, Group>
-) => (
-  <components.DropdownIndicator {...props}>
-    <ArrowIcon />
-  </components.DropdownIndicator>
-);
-
 const ParameterMenuList = <
   Option extends ParameterSelectOption,
   Group extends GroupBase<Option> = GroupBase<Option>
@@ -104,6 +92,7 @@ type ParameterSelectProps<
 > = Omit<Props<Option, false, Group>, 'isMulti'> & {
   error?: string;
   containerClassName?: string;
+  indicatorClassName?: string;
   menuWidth?: 'content' | 'full';
 };
 
@@ -115,6 +104,7 @@ export function ParameterSelect<
   error,
   containerClassName,
   className,
+  indicatorClassName,
   menuWidth = 'full',
   components: customComponents,
   ...props
@@ -140,7 +130,11 @@ export function ParameterSelect<
           control: (base) => ({ ...base, minHeight: '32px', height: '32px' }),
         }}
         components={{
-          DropdownIndicator: ParameterDropdownIndicator,
+          DropdownIndicator: (indicatorProps) => (
+            <components.DropdownIndicator {...indicatorProps}>
+              <ArrowIcon className={indicatorClassName} />
+            </components.DropdownIndicator>
+          ),
           IndicatorSeparator: null,
           MenuList: ParameterMenuList,
           Option: ParameterOption as any,
