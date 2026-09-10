@@ -15,10 +15,8 @@ import { ClientStatus } from '@renderer/components/Modules/Websocket/ClientStatu
 import { useAddressBook } from '@renderer/hooks/useAddressBook';
 import { useModal } from '@renderer/hooks/useModal';
 import { useSettings } from '@renderer/hooks/useSettings';
-import { useModelContext } from '@renderer/store/ModelContext';
 import { useFlasher } from '@renderer/store/useFlasher';
 import { useManagerMS } from '@renderer/store/useManagerMS';
-import { useTabs } from '@renderer/store/useTabs';
 import {
   AddressData,
   FirmwareTargetType,
@@ -55,7 +53,6 @@ export const FlasherStatus: React.FC = () => {
 };
 
 export const FlasherTab: React.FC = () => {
-  const modelController = useModelContext();
   const [flasherSetting] = useSettings('flasher');
   const {
     device: deviceMs,
@@ -81,9 +78,6 @@ export const FlasherTab: React.FC = () => {
 
   const [managerMSSetting, setManagerMSSetting] = useSettings('managerMS');
 
-  const openTab = useTabs((state) => state.openTab);
-  const closeTab = useTabs((state) => state.closeTab);
-
   const [isAddressBookOpen, openAddressBook, closeAddressBook] = useModal(false);
   const [isMsGetAddressOpen, openMsGetAddressModal, closeMsGetAddressModal] = useModal(false);
   const [isDeviceListOpen, openDeviceList, closeDeviceList] = useModal(false);
@@ -98,6 +92,7 @@ export const FlasherTab: React.FC = () => {
   const [msgModalData, setMsgModalData] = useState<ErrorModalData>();
   const [isMsgModalOpen, setIsMsgModalOpen] = useState(false);
   const [isActionsMenuOpen, setIsActionsMenuOpen] = useState(false);
+  const [activeLog, setActiveLog] = useState<'actions' | 'upload'>('actions');
   const actionsMenuRef = useRef<HTMLDivElement>(null);
   const closeMsgModal = () => setIsMsgModalOpen(false);
   const openMsgModal = (data: ErrorModalData) => {
@@ -172,7 +167,7 @@ export const FlasherTab: React.FC = () => {
     if (managerMSSetting?.autoScroll && logContainerRef.current) {
       logContainerRef.current.scrollTop = logContainerRef.current.scrollHeight;
     }
-  }, [log, managerMSSetting]);
+  }, [activeLog, log, managerMSSetting]);
 
   const addToTable = (item: FlashTableItem) => {
     if (
@@ -578,19 +573,6 @@ export const FlasherTab: React.FC = () => {
     openAddressEnrtyEdit();
   };
 
-  // добавление вкладки с сообщением от программы загрузки прошивки (например от avrdude)
-  const handleAddFlashResultTab = () => {
-    flashResult.forEach((result, key) => {
-      closeTab(key, modelController);
-      openTab(modelController, {
-        type: 'code',
-        name: key,
-        code: result.report() ?? '',
-        language: 'txt',
-      });
-    });
-  };
-
   const handleAddDevice = (deviceIds: string[]) => {
     for (const devId of deviceIds) {
       const dev = devices.get(devId);
@@ -696,7 +678,7 @@ export const FlasherTab: React.FC = () => {
             <DropdownMenu className="absolute left-0 top-[36px] z-30 w-[212px]">
               <DropdownMenuItem
                 disabled={flashResult.size === 0}
-                onClick={() => runMenuAction(handleAddFlashResultTab)}
+                onClick={() => runMenuAction(() => setActiveLog('upload'))}
               >
                 Журнал загрузки
               </DropdownMenuItem>
@@ -964,17 +946,50 @@ export const FlasherTab: React.FC = () => {
         <FlasherTable addressEnrtyEdit={addressEnrtyEdit} getEntryById={getEntryById} />
       </div>
       <div className="mt-5 shrink-0">{operationButtons()}</div>
-      <div className="h2-header mb-3 mt-6 shrink-0">Журнал действий</div>
+      <div className="mb-3 mt-6 flex shrink-0 items-center gap-5">
+        <button
+          type="button"
+          className={
+            activeLog === 'actions'
+              ? 'shrink-0 font-medium text-primary'
+              : 'shrink-0 hover:text-primary'
+          }
+          aria-pressed={activeLog === 'actions'}
+          onClick={() => setActiveLog('actions')}
+        >
+          Журнал действий
+        </button>
+        <button
+          type="button"
+          className={
+            activeLog === 'upload'
+              ? 'shrink-0 font-medium text-primary'
+              : 'shrink-0 hover:text-primary disabled:cursor-not-allowed disabled:text-text-disabled'
+          }
+          disabled={flashResult.size === 0}
+          aria-pressed={activeLog === 'upload'}
+          onClick={() => setActiveLog('upload')}
+        >
+          Журнал загрузки
+        </button>
+      </div>
       <ScrollArea
         className="min-h-20 flex-1 rounded-lg border border-border-primary bg-bg-primary"
         viewportClassName="whitespace-break-spaces px-3 py-[7px]"
-        ref={logContainerRef}
+        ref={activeLog === 'actions' ? logContainerRef : undefined}
       >
-        {log.map((msg, index) => (
-          <div key={index} className="select-text">
-            {msg}
-          </div>
-        ))}
+        {activeLog === 'actions'
+          ? log.map((msg, index) => (
+              <div key={index} className="select-text">
+                {msg}
+              </div>
+            ))
+          : Array.from(flashResult, ([deviceName, result]) => (
+              <div key={deviceName} className="mb-4 select-text last:mb-0">
+                <div className="font-medium">{deviceName}</div>
+                <div>{result.report()}</div>
+              </div>
+            ))}
       </ScrollArea>
       <AddressBookModal
         isOpen={isAddressBookOpen}

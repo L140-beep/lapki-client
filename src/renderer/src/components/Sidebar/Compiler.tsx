@@ -322,7 +322,7 @@ export const CompilerTab: React.FC = () => {
               language={activeSourceTab.language}
             />
           ) : compilationLogLines.length > 0 ? (
-            <div className="grid min-w-max grid-cols-[auto_1fr] py-1">
+            <div className="grid min-w-max select-text grid-cols-[auto_1fr] py-1">
               {compilationLogLines.map((line, index) => (
                 <React.Fragment key={index}>
                   <span className="select-none border-r border-border-primary px-2 text-right text-text-inactive">
