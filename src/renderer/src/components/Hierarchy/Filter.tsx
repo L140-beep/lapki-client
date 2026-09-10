@@ -10,10 +10,11 @@ interface FilterProps {
   search: string;
   onChangeSearch: (value: string) => void;
   disabled?: boolean;
+  className?: string;
 }
 
 export const Filter: React.FC<FilterProps> = (props) => {
-  const { search, onChangeSearch, disabled } = props;
+  const { search, onChangeSearch, disabled, className } = props;
   const inputRef = useRef<HTMLInputElement>(null);
 
   const handleChangeSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -26,7 +27,7 @@ export const Filter: React.FC<FilterProps> = (props) => {
   };
 
   return (
-    <div className="flex items-end gap-2 pb-[7px]">
+    <div className={twMerge('flex items-end gap-2 pb-[7px]', className)}>
       <label className="flex h-[32px] items-center rounded-lg border border-border-primary transition-colors focus-within:border-text-inactive">
         <TextInput
           ref={inputRef}
