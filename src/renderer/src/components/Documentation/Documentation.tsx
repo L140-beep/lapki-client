@@ -161,7 +161,7 @@ const DocumentationSection: React.FC<DocumentationSectionProps> = ({
               Просмотр
             </button>
           </div>
-          <div className="h-full overflow-y-hidden">
+          <div className="h-full overflow-y-hidden pt-3">
             <div className={twMerge('h-full', activeTab !== -1 && 'hidden')}>
               <ReferencePanel />
             </div>

@@ -51,7 +51,7 @@ export const Reference: React.FC = () => {
   };
 
   return (
-    <div className="flex h-full min-h-0 flex-col gap-2 pt-6 text-xs">
+    <div className="flex h-full min-h-0 flex-col gap-2 pt-3 text-xs">
       <ParameterSelect
         containerClassName="w-full"
         options={platformOptions}
