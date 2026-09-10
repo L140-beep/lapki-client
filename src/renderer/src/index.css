@@ -91,6 +91,14 @@
     @apply cursor-pointer hover:bg-[#e6f4ff] active:bg-bg-active;
   }
 
+  .context-menu-item > svg {
+    @apply text-icon-secondary;
+  }
+
+  .context-menu-item.danger > svg {
+    @apply text-danger;
+  }
+
   .dropdown-submenu {
     @apply pointer-events-none invisible absolute left-full top-0 z-[120] w-[92px] overflow-hidden opacity-0 transition-opacity group-focus-within:pointer-events-auto group-focus-within:visible group-focus-within:opacity-100 group-hover:pointer-events-auto group-hover:visible group-hover:opacity-100;
   }

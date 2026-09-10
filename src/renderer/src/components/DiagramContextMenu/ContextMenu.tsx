@@ -2,6 +2,8 @@ import React, { ComponentProps } from 'react';
 
 import { twMerge } from 'tailwind-merge';
 
+import { ReactComponent as ArrowIcon } from '@renderer/assets/icons/arrow-down.svg';
+
 import { ContextMenuContext, useContextMenuContext } from './ContextMenuContext';
 
 interface ContextMenuProps {
@@ -45,6 +47,10 @@ type SubMenuContainerProps = ComponentProps<'div'>;
 export const SubMenuContainer: React.FC<SubMenuContainerProps> = ({ className, ...props }) => {
   return <div className={twMerge('group relative', className)} {...props} />;
 };
+
+export const SubMenuArrow: React.FC = () => (
+  <ArrowIcon aria-hidden="true" className="ml-auto size-2.5 shrink-0 -rotate-90" />
+);
 
 interface SubMenuProps extends ComponentProps<'div'> {
   position: 'left' | 'right';

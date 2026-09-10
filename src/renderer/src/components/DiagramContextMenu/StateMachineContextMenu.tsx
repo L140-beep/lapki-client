@@ -39,7 +39,7 @@ import { useModelContext } from '@renderer/store/ModelContext';
 import { useTabs } from '@renderer/store/useTabs';
 import { getVirtualElement } from '@renderer/utils';
 
-import { ContextMenu, MenuItem, SubMenuContainer, SubMenu } from './ContextMenu';
+import { ContextMenu, MenuItem, SubMenuArrow, SubMenuContainer, SubMenu } from './ContextMenu';
 import { NoteMenu } from './Menus/NoteMenu';
 
 type MenuVariant =
@@ -266,7 +266,7 @@ export const StateMachineContextMenu: React.FC<StateMachineContextMenuProps> = (
           <SubMenuContainer>
             <MenuItem closeable={false}>
               <EditIcon className="size-6 flex-shrink-0" /> Редактировать
-              <span className="ml-auto">{'>'}</span>
+              <SubMenuArrow />
             </MenuItem>
 
             <SubMenu position={position.x < 800 ? 'left' : 'right'}>
@@ -396,7 +396,7 @@ export const StateMachineContextMenu: React.FC<StateMachineContextMenuProps> = (
           <SubMenuContainer>
             <MenuItem closeable={false}>
               <EditIcon className="size-6 flex-shrink-0" /> Выбрать исход
-              <span className="ml-auto">{'>'}</span>
+              <SubMenuArrow />
             </MenuItem>
 
             <SubMenu position={position.x < 800 ? 'left' : 'right'}>
@@ -424,7 +424,7 @@ export const StateMachineContextMenu: React.FC<StateMachineContextMenuProps> = (
           <SubMenuContainer>
             <MenuItem closeable={false}>
               <EditIcon className="size-6 flex-shrink-0" /> Выбрать цель
-              <span className="ml-auto">{'>'}</span>
+              <SubMenuArrow />
             </MenuItem>
 
             <SubMenu position={position.x < 800 ? 'left' : 'right'}>

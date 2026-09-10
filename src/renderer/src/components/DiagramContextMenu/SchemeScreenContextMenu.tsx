@@ -116,7 +116,7 @@ export const SchemeScreenContextMenu: React.FC<SchemeScreenContextMenuProps> = (
       return (
         <ContextMenu onClose={close}>
           <MenuItem onClick={sMFuncs.onRequestAddStateMachine}>
-            <StateMachineIcon className="size-6 flex-shrink-0 fill-border-contrast" />
+            <StateMachineIcon className="size-6 flex-shrink-0" />
             Вставить машину состояний
           </MenuItem>
         </ContextMenu>
