@@ -99,7 +99,7 @@ const DocumentationSection: React.FC<DocumentationSectionProps> = ({
   return (
     <section
       className={twMerge(
-        'flex h-full select-none flex-col bg-bg-primary px-3 text-xs font-light',
+        'flex h-full select-none flex-col bg-bg-primary px-3 text-xs',
         !isCollapsed && 'pt-4'
       )}
     >
@@ -134,7 +134,7 @@ const DocumentationSection: React.FC<DocumentationSectionProps> = ({
           <div className="grid grid-cols-3 gap-3">
             <button
               className={twMerge(
-                'rounded-lg border border-primary bg-inactive-button px-3 py-[5px] font-light',
+                'rounded-lg px-3 py-[5px]',
                 activeTab === -1 && 'bg-[#E6F4FF] font-medium'
               )}
               onClick={() => setActiveTab(-1)}
@@ -143,7 +143,7 @@ const DocumentationSection: React.FC<DocumentationSectionProps> = ({
             </button>
             <button
               className={twMerge(
-                'rounded-lg border border-primary bg-inactive-button px-3 py-[5px] font-light',
+                'rounded-lg px-3 py-[5px]',
                 activeTab === 0 && 'bg-[#E6F4FF] font-medium'
               )}
               onClick={() => setActiveTab(0)}
@@ -152,7 +152,7 @@ const DocumentationSection: React.FC<DocumentationSectionProps> = ({
             </button>
             <button
               className={twMerge(
-                'rounded-lg border border-primary bg-inactive-button px-3 py-[5px] font-light disabled:cursor-not-allowed',
+                'rounded-lg px-3 py-[5px] disabled:cursor-not-allowed disabled:bg-inactive-button',
                 activeTab === 1 && 'bg-[#E6F4FF] font-medium'
               )}
               onClick={() => setActiveTab(1)}

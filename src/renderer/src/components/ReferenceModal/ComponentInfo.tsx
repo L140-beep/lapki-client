@@ -29,12 +29,12 @@ export const ComponentInfo: React.FC<ComponentInfoProps> = ({
   const prettyName = (name: string | undefined, defaultName: string) => {
     if (name) {
       return (
-        <span className="font-normal">
+        <span className="font-medium">
           {name} <span className="text-[#9D9D9D]">[{defaultName}]</span>
         </span>
       );
     }
-    return <span className="font-normal text-[#9D9D9D]">{defaultName}</span>;
+    return <span className="font-medium text-[#9D9D9D]">{defaultName}</span>;
   };
 
   const prettyType = (valueAlias: ArgType | undefined, type: ArgType | undefined) => {
@@ -92,7 +92,7 @@ export const ComponentInfo: React.FC<ComponentInfoProps> = ({
             component.idx,
             twMerge('size-5', component.img ? '' : 'rounded-full bg-gray-200 p-0.5')
           )}
-          <span className={twMerge('text-xs font-normal', !component.name && 'text-[#9D9D9D]')}>
+          <span className={twMerge('text-xs font-medium', !component.name && 'text-[#9D9D9D]')}>
             {componentName}
           </span>
         </div>
