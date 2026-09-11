@@ -1,4 +1,4 @@
-import React, { useReducer, useRef, RefObject, useState } from 'react';
+import React, { useLayoutEffect, useReducer, useRef, RefObject, useState } from 'react';
 
 import {
   Panel,
@@ -14,7 +14,7 @@ import { StateMachinesHierarchy } from './StateMachinesHierarchy';
 
 import { StateMachinesList } from '../StateMachinesTab';
 
-const collapsedSize = 6;
+const defaultCollapsedSize = 6;
 
 export const Explorer: React.FC = () => {
   const modelController = useModelContext();
@@ -27,13 +27,45 @@ export const Explorer: React.FC = () => {
   const stateMachinesPanelRef = useRef<ImperativePanelHandle>(null);
   const componentPanelRef = useRef<ImperativePanelHandle>(null);
   const hierarchyPanelRef = useRef<ImperativePanelHandle>(null);
+  const explorerRef = useRef<HTMLElement>(null);
 
   const [, forceUpdate] = useReducer((p) => p + 1, 0);
+  const [collapsedSize, setCollapsedSize] = useState(defaultCollapsedSize);
 
   const [selectedSm, setSmSelected] = useState<string | null>(null);
   const activeSm = stateMachinesIds[0];
   const displayedSm =
     selectedSm && stateMachinesIds.includes(selectedSm) ? selectedSm : stateMachinesIds[0];
+
+  useLayoutEffect(() => {
+    const explorer = explorerRef.current;
+    const panelGroup = explorer?.querySelector<HTMLElement>('[data-panel-group]');
+    const panelHeader = explorer?.querySelector<HTMLElement>('[data-panel-header]');
+
+    if (!panelGroup || !panelHeader) return;
+
+    const updateCollapsedSize = () => {
+      const resizeHandlesHeight = Array.from(
+        panelGroup.querySelectorAll<HTMLElement>('[data-panel-resize-handle-id]')
+      ).reduce((height, handle) => height + handle.offsetHeight, 0);
+      const panelsHeight = panelGroup.clientHeight - resizeHandlesHeight;
+
+      if (panelsHeight <= 0) return;
+
+      const nextCollapsedSize = (panelHeader.offsetHeight / panelsHeight) * 100;
+      setCollapsedSize((currentSize) =>
+        Math.abs(currentSize - nextCollapsedSize) > 0.01 ? nextCollapsedSize : currentSize
+      );
+    };
+
+    updateCollapsedSize();
+
+    const resizeObserver = new ResizeObserver(updateCollapsedSize);
+    resizeObserver.observe(panelGroup);
+    resizeObserver.observe(panelHeader);
+
+    return () => resizeObserver.disconnect();
+  }, [isInitialized]);
 
   const togglePanel = (panelRef: RefObject<ImperativePanelHandle>) => {
     const panel = panelRef.current;
@@ -49,7 +81,7 @@ export const Explorer: React.FC = () => {
   };
 
   return (
-    <section className="flex h-full min-h-0 flex-col">
+    <section ref={explorerRef} className="flex h-full min-h-0 flex-col">
       {!isInitialized ? (
         <div className="p-4 text-text-inactive">
           <em>Недоступно до открытия документа</em>
