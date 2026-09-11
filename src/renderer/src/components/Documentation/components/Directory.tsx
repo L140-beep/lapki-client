@@ -27,7 +27,7 @@ export const Directory: React.FC<DirectoryProps> = ({ item, onItemClick }) => {
         <DirectoryIcon
           className={twMerge(
             'mr-3 inline-block h-5 w-5 transition-colors',
-            isOpen && 'text-icon-hover'
+            isOpen && '[&_path]:stroke-icon-hover'
           )}
         />
         {item.name}
