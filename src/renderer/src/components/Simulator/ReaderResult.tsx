@@ -37,7 +37,7 @@ export const ReaderResult: React.FC<{
               key={`${index}:${impulse}`}
               className="rounded-lg border border-border-primary bg-bg-primary p-2"
             >
-              <code className="break-all font-Fira-Mono text-sm text-text-primary">{impulse}</code>
+              <code className="break-all text-text-primary">{impulse}</code>
             </li>
           ))}
         </ol>
