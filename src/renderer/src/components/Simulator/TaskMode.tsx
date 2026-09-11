@@ -145,10 +145,7 @@ const GardenerDetails: React.FC<{
     <div className="grid min-h-0 flex-1 grid-cols-2 content-start items-start gap-4 overflow-y-auto bg-bg-primary p-4">
       <section className="min-w-0 rounded-xl border border-border-primary bg-bg-primary p-4 shadow-sm">
         <div className="mb-4">
-          <p className="text-xs font-medium uppercase tracking-wide text-text-inactive">
-            Исходные данные
-          </p>
-          <h3 className="h2-header mt-1">Входное поле</h3>
+          <h3 className="h2-header">Входное поле</h3>
         </div>
         <div className="flex justify-center">
           <FieldView input={input} />
@@ -158,10 +155,7 @@ const GardenerDetails: React.FC<{
       <section className="min-w-0 rounded-xl border border-border-primary bg-bg-primary p-4 shadow-sm">
         <div className="mb-4 flex items-start justify-between gap-3">
           <div>
-            <p className="text-xs font-medium uppercase tracking-wide text-text-inactive">
-              Результат
-            </p>
-            <h3 className="h2-header mt-1">Фактическое поле</h3>
+            <h3 className="h2-header">Фактическое поле</h3>
           </div>
           <span className="shrink-0 rounded-full bg-bg-secondary px-2 py-1 text-xs text-text-inactive">
             {steps.length > 0
@@ -318,7 +312,7 @@ export const TaskMode: React.FC<TaskModeProps> = ({
     : undefined;
 
   return (
-    <div className="grid min-h-0 flex-1 grid-cols-[minmax(0,1fr)_304px] overflow-hidden rounded-t-xl border border-border-primary">
+    <div className="grid min-h-0 flex-1 grid-cols-[minmax(0,1fr)_304px] overflow-hidden rounded-lg border border-border-primary">
       <div className="flex min-h-0 flex-col">
         <div className="border-b border-border-primary px-5 py-4">
           <div className="flex items-center justify-between gap-4">

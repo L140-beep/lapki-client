@@ -61,7 +61,13 @@ describe('TaskMode Gardener result', () => {
   });
 
   it('shows that the test has not run before a result exists', () => {
-    expect(renderTaskMode()).toContain('Нет запуска');
+    const html = renderTaskMode();
+
+    expect(html).toContain('Нет запуска');
+    expect(html).not.toContain('Исходные данные');
+    expect(html).not.toContain('>Результат<');
+    expect(html).toContain('overflow-hidden rounded-lg border');
+    expect(html).not.toContain('rounded-t-xl');
   });
 
   it('shows the final state for a submission result without a step trace', () => {
