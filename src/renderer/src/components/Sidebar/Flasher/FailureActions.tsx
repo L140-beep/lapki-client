@@ -3,7 +3,6 @@ import React from 'react';
 interface FailureActionsProps {
   reconnectLabel: React.ReactNode;
   reconnectDisabled: boolean;
-  errorDescriptionActive: boolean;
   onReconnect: () => void;
   onShowErrorDescription: () => void;
 }
@@ -11,7 +10,6 @@ interface FailureActionsProps {
 export const FailureActions: React.FC<FailureActionsProps> = ({
   reconnectLabel,
   reconnectDisabled,
-  errorDescriptionActive,
   onReconnect,
   onShowErrorDescription,
 }) => (
@@ -28,7 +26,6 @@ export const FailureActions: React.FC<FailureActionsProps> = ({
       type="button"
       className="btn-primary mr-2 border-warning bg-warning p-0 px-2"
       onClick={onShowErrorDescription}
-      aria-pressed={errorDescriptionActive}
     >
       Описание ошибки
     </button>

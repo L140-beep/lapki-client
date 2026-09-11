@@ -10,7 +10,6 @@ describe('FailureActions', () => {
         <FailureActions
           reconnectLabel="Перезапустить"
           reconnectDisabled={false}
-          errorDescriptionActive={false}
           onReconnect={vi.fn()}
           onShowErrorDescription={vi.fn()}
         />
