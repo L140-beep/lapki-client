@@ -90,7 +90,6 @@ export const FlasherTab: React.FC = () => {
   const addressEntryAddForm = useForm<AddressEntryForm>();
 
   const [isActionsMenuOpen, setIsActionsMenuOpen] = useState(false);
-  const [showUploadLog, setShowUploadLog] = useState(false);
   const actionsMenuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -160,7 +159,7 @@ export const FlasherTab: React.FC = () => {
     if (managerMSSetting?.autoScroll && logContainerRef.current) {
       logContainerRef.current.scrollTop = logContainerRef.current.scrollHeight;
     }
-  }, [flashResult, log, managerMSSetting, showUploadLog]);
+  }, [log, managerMSSetting]);
 
   const addToTable = (item: FlashTableItem) => {
     if (
@@ -623,6 +622,10 @@ export const FlasherTab: React.FC = () => {
       action();
     };
 
+    const showUploadLog = () => {
+      flashResult.forEach((result) => ManagerMS.addLog(result.report()));
+    };
+
     return (
       <div className="flex items-start gap-3">
         <button
@@ -648,7 +651,7 @@ export const FlasherTab: React.FC = () => {
             <DropdownMenu className="absolute left-0 top-[36px] z-30 w-[212px]">
               <DropdownMenuItem
                 disabled={flashResult.size === 0}
-                onClick={() => runMenuAction(() => setShowUploadLog(true))}
+                onClick={() => runMenuAction(showUploadLog)}
               >
                 Журнал загрузки
               </DropdownMenuItem>
@@ -911,16 +914,6 @@ export const FlasherTab: React.FC = () => {
             {msg}
           </div>
         ))}
-        {showUploadLog &&
-          Array.from(flashResult, ([deviceName, result]) => (
-            <div
-              key={deviceName}
-              className="mt-4 border-t border-border-primary pt-4 first:mt-0 first:border-t-0 first:pt-0"
-            >
-              <div className="select-text font-medium">{deviceName}</div>
-              <div className="select-text">{result.report()}</div>
-            </div>
-          ))}
       </ScrollArea>
       <AddressBookModal
         isOpen={isAddressBookOpen}
