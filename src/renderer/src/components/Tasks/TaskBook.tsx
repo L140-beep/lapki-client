@@ -183,7 +183,6 @@ export const TaskBook: React.FC<TaskBookProps> = ({
       )}
     >
       <div
-        data-documentation-panel-header
         className={twMerge('flex items-center justify-between', isCollapsed ? 'pb-1' : 'mb-3 mt-2')}
       >
         {canCollapse ? (

@@ -1,4 +1,4 @@
-import React, { useLayoutEffect, useRef, useState } from 'react';
+import React, { useReducer, useRef, RefObject, useState } from 'react';
 
 import {
   Panel,
@@ -14,21 +14,7 @@ import { StateMachinesHierarchy } from './StateMachinesHierarchy';
 
 import { StateMachinesList } from '../StateMachinesTab';
 
-const defaultCollapsedSize = 6;
-const expandedMinSize = 20;
-const defaultExpandedSizes = {
-  stateMachines: 25.5,
-  components: 38.2,
-  hierarchy: 36.3,
-};
-
-type ExplorerPanelId = keyof typeof defaultExpandedSizes;
-
-const nearestPanel: Record<ExplorerPanelId, ExplorerPanelId> = {
-  stateMachines: 'components',
-  components: 'stateMachines',
-  hierarchy: 'components',
-};
+const collapsedSize = 6;
 
 export const Explorer: React.FC = () => {
   const modelController = useModelContext();
@@ -41,100 +27,29 @@ export const Explorer: React.FC = () => {
   const stateMachinesPanelRef = useRef<ImperativePanelHandle>(null);
   const componentPanelRef = useRef<ImperativePanelHandle>(null);
   const hierarchyPanelRef = useRef<ImperativePanelHandle>(null);
-  const explorerRef = useRef<HTMLElement>(null);
-  const expandedSizesRef = useRef(defaultExpandedSizes);
-  const adjustingPanelsRef = useRef(false);
 
-  const [collapsedSize, setCollapsedSize] = useState(defaultCollapsedSize);
-  const [collapsedPanels, setCollapsedPanels] = useState<Record<ExplorerPanelId, boolean>>({
-    stateMachines: false,
-    components: false,
-    hierarchy: false,
-  });
+  const [, forceUpdate] = useReducer((p) => p + 1, 0);
 
   const [selectedSm, setSmSelected] = useState<string | null>(null);
   const activeSm = stateMachinesIds[0];
   const displayedSm =
     selectedSm && stateMachinesIds.includes(selectedSm) ? selectedSm : stateMachinesIds[0];
 
-  useLayoutEffect(() => {
-    const explorer = explorerRef.current;
-    const panelGroup = explorer?.querySelector<HTMLElement>('[data-panel-group]');
-    const panelHeader = explorer?.querySelector<HTMLElement>('[data-panel-header]');
-
-    if (!panelGroup || !panelHeader) return;
-
-    const updateCollapsedSize = () => {
-      const resizeHandlesHeight = Array.from(
-        panelGroup.querySelectorAll<HTMLElement>('[data-panel-resize-handle-id]')
-      ).reduce((height, handle) => height + handle.offsetHeight, 0);
-      const panelsHeight = panelGroup.clientHeight - resizeHandlesHeight;
-
-      if (panelsHeight <= 0) return;
-
-      const nextCollapsedSize = (panelHeader.offsetHeight / panelsHeight) * 100;
-      setCollapsedSize((currentSize) =>
-        Math.abs(currentSize - nextCollapsedSize) > 0.01 ? nextCollapsedSize : currentSize
-      );
-    };
-
-    updateCollapsedSize();
-
-    const resizeObserver = new ResizeObserver(updateCollapsedSize);
-    resizeObserver.observe(panelGroup);
-    resizeObserver.observe(panelHeader);
-
-    return () => resizeObserver.disconnect();
-  }, [isInitialized]);
-
-  const panelRefs: Record<ExplorerPanelId, React.RefObject<ImperativePanelHandle>> = {
-    stateMachines: stateMachinesPanelRef,
-    components: componentPanelRef,
-    hierarchy: hierarchyPanelRef,
-  };
-
-  const setPanelCollapsed = (panelId: ExplorerPanelId, collapsed: boolean) => {
-    setCollapsedPanels((currentPanels) => ({ ...currentPanels, [panelId]: collapsed }));
-  };
-
-  const expandPanel = (panelId: ExplorerPanelId) => {
-    panelRefs[panelId].current?.resize(
-      Math.max(expandedMinSize, expandedSizesRef.current[panelId])
-    );
-  };
-
-  const togglePanel = (panelId: ExplorerPanelId) => {
-    const panel = panelRefs[panelId].current;
+  const togglePanel = (panelRef: RefObject<ImperativePanelHandle>) => {
+    const panel = panelRef.current;
     if (!panel) return;
 
-    adjustingPanelsRef.current = true;
-
-    try {
-      if (collapsedPanels[panelId]) {
-        expandPanel(panelId);
-        return;
-      }
-
-      const expandedPanels = Object.values(collapsedPanels).filter((collapsed) => !collapsed);
-
-      if (expandedPanels.length === 1) {
-        expandPanel(nearestPanel[panelId]);
-      }
-
+    if (panel.isCollapsed()) {
+      panel.expand();
+    } else {
       panel.collapse();
-    } finally {
-      adjustingPanelsRef.current = false;
     }
-  };
 
-  const rememberExpandedSize = (panelId: ExplorerPanelId, size: number) => {
-    if (!adjustingPanelsRef.current && size > collapsedSize + 0.01) {
-      expandedSizesRef.current = { ...expandedSizesRef.current, [panelId]: size };
-    }
+    forceUpdate();
   };
 
   return (
-    <section ref={explorerRef} className="flex h-full min-h-0 flex-col">
+    <section className="flex h-full min-h-0 flex-col">
       {!isInitialized ? (
         <div className="p-4 text-text-inactive">
           <em>Недоступно до открытия документа</em>
@@ -145,20 +60,19 @@ export const Explorer: React.FC = () => {
             ref={stateMachinesPanelRef}
             id="panel0"
             collapsible
-            minSize={expandedMinSize}
+            minSize={collapsedSize}
             collapsedSize={collapsedSize}
-            defaultSize={defaultExpandedSizes.stateMachines}
-            onCollapse={() => setPanelCollapsed('stateMachines', true)}
-            onExpand={() => setPanelCollapsed('stateMachines', false)}
-            onResize={(size) => rememberExpandedSize('stateMachines', size)}
+            defaultSize={25.5}
+            onCollapse={forceUpdate}
+            onExpand={forceUpdate}
             className="min-h-0 overflow-hidden px-[12px]"
           >
             <StateMachinesList
               activeSm={activeSm ?? null}
               selectedSm={selectedSm}
               setSmSelected={setSmSelected}
-              isCollapsed={() => collapsedPanels.stateMachines}
-              togglePanel={() => togglePanel('stateMachines')}
+              isCollapsed={() => stateMachinesPanelRef.current?.isCollapsed() ?? false}
+              togglePanel={() => togglePanel(stateMachinesPanelRef)}
             />
           </Panel>
 
@@ -170,18 +84,17 @@ export const Explorer: React.FC = () => {
             ref={componentPanelRef}
             id="panel1"
             collapsible
-            minSize={expandedMinSize}
+            minSize={collapsedSize}
             collapsedSize={collapsedSize}
-            defaultSize={defaultExpandedSizes.components}
-            onCollapse={() => setPanelCollapsed('components', true)}
-            onExpand={() => setPanelCollapsed('components', false)}
-            onResize={(size) => rememberExpandedSize('components', size)}
+            defaultSize={38.2}
+            onCollapse={forceUpdate}
+            onExpand={forceUpdate}
             className="min-h-0 overflow-hidden px-[12px]"
           >
             <StateMachineComponentList
               smId={displayedSm ?? ''}
-              isCollapsed={() => collapsedPanels.components}
-              togglePanel={() => togglePanel('components')}
+              isCollapsed={() => componentPanelRef.current?.isCollapsed() ?? false}
+              togglePanel={() => togglePanel(componentPanelRef)}
             />
           </Panel>
 
@@ -193,18 +106,17 @@ export const Explorer: React.FC = () => {
             id="panel2"
             ref={hierarchyPanelRef}
             collapsible
-            minSize={expandedMinSize}
+            minSize={collapsedSize}
             collapsedSize={collapsedSize}
-            defaultSize={defaultExpandedSizes.hierarchy}
-            onCollapse={() => setPanelCollapsed('hierarchy', true)}
-            onExpand={() => setPanelCollapsed('hierarchy', false)}
-            onResize={(size) => rememberExpandedSize('hierarchy', size)}
+            defaultSize={36.3}
+            onCollapse={forceUpdate}
+            onExpand={forceUpdate}
             className="min-h-0 overflow-hidden px-[12px]"
           >
             {isInitialized ? (
               <StateMachinesHierarchy
-                isCollapsed={() => collapsedPanels.hierarchy}
-                togglePanel={() => togglePanel('hierarchy')}
+                isCollapsed={() => hierarchyPanelRef.current?.isCollapsed() ?? false}
+                togglePanel={() => togglePanel(hierarchyPanelRef)}
               />
             ) : (
               <div className="px-4">Недоступно до открытия документа</div>

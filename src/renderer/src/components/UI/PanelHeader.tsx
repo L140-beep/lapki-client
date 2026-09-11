@@ -18,7 +18,7 @@ export const PanelHeader: React.FC<PanelHeaderProps> = ({
   isAddDisabled,
 }) => {
   return (
-    <div data-panel-header className="flex shrink-0 items-center py-3">
+    <div className="flex shrink-0 items-center py-3">
       <button className="flex items-center" onClick={togglePanel} type="button">
         <ArrowIcon
           className={
