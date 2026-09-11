@@ -1,5 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
 
+import { GardenerMarker, type GardenerFieldOrientation, gardenerCellStyles } from './GardenerField';
+import { ReaderImpulseList } from './ReaderResult';
+
 import type {
   CatalogTask,
   GardenerTaskInput,
@@ -8,8 +11,6 @@ import type {
 } from '../../../../common/tasks';
 import { type TaskTestPhase, useTasks } from '../../store/useTasks';
 import type { SimulationResult } from '../../types/InterpreterTypes';
-import { GardenerMarker, type GardenerFieldOrientation, gardenerCellStyles } from './GardenerField';
-import { ReaderImpulseList } from './ReaderResult';
 
 const phaseLabels = {
   idle: 'Не запускался',
@@ -316,7 +317,7 @@ export const TaskMode: React.FC<TaskModeProps> = ({
               <h2 className="h2-header mt-1 truncate">{selectedTest?.title}</h2>
             </div>
             <div
-              className={`flex shrink-0 items-center gap-2 px-3 py-1.5 text-xs font-medium ${selectedPhaseStyle.text}`}
+              className={`flex shrink-0 items-center gap-2 px-3 py-1.5 text-xs ${selectedPhaseStyle.text}`}
             >
               <span className={`size-2 rounded-full ${selectedPhaseStyle.dot}`} />
               {selectedPhaseStyle.label}
