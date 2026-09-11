@@ -143,6 +143,17 @@ describe('TaskMode Reader result', () => {
     taskState.submissionResult = undefined;
   });
 
+  it('shows the input string with an outline and without a filled background', () => {
+    const html = renderReaderTaskMode();
+
+    expect(html).toContain(
+      'whitespace-pre-wrap rounded-lg border border-border-primary p-3 text-xs'
+    );
+    expect(html).not.toContain(
+      'whitespace-pre-wrap rounded-lg border border-border-primary bg-bg-secondary'
+    );
+  });
+
   it('uses the same impulse list presentation as ReaderResult', () => {
     taskState.detailedResult = {
       testId: 'first',

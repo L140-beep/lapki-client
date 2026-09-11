@@ -232,7 +232,7 @@ const ReaderDetails: React.FC<{
     <div className="grid gap-4 overflow-y-auto bg-bg-primary p-4 lg:grid-cols-2">
       <section className="rounded-xl border border-border-primary bg-bg-primary p-4 shadow-sm">
         <h3 className="h2-header mb-3">Входная строка</h3>
-        <pre className="whitespace-pre-wrap rounded-lg border border-border-primary bg-bg-secondary p-3 text-xs">
+        <pre className="whitespace-pre-wrap rounded-lg border border-border-primary p-3 text-xs">
           {input.message}
         </pre>
       </section>
