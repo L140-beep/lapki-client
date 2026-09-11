@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useState } from 'react';
 
 import { twMerge } from 'tailwind-merge';
 
@@ -194,7 +194,7 @@ const GardenerSimulator: React.FC<GardenerRuntimeProps> = ({
     };
   }, [reviewingHistory]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     setHistoryIndex(Math.max(0, steps.length - 1));
     setReviewingHistory(steps.length > 0);
     setIsPlaying(false);
