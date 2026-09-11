@@ -296,6 +296,7 @@ const GardenerSimulator: React.FC<GardenerRuntimeProps> = ({
           error={error}
           message={result?.message}
           stale={stale}
+          reserveFeedbackSpace
           onModeChange={(nextMode) => {
             stopHistoryPlayback();
             setMode(nextMode);

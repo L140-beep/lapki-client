@@ -54,4 +54,20 @@ describe('SimulationRunPanel', () => {
     expect(html).toContain('id="simulator-timeout"');
     expect(html).toMatch(/id="simulator-timeout"[^>]*disabled=""/);
   });
+
+  it('can reserve feedback space while a result message is absent', () => {
+    const html = renderToStaticMarkup(
+      <SimulationRunPanel
+        machineSelector={<div />}
+        mode="finite"
+        timeout={10}
+        ready
+        active
+        reserveFeedbackSpace
+        {...callbacks}
+      />
+    );
+
+    expect(html).toContain('mt-3 min-h-4 space-y-3');
+  });
 });

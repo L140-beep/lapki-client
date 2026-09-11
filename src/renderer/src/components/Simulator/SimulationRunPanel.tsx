@@ -18,6 +18,7 @@ interface SimulationRunPanelProps {
   error?: string;
   message?: string;
   stale?: boolean;
+  reserveFeedbackSpace?: boolean;
   onModeChange: (mode: SimulationMode) => void;
   onTimeoutChange: (timeout: number) => void;
   onStart: () => void;
@@ -50,6 +51,7 @@ export const SimulationRunPanel: React.FC<SimulationRunPanelProps> = ({
   error,
   message,
   stale,
+  reserveFeedbackSpace = false,
   onModeChange,
   onTimeoutChange,
   onStart,
@@ -100,9 +102,13 @@ export const SimulationRunPanel: React.FC<SimulationRunPanelProps> = ({
             {active ? 'Отменить' : 'Запустить'}
           </button>
         </div>
-        {error && <p className="mt-3 text-xs text-error">{error}</p>}
-        {message && <p className="mt-3 text-xs">{message}</p>}
-        {stale && <p className="mt-3 text-xs text-warning">Результат устарел.</p>}
+        {(reserveFeedbackSpace || error || message || stale) && (
+          <div className="mt-3 min-h-4 space-y-3">
+            {error && <p className="text-xs text-error">{error}</p>}
+            {message && <p className="text-xs">{message}</p>}
+            {stale && <p className="text-xs text-warning">Результат устарел.</p>}
+          </div>
+        )}
       </div>
     </section>
   </div>
