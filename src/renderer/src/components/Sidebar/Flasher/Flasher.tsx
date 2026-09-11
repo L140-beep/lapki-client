@@ -67,7 +67,6 @@ export const FlasherTab: React.FC = () => {
     useAddressBook();
   const {
     connectionStatus,
-    flashResult,
     devices,
     flashTableData,
     setFlashTableData,
@@ -90,8 +89,6 @@ export const FlasherTab: React.FC = () => {
   const addressEntryAddForm = useForm<AddressEntryForm>();
 
   const [isActionsMenuOpen, setIsActionsMenuOpen] = useState(false);
-  const [activeLog, setActiveLog] = useState<'actions' | 'upload' | 'error'>('actions');
-  const [errorDescription, setErrorDescription] = useState('');
   const actionsMenuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -113,10 +110,6 @@ export const FlasherTab: React.FC = () => {
       document.removeEventListener('keydown', closeMenuOnEscape);
     };
   }, [isActionsMenuOpen]);
-
-  useEffect(() => {
-    if (!errorMessage && activeLog === 'error') setActiveLog('actions');
-  }, [activeLog, errorMessage]);
 
   const selectedDevicesCount = useMemo(() => {
     return flashTableData.filter((item) => item.isSelected).length;
@@ -165,7 +158,7 @@ export const FlasherTab: React.FC = () => {
     if (managerMSSetting?.autoScroll && logContainerRef.current) {
       logContainerRef.current.scrollTop = logContainerRef.current.scrollHeight;
     }
-  }, [activeLog, log, managerMSSetting]);
+  }, [log, managerMSSetting]);
 
   const addToTable = (item: FlashTableItem) => {
     if (
@@ -652,12 +645,6 @@ export const FlasherTab: React.FC = () => {
           {isActionsMenuOpen && (
             <DropdownMenu className="absolute left-0 top-[36px] z-30 w-[212px]">
               <DropdownMenuItem
-                disabled={flashResult.size === 0}
-                onClick={() => runMenuAction(() => setActiveLog('upload'))}
-              >
-                Журнал загрузки
-              </DropdownMenuItem>
-              <DropdownMenuItem
                 disabled={commonOperationDisabled}
                 onClick={() => runMenuAction(() => handleSendBin(true))}
               >
@@ -702,8 +689,6 @@ export const FlasherTab: React.FC = () => {
 
   const handleErrorMessageDisplay = async () => {
     if (!flasherSetting) return;
-    setActiveLog('error');
-    setErrorDescription('Получение описания ошибки...');
 
     let description = 'Неизвестный тип ошибки.';
     if (flasherSetting.type === 'local') {
@@ -746,7 +731,7 @@ export const FlasherTab: React.FC = () => {
           : errorMessage ?? 'Описание ошибки отсутствует.';
     }
 
-    setErrorDescription(description);
+    ManagerMS.addLog(description);
   };
 
   const handleReconnect = async () => {
@@ -848,7 +833,6 @@ export const FlasherTab: React.FC = () => {
               reconnectDisabled={
                 flasherSetting?.type === 'local' && connectionStatus === ClientStatus.CONNECTING
               }
-              errorDescriptionActive={activeLog === 'error'}
               onReconnect={handleReconnect}
               onShowErrorDescription={handleErrorMessageDisplay}
             />
@@ -908,52 +892,17 @@ export const FlasherTab: React.FC = () => {
         <FlasherTable addressEnrtyEdit={addressEnrtyEdit} getEntryById={getEntryById} />
       </div>
       <div className="mt-5 shrink-0">{operationButtons()}</div>
-      <div className="mb-3 mt-6 flex shrink-0 items-center gap-5">
-        <button
-          type="button"
-          className={
-            activeLog === 'actions'
-              ? 'shrink-0 font-medium text-primary'
-              : 'shrink-0 hover:text-primary'
-          }
-          aria-pressed={activeLog === 'actions'}
-          onClick={() => setActiveLog('actions')}
-        >
-          Журнал действий
-        </button>
-        <button
-          type="button"
-          className={
-            activeLog === 'upload'
-              ? 'shrink-0 font-medium text-primary'
-              : 'shrink-0 hover:text-primary disabled:cursor-not-allowed disabled:text-text-disabled'
-          }
-          disabled={flashResult.size === 0}
-          aria-pressed={activeLog === 'upload'}
-          onClick={() => setActiveLog('upload')}
-        >
-          Журнал загрузки
-        </button>
-      </div>
+      <h2 className="mb-3 mt-6 shrink-0 font-medium text-black">Журнал действий</h2>
       <ScrollArea
         className="min-h-20 flex-1 rounded-lg border border-border-primary bg-bg-primary"
         viewportClassName="whitespace-break-spaces px-3 py-[7px]"
-        ref={activeLog === 'actions' ? logContainerRef : undefined}
+        ref={logContainerRef}
       >
-        {activeLog === 'actions' &&
-          log.map((msg, index) => (
-            <div key={index} className="select-text">
-              {msg}
-            </div>
-          ))}
-        {activeLog === 'upload' &&
-          Array.from(flashResult, ([deviceName, result]) => (
-            <div key={deviceName} className="mb-4 select-text last:mb-0">
-              <div className="font-medium">{deviceName}</div>
-              <div>{result.report()}</div>
-            </div>
-          ))}
-        {activeLog === 'error' && <div className="select-text">{errorDescription}</div>}
+        {log.map((msg, index) => (
+          <div key={index} className="select-text">
+            {msg}
+          </div>
+        ))}
       </ScrollArea>
       <AddressBookModal
         isOpen={isAddressBookOpen}
