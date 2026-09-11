@@ -1,3 +1,5 @@
+import { createElement, type ReactNode } from 'react';
+
 import { renderToStaticMarkup } from 'react-dom/server';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -11,6 +13,11 @@ const taskState = vi.hoisted(() => ({
 
 vi.mock('../../store/useTasks', () => ({
   useTasks: (selector: (state: typeof taskState) => unknown) => selector(taskState),
+}));
+
+vi.mock('@renderer/components/UI/ScrollArea', () => ({
+  ScrollArea: ({ children, className }: { children: ReactNode; className?: string }) =>
+    createElement('div', { className }, children),
 }));
 
 import { TaskMode } from './TaskMode';
@@ -44,6 +51,33 @@ const renderTaskMode = () =>
   renderToStaticMarkup(
     <TaskMode
       task={task}
+      ready
+      active={false}
+      hasSolution
+      onRunTest={vi.fn()}
+      onCancel={vi.fn()}
+      onSubmit={vi.fn()}
+    />
+  );
+
+const readerTask: CatalogTask = {
+  ...task,
+  id: 'reader-task',
+  platformId: 'junior-reader',
+  tests: [
+    {
+      id: 'first',
+      title: 'First',
+      input: { message: 'А' },
+      checks: [{ type: 'reader.impulses.equals', expected: ['impulseA'] }],
+    },
+  ],
+};
+
+const renderReaderTaskMode = () =>
+  renderToStaticMarkup(
+    <TaskMode
+      task={readerTask}
       ready
       active={false}
       hasSolution
@@ -99,5 +133,37 @@ describe('TaskMode Gardener result', () => {
     expect(html).toContain('Итог');
     expect(html).not.toContain('Нет запуска');
     expect(html).toContain('Пройден');
+  });
+});
+
+describe('TaskMode Reader result', () => {
+  beforeEach(() => {
+    taskState.testStates = { first: { phase: 'idle' } };
+    taskState.detailedResult = undefined;
+    taskState.submissionResult = undefined;
+  });
+
+  it('uses the same impulse list presentation as ReaderResult', () => {
+    taskState.detailedResult = {
+      testId: 'first',
+      execution: {
+        status: 'success',
+        result: { signals: [], calledSignals: ['impulseA'] },
+      },
+    };
+
+    const html = renderReaderTaskMode();
+
+    expect(html).toContain('Импульс А');
+    expect(html).not.toContain('impulseA');
+    expect(html).toContain('rounded-lg border border-border-primary bg-bg-primary p-2');
+    expect(html).toContain('max-h-[236px]');
+    expect(html).not.toContain('list-decimal');
+  });
+
+  it('keeps the task-specific empty message', () => {
+    const html = renderReaderTaskMode();
+
+    expect(html).toContain('Импульсы ещё не получены.');
   });
 });
