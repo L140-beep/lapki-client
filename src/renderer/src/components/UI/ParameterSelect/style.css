@@ -22,6 +22,15 @@
   @apply border-text-inactive !important;
 }
 
+.ParameterSelect__control--is-disabled {
+  @apply cursor-not-allowed bg-inactive-input !important;
+}
+
+.ParameterSelect__control--is-disabled .ParameterSelect__single-value,
+.ParameterSelect__control--is-disabled .ParameterSelect__indicator {
+  @apply text-text-inactive !important;
+}
+
 .ParameterSelect__single-value {
   @apply text-text-primary !important;
 }

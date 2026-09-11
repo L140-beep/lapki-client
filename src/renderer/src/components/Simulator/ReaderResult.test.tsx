@@ -18,6 +18,9 @@ describe('ReaderResult', () => {
     const html = renderToStaticMarkup(<ReaderResult result={result} stale={false} />);
 
     expect(html).toContain('impulseA');
+    expect(html).not.toContain('Завершено');
+    expect(html).not.toContain('grid-cols-[2rem_minmax(0,1fr)]');
+    expect(html).not.toContain('bg-bg-secondary');
     expect(html).not.toContain('reader.char_accepted');
     expect(html).not.toContain('reader.line_finished');
     expect(html).not.toContain('Системные события');
@@ -34,5 +37,18 @@ describe('ReaderResult', () => {
     const html = renderToStaticMarkup(<ReaderResult stale={false} />);
 
     expect(html).toContain('Импульсы появятся после запуска');
+  });
+
+  it('shows an unnumbered empty state without a gray background', () => {
+    const html = renderToStaticMarkup(
+      <ReaderResult
+        result={{ status: 'success', result: { signals: [], calledSignals: [] } }}
+        stale={false}
+      />
+    );
+
+    expect(html).toContain('Нет выходных импульсов');
+    expect(html).not.toContain('Завершено');
+    expect(html).not.toContain('bg-bg-secondary');
   });
 });
