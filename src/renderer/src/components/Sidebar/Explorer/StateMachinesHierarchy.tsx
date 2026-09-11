@@ -27,6 +27,7 @@ export const StateMachinesHierarchy: React.FC<StateMachinesHierarchyProps> = ({
   const [search, setSearch] = useState('');
   const expand = true;
   const collapse = true;
+  const collapsed = isCollapsed();
   const handleChangeSearch = (value: string) => {
     if (!value) value = '';
     setSearch(value);
@@ -35,27 +36,31 @@ export const StateMachinesHierarchy: React.FC<StateMachinesHierarchyProps> = ({
   return (
     <div className={twMerge(theme !== 'light' && 'rct-dark', 'flex h-full min-h-0 flex-col')}>
       <PanelHeader title="Иерархия" isCollapsed={isCollapsed} togglePanel={togglePanel} />
-      <Filter
-        search={search}
-        onChangeSearch={handleChangeSearch}
-        disabled={headControllerId === ''}
-      />
-      <ScrollArea className="flex-1">
-        {headControllerId === '' ? (
-          <p className="pl-[19px] text-text-inactive">Нет активной диаграммы</p>
-        ) : (
-          stateMachinesIds.map((smId) => (
-            <Hierarchy
-              key={smId}
-              expand={expand}
-              collapse={collapse}
-              search={search}
-              controller={controller}
-              smId={smId}
-            />
-          ))
-        )}
-      </ScrollArea>
+      {!collapsed && (
+        <>
+          <Filter
+            search={search}
+            onChangeSearch={handleChangeSearch}
+            disabled={headControllerId === ''}
+          />
+          <ScrollArea className="flex-1">
+            {headControllerId === '' ? (
+              <p className="pl-[19px] text-text-inactive">Нет активной диаграммы</p>
+            ) : (
+              stateMachinesIds.map((smId) => (
+                <Hierarchy
+                  key={smId}
+                  expand={expand}
+                  collapse={collapse}
+                  search={search}
+                  controller={controller}
+                  smId={smId}
+                />
+              ))
+            )}
+          </ScrollArea>
+        </>
+      )}
     </div>
   );
 };

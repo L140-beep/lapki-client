@@ -66,6 +66,7 @@ export const StateMachineComponentList: React.FC<StateMachineComponentListProps>
   };
 
   const isDisabled = !isInitialized || headControllerId === '';
+  const collapsed = isCollapsed();
 
   useEffect(() => {
     if (isCollapsed()) togglePanel();
@@ -80,50 +81,51 @@ export const StateMachineComponentList: React.FC<StateMachineComponentListProps>
         requestAddAction={() => onRequestAddComponent(smId, components)}
         isAddDisabled={isDisabled}
       />
-      {isInitialized ? (
-        <ScrollArea className="mb-2 flex-1" viewportClassName="select-none">
-          {headControllerId === '' ? (
-            <p className="pl-[19px] text-text-inactive">Нет активной диаграммы</p>
-          ) : sortedComponents.length === 0 ? (
-            <p className="pl-[19px] text-text-inactive">Нет компонентов</p>
-          ) : (
-            sortedComponents.map((id) => {
-              const name = components[id].name;
-              const key = controller.components.getComponentKey(smId, id);
-              return (
-                <Component
-                  key={key}
-                  name={name ?? id}
-                  variant="compact"
-                  description={
-                    platform[smId] !== undefined
-                      ? platform[smId].getComponent(id)?.description
-                      : undefined
-                  }
-                  icon={
-                    platform[smId] !== undefined
-                      ? platform[smId].getFullComponentIcon(
-                          id,
-                          'size-[26px] [&>p]:bottom-0 [&>p]:right-0 [&>p]:text-[8px] [&>p]:leading-[9px]'
-                        )
-                      : undefined
-                  }
-                  isSelected={key === selectedComponent}
-                  isDragging={key === dragName}
-                  onCallContextMenu={() => onRequestEditComponent(smId, components, id)}
-                  onSelect={() => setSelectedComponent(key)}
-                  onEdit={() => onRequestEditComponent(smId, components, id)}
-                  onDelete={() => onRequestDeleteComponent(smId, components, id)}
-                  onDragStart={() => setDragName(key)}
-                  onDrop={() => onDropComponent(key)}
-                />
-              );
-            })
-          )}
-        </ScrollArea>
-      ) : (
-        <div className="px-4">Недоступно до открытия документа</div>
-      )}
+      {!collapsed &&
+        (isInitialized ? (
+          <ScrollArea className="mb-2 flex-1" viewportClassName="select-none">
+            {headControllerId === '' ? (
+              <p className="pl-[19px] text-text-inactive">Нет активной диаграммы</p>
+            ) : sortedComponents.length === 0 ? (
+              <p className="pl-[19px] text-text-inactive">Нет компонентов</p>
+            ) : (
+              sortedComponents.map((id) => {
+                const name = components[id].name;
+                const key = controller.components.getComponentKey(smId, id);
+                return (
+                  <Component
+                    key={key}
+                    name={name ?? id}
+                    variant="compact"
+                    description={
+                      platform[smId] !== undefined
+                        ? platform[smId].getComponent(id)?.description
+                        : undefined
+                    }
+                    icon={
+                      platform[smId] !== undefined
+                        ? platform[smId].getFullComponentIcon(
+                            id,
+                            'size-[26px] [&>p]:bottom-0 [&>p]:right-0 [&>p]:text-[8px] [&>p]:leading-[9px]'
+                          )
+                        : undefined
+                    }
+                    isSelected={key === selectedComponent}
+                    isDragging={key === dragName}
+                    onCallContextMenu={() => onRequestEditComponent(smId, components, id)}
+                    onSelect={() => setSelectedComponent(key)}
+                    onEdit={() => onRequestEditComponent(smId, components, id)}
+                    onDelete={() => onRequestDeleteComponent(smId, components, id)}
+                    onDragStart={() => setDragName(key)}
+                    onDrop={() => onDropComponent(key)}
+                  />
+                );
+              })
+            )}
+          </ScrollArea>
+        ) : (
+          <div className="px-4">Недоступно до открытия документа</div>
+        ))}
 
       <ComponentAddModal {...addProps} />
       <ComponentEditModal {...editProps} />
