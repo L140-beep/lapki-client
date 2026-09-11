@@ -13,6 +13,8 @@ import {
   SimulationResult,
 } from '@renderer/types/InterpreterTypes';
 
+import { ExecutionHistory } from './ExecutionHistory';
+import { GardenerMarker, gardenerCellStyles } from './GardenerField';
 import {
   GardenerCell,
   GardenerOrientation,
@@ -24,17 +26,15 @@ import {
   resizeField,
   setFieldCell,
 } from './model';
-import { ExecutionHistory } from './ExecutionHistory';
-import { GardenerMarker, gardenerCellStyles } from './GardenerField';
 import { countUnicodeCharacters, limitUnicodeCharacters } from './readerModel';
 import { ReaderResult } from './ReaderResult';
-import { SimulationMode, SimulationRunPanel } from './SimulationRunPanel';
 import {
   SimulationMachineOption,
   getSimulationMachineOptions,
   isSimulationResultStale,
   selectInitialMachineId,
 } from './selection';
+import { SimulationMode, SimulationRunPanel } from './SimulationRunPanel';
 import { TaskMode } from './TaskMode';
 import { taskForProtocol } from './taskProtocol';
 import { useInterpreter } from './useInterpreter';
@@ -688,13 +688,6 @@ export const Simulator: React.FC<SimulatorProps> = ({
           <span className="font-normal">
             Статус: <span className="text-primary">{interpreter.status}</span>
           </span>
-        </div>
-      )}
-      {!machine && (
-        <div className="p-6 text-text-inactive">
-          {activeTask
-            ? `В текущем документе нет машины для платформы ${activeTask.platformId}. Откройте или создайте совместимый документ.`
-            : 'В текущем документе нет машин с поддержкой симуляции.'}
         </div>
       )}
       {(activeTask ||
