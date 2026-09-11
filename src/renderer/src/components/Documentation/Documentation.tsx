@@ -166,7 +166,7 @@ const DocumentationSection: React.FC<DocumentationSectionProps> = ({
               <ReferencePanel />
             </div>
             <div className={twMerge('h-full', activeTab !== 0 && 'hidden')}>
-              <Tree root={data.body} borderWidth={0} onItemClick={onItemClick} />
+              <Tree root={data.body} onItemClick={onItemClick} />
             </div>
             <div className={twMerge('h-full', activeTab !== 1 && 'hidden')}>
               {currentItem && (
