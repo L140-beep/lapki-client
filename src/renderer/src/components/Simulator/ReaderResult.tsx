@@ -1,6 +1,9 @@
 import React from 'react';
 
+import { ScrollArea } from '@renderer/components/UI/ScrollArea';
 import { SimulationResult } from '@renderer/types/InterpreterTypes';
+
+import { getReaderImpulseLabel } from './readerModel';
 
 export const ReaderResult: React.FC<{
   result?: SimulationResult;
@@ -8,7 +11,7 @@ export const ReaderResult: React.FC<{
 }> = ({ result, stale }) => {
   if (!result) {
     return (
-      <div className="flex h-44 items-center justify-center rounded-lg border border-border-primary p-4 text-center text-xs leading-4 text-text-inactive">
+      <div className="flex min-h-44 flex-1 items-center justify-center rounded-lg border border-border-primary p-4 text-center text-xs leading-4 text-text-inactive">
         Импульсы появятся после запуска.
       </div>
     );
@@ -17,7 +20,7 @@ export const ReaderResult: React.FC<{
   const impulses = result.result?.calledSignals ?? [];
 
   return (
-    <div className="grid gap-3 rounded-lg border border-border-primary p-3">
+    <div className="flex min-h-0 flex-1 flex-col gap-3 rounded-lg border border-border-primary p-3">
       {result.message && <p className="text-xs leading-4">{result.message}</p>}
       {stale && (
         <p className="rounded-lg border border-warning p-3 text-xs leading-4 text-warning">
@@ -31,16 +34,24 @@ export const ReaderResult: React.FC<{
           Нет выходных импульсов.
         </div>
       ) : (
-        <ol className="grid max-h-[236px] gap-2 overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-track-scrollbar-track scrollbar-thumb-scrollbar-thumb">
-          {impulses.map((impulse, index) => (
-            <li
-              key={`${index}:${impulse}`}
-              className="rounded-lg border border-border-primary bg-bg-primary p-2"
-            >
-              <code className="break-all font-Fira-Mono text-sm text-text-primary">{impulse}</code>
-            </li>
-          ))}
-        </ol>
+        <ScrollArea
+          className="min-h-0 flex-1 py-0"
+          viewportClassName="mr-[6px]"
+          horizontalScroll={false}
+        >
+          <ol className="grid gap-2">
+            {impulses.map((impulse, index) => (
+              <li
+                key={`${index}:${impulse}`}
+                className="rounded-lg border border-border-primary bg-bg-primary p-2"
+              >
+                <code className="break-all font-Fira-Mono text-sm text-text-primary">
+                  {getReaderImpulseLabel(impulse)}
+                </code>
+              </li>
+            ))}
+          </ol>
+        </ScrollArea>
       )}
     </div>
   );

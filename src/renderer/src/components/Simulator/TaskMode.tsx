@@ -9,6 +9,7 @@ import type {
 import { type TaskTestPhase, useTasks } from '../../store/useTasks';
 import type { SimulationResult } from '../../types/InterpreterTypes';
 import { GardenerMarker, type GardenerFieldOrientation, gardenerCellStyles } from './GardenerField';
+import { getReaderImpulseLabel } from './readerModel';
 
 const phaseLabels = {
   idle: 'Не запускался',
@@ -242,7 +243,7 @@ const ReaderDetails: React.FC<{
         {impulses.length ? (
           <ol className="list-decimal space-y-1 pl-5 text-xs">
             {impulses.map((signal, index) => (
-              <li key={`${signal}-${index}`}>{signal}</li>
+              <li key={`${signal}-${index}`}>{getReaderImpulseLabel(signal)}</li>
             ))}
           </ol>
         ) : (
