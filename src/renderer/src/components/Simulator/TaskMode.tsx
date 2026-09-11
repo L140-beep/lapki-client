@@ -164,7 +164,11 @@ const GardenerDetails: React.FC<{
             <h3 className="h2-header mt-1">Фактическое поле</h3>
           </div>
           <span className="shrink-0 rounded-full bg-bg-secondary px-2 py-1 text-xs text-text-inactive">
-            {steps.length > 0 ? `${stepIndex + 1} / ${steps.length}` : 'Нет запуска'}
+            {steps.length > 0
+              ? `${stepIndex + 1} / ${steps.length}`
+              : execution
+              ? 'Итог'
+              : 'Нет запуска'}
           </span>
         </div>
 
@@ -326,7 +330,7 @@ export const TaskMode: React.FC<TaskModeProps> = ({
               <h2 className="h2-header mt-1 truncate">{selectedTest?.title}</h2>
             </div>
             <div
-              className={`flex shrink-0 items-center gap-2 rounded-full bg-bg-secondary px-3 py-1.5 text-xs font-medium ${selectedPhaseStyle.text}`}
+              className={`flex shrink-0 items-center gap-2 px-3 py-1.5 text-xs font-medium ${selectedPhaseStyle.text}`}
             >
               <span className={`size-2 rounded-full ${selectedPhaseStyle.dot}`} />
               {selectedPhaseStyle.label}
