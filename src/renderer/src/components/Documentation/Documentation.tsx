@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 
 import { Resizable } from 're-resizable';
 import {
@@ -104,6 +104,7 @@ const DocumentationSection: React.FC<DocumentationSectionProps> = ({
       )}
     >
       <div
+        data-documentation-panel-header
         className={twMerge(
           'relative flex items-center justify-between pb-1',
           !isCollapsed && 'mb-3 mt-2'
@@ -203,7 +204,9 @@ export const Documentation: React.FC<DocumentationProps> = ({ width, onWidthChan
   const panelGroupRef = useRef<ImperativePanelGroupHandle>(null);
   const documentationPanelRef = useRef<ImperativePanelHandle>(null);
   const tasksPanelRef = useRef<ImperativePanelHandle>(null);
+  const documentationLayoutRef = useRef<HTMLDivElement>(null);
   const splitLayout = useRef([50, 50]);
+  const [collapsedSize, setCollapsedSize] = useState(6);
   const [isDocumentationCollapsed, setDocumentationCollapsed] = useState(false);
   const [isTasksCollapsed, setTasksCollapsed] = useState(false);
   const bothMounted = mountedViews.documentation && mountedViews.tasks;
@@ -245,6 +248,38 @@ export const Documentation: React.FC<DocumentationProps> = ({ width, onWidthChan
     else panelGroupRef.current?.setLayout([0, 100]);
   }, [bothMounted, bothVisible, hasVisibleView, visibleViews.documentation]);
 
+  useLayoutEffect(() => {
+    const layout = documentationLayoutRef.current;
+    const panelGroup = layout?.querySelector<HTMLElement>('[data-panel-group]');
+    const panelHeader = layout?.querySelector<HTMLElement>(
+      '[data-documentation-panel-header]'
+    );
+
+    if (!panelGroup || !panelHeader) return;
+
+    const updateCollapsedSize = () => {
+      const resizeHandlesHeight = Array.from(
+        panelGroup.querySelectorAll<HTMLElement>('[data-panel-resize-handle-id]')
+      ).reduce((height, handle) => height + handle.offsetHeight, 0);
+      const panelsHeight = panelGroup.clientHeight - resizeHandlesHeight;
+
+      if (panelsHeight <= 0) return;
+
+      const nextCollapsedSize = (panelHeader.offsetHeight / panelsHeight) * 100;
+      setCollapsedSize((currentSize) =>
+        Math.abs(currentSize - nextCollapsedSize) > 0.01 ? nextCollapsedSize : currentSize
+      );
+    };
+
+    updateCollapsedSize();
+
+    const resizeObserver = new ResizeObserver(updateCollapsedSize);
+    resizeObserver.observe(panelGroup);
+    resizeObserver.observe(panelHeader);
+
+    return () => resizeObserver.disconnect();
+  }, [bothMounted, bothVisible, hasVisibleView, isOpen]);
+
   const rememberSplit = (layout: number[]) => {
     if (bothVisible && layout[0] > 0 && layout[1] > 0) splitLayout.current = layout;
   };
@@ -273,7 +308,10 @@ export const Documentation: React.FC<DocumentationProps> = ({ width, onWidthChan
           </div>
         )}
 
-        <div className={twMerge('h-full min-h-0', (!isOpen || !hasVisibleView) && 'hidden')}>
+        <div
+          ref={documentationLayoutRef}
+          className={twMerge('h-full min-h-0', (!isOpen || !hasVisibleView) && 'hidden')}
+        >
           <PanelGroup
             ref={panelGroupRef}
             direction="vertical"
@@ -287,12 +325,12 @@ export const Documentation: React.FC<DocumentationProps> = ({ width, onWidthChan
                 id="documentation"
                 order={0}
                 collapsible
-                collapsedSize={visibleViews.documentation ? 6 : 0}
+                collapsedSize={visibleViews.documentation ? collapsedSize : 0}
                 minSize={20}
                 defaultSize={50}
                 onCollapse={() => setDocumentationCollapsed(true)}
                 onExpand={() => setDocumentationCollapsed(false)}
-                className="min-h-0"
+                className="min-h-0 overflow-hidden"
               >
                 <DocumentationSection
                   canCollapse={bothVisible}
@@ -319,12 +357,12 @@ export const Documentation: React.FC<DocumentationProps> = ({ width, onWidthChan
                 id="tasks"
                 order={1}
                 collapsible
-                collapsedSize={visibleViews.tasks ? 6 : 0}
+                collapsedSize={visibleViews.tasks ? collapsedSize : 0}
                 minSize={20}
                 defaultSize={50}
                 onCollapse={() => setTasksCollapsed(true)}
                 onExpand={() => setTasksCollapsed(false)}
-                className="min-h-0"
+                className="min-h-0 overflow-hidden"
               >
                 <TaskBook
                   canCollapse={bothVisible}

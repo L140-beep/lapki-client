@@ -15,6 +15,7 @@ import { StateMachinesHierarchy } from './StateMachinesHierarchy';
 import { StateMachinesList } from '../StateMachinesTab';
 
 const defaultCollapsedSize = 6;
+const expandedMinSize = 20;
 
 export const Explorer: React.FC = () => {
   const modelController = useModelContext();
@@ -92,7 +93,7 @@ export const Explorer: React.FC = () => {
             ref={stateMachinesPanelRef}
             id="panel0"
             collapsible
-            minSize={collapsedSize}
+            minSize={expandedMinSize}
             collapsedSize={collapsedSize}
             defaultSize={25.5}
             onCollapse={forceUpdate}
@@ -116,7 +117,7 @@ export const Explorer: React.FC = () => {
             ref={componentPanelRef}
             id="panel1"
             collapsible
-            minSize={collapsedSize}
+            minSize={expandedMinSize}
             collapsedSize={collapsedSize}
             defaultSize={38.2}
             onCollapse={forceUpdate}
@@ -138,7 +139,7 @@ export const Explorer: React.FC = () => {
             id="panel2"
             ref={hierarchyPanelRef}
             collapsible
-            minSize={collapsedSize}
+            minSize={expandedMinSize}
             collapsedSize={collapsedSize}
             defaultSize={36.3}
             onCollapse={forceUpdate}
