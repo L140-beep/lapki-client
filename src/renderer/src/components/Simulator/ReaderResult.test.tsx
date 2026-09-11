@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { createElement, type ReactNode } from 'react';
 
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it, vi } from 'vitest';
@@ -8,15 +8,22 @@ import { SimulationResult } from '@renderer/types/InterpreterTypes';
 vi.mock('@renderer/components/UI/ScrollArea', () => ({
   ScrollArea: ({
     children,
+    className,
     horizontalScroll,
   }: {
     children: ReactNode;
+    className?: string;
     horizontalScroll?: boolean;
-  }) => (
-    <div data-scroll-area="true" data-horizontal-scroll={horizontalScroll}>
-      {children}
-    </div>
-  ),
+  }) =>
+    createElement(
+      'div',
+      {
+        className,
+        'data-scroll-area': 'true',
+        'data-horizontal-scroll': horizontalScroll,
+      },
+      children
+    ),
 }));
 
 import { ReaderResult } from './ReaderResult';
@@ -42,6 +49,7 @@ describe('ReaderResult', () => {
     expect(html).not.toContain('bg-bg-secondary');
     expect(html).toContain('data-scroll-area="true"');
     expect(html).toContain('data-horizontal-scroll="false"');
+    expect(html).toContain('max-h-[calc(100vh-196px)]');
     expect(html).not.toContain('reader.char_accepted');
     expect(html).not.toContain('reader.line_finished');
     expect(html).not.toContain('Системные события');

@@ -36,7 +36,7 @@ export const ReaderResult: React.FC<{
         </div>
       ) : (
         <ScrollArea
-          className="min-h-0 flex-1 py-0"
+          className="max-h-[calc(100vh-196px)] min-h-0 flex-1 py-0"
           viewportClassName="mr-[6px]"
           horizontalScroll={false}
         >
