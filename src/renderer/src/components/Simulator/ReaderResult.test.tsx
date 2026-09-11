@@ -31,7 +31,9 @@ const result: SimulationResult = {
 
 describe('ReaderResult', () => {
   it('shows output impulses without system events', () => {
-    const html = renderToStaticMarkup(<ReaderResult result={result} stale={false} />);
+    const html = renderToStaticMarkup(
+      <ReaderResult result={result} stale={false} active={false} />
+    );
 
     expect(html).toContain('Импульс А');
     expect(html).not.toContain('impulseA');
@@ -46,16 +48,23 @@ describe('ReaderResult', () => {
   });
 
   it('keeps a stale result visible with a warning', () => {
-    const html = renderToStaticMarkup(<ReaderResult result={result} stale />);
+    const html = renderToStaticMarkup(<ReaderResult result={result} stale active={false} />);
 
     expect(html).toContain('Результат устарел');
     expect(html).toContain('Импульс А');
   });
 
   it('shows an empty state before the first run', () => {
-    const html = renderToStaticMarkup(<ReaderResult stale={false} />);
+    const html = renderToStaticMarkup(<ReaderResult stale={false} active={false} />);
 
     expect(html).toContain('Импульсы появятся после запуска');
+  });
+
+  it('explains that impulses will appear when the active run finishes', () => {
+    const html = renderToStaticMarkup(<ReaderResult stale={false} active />);
+
+    expect(html).toContain('Импульсы появятся после окончания работы');
+    expect(html).not.toContain('Импульсы появятся после запуска');
   });
 
   it('shows an unnumbered empty state without a gray background', () => {
@@ -63,6 +72,7 @@ describe('ReaderResult', () => {
       <ReaderResult
         result={{ status: 'success', result: { signals: [], calledSignals: [] } }}
         stale={false}
+        active={false}
       />
     );
 

@@ -525,7 +525,7 @@ const ReaderSimulator: React.FC<ReaderRuntimeProps> = ({
 
       <section className="flex min-h-0 min-w-0 flex-col">
         <h2 className="h2-header mb-2">Импульсы</h2>
-        <ReaderResult result={result} stale={stale} />
+        <ReaderResult result={result} stale={stale} active={active} />
       </section>
 
       <section className="min-w-0 max-[983px]:col-span-2 max-[729px]:col-span-1">

@@ -8,11 +8,12 @@ import { getReaderImpulseLabel } from './readerModel';
 export const ReaderResult: React.FC<{
   result?: SimulationResult;
   stale: boolean;
-}> = ({ result, stale }) => {
+  active: boolean;
+}> = ({ result, stale, active }) => {
   if (!result) {
     return (
       <div className="flex min-h-44 flex-1 items-center justify-center rounded-lg border border-border-primary p-4 text-center text-xs leading-4 text-text-inactive">
-        Импульсы появятся после запуска.
+        {active ? 'Импульсы появятся после окончания работы.' : 'Импульсы появятся после запуска.'}
       </div>
     );
   }
