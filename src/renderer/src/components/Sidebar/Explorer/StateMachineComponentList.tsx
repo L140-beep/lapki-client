@@ -72,7 +72,7 @@ export const StateMachineComponentList: React.FC<StateMachineComponentListProps>
   }, [sortedComponents.length]);
 
   return (
-    <div key={smId} className="flex h-full flex-col">
+    <div key={smId} className="flex h-full min-h-0 flex-col">
       <PanelHeader
         title="Компоненты"
         isCollapsed={isCollapsed}
