@@ -20,7 +20,7 @@ export const ReaderResult: React.FC<{
   const impulses = result.result?.calledSignals ?? [];
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col gap-3 rounded-lg border border-border-primary p-3">
+    <div className="flex max-h-[calc(100vh-170px)] min-h-0 flex-1 flex-col gap-3 rounded-lg border border-border-primary p-3">
       {result.message && <p className="text-xs leading-4">{result.message}</p>}
       {stale && (
         <p className="rounded-lg border border-warning p-3 text-xs leading-4 text-warning">

@@ -103,14 +103,13 @@ export const DiagramTabs = () => {
           width="8px"
           height="8px"
         />
-        <span className="ml-10 font-medium">Статус:</span>
-        <span
-          className={twMerge(
-            'font-normal text-primary',
-            compilerData?.result === 'NOTOK' && 'text-danger'
-          )}
-        >
-          {humanizeCompilerResult(compilerData?.result)}
+        <span className="ml-10 font-normal">
+          <span className="font-medium">Статус: </span>
+          <span
+            className={twMerge('text-primary', compilerData?.result === 'NOTOK' && 'text-danger')}
+          >
+            {humanizeCompilerResult(compilerData?.result)}
+          </span>
         </span>
       </div>
     ) : (
