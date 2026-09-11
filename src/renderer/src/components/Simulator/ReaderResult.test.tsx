@@ -49,7 +49,7 @@ describe('ReaderResult', () => {
     expect(html).not.toContain('bg-bg-secondary');
     expect(html).toContain('data-scroll-area="true"');
     expect(html).toContain('data-horizontal-scroll="false"');
-    expect(html).toContain('max-h-[calc(100vh-196px)]');
+    expect(html).toContain('max-h-[236px]');
     expect(html).not.toContain('reader.char_accepted');
     expect(html).not.toContain('reader.line_finished');
     expect(html).not.toContain('Системные события');
