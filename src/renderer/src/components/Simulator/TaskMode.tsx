@@ -144,7 +144,7 @@ const GardenerDetails: React.FC<{
   return (
     <div className="grid min-h-0 flex-1 grid-cols-2 content-start items-start gap-4 overflow-y-auto bg-bg-primary p-4">
       <section className="min-w-0 rounded-xl border border-border-primary bg-bg-primary p-4 shadow-sm">
-        <div className="mb-4">
+        <div className="mb-4 flex h-4 items-center">
           <h3 className="h2-header">Входное поле</h3>
         </div>
         <div className="flex justify-center">
@@ -153,11 +153,11 @@ const GardenerDetails: React.FC<{
       </section>
 
       <section className="min-w-0 rounded-xl border border-border-primary bg-bg-primary p-4 shadow-sm">
-        <div className="mb-4 flex items-start justify-between gap-3">
+        <div className="mb-4 flex h-4 items-center justify-between gap-3">
           <div>
             <h3 className="h2-header">Фактическое поле</h3>
           </div>
-          <span className="shrink-0 rounded-full bg-bg-secondary px-2 py-1 text-xs text-text-inactive">
+          <span className="shrink-0 rounded-full bg-bg-secondary px-1.5 text-[10px] leading-4 text-text-inactive">
             {steps.length > 0
               ? `${stepIndex + 1} / ${steps.length}`
               : execution
