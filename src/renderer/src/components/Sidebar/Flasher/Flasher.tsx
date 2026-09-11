@@ -8,7 +8,6 @@ import { toast } from 'sonner';
 
 import { ReactComponent as DeleteIcon } from '@renderer/assets/icons/delete.svg';
 import { AvrdudeGuideModal } from '@renderer/components/AvrdudeGuide';
-import { ErrorModal, ErrorModalData } from '@renderer/components/ErrorModal';
 import { Device, MSDevice } from '@renderer/components/Modules/Device';
 import { Flasher } from '@renderer/components/Modules/Flasher';
 import { ClientStatus } from '@renderer/components/Modules/Websocket/ClientStatus';
@@ -32,6 +31,7 @@ import {
 import { AddressBookModal } from './AddressBook';
 import { AddressEntryEditModal, AddressEntryForm } from './AddressEntryModal';
 import { DeviceList } from './DeviceList';
+import { FailureActions } from './FailureActions';
 import { FlasherTable } from './FlasherTable';
 import { MsGetAddressModal } from './MsGetAddressModal';
 
@@ -89,16 +89,10 @@ export const FlasherTab: React.FC = () => {
   const [isAddressEnrtyAddOpen, openAddressEnrtyAdd, closeAddressEnrtyAdd] = useModal(false); // для добавления новых записей в адресную книгу
   const addressEntryAddForm = useForm<AddressEntryForm>();
 
-  const [msgModalData, setMsgModalData] = useState<ErrorModalData>();
-  const [isMsgModalOpen, setIsMsgModalOpen] = useState(false);
   const [isActionsMenuOpen, setIsActionsMenuOpen] = useState(false);
-  const [activeLog, setActiveLog] = useState<'actions' | 'upload'>('actions');
+  const [activeLog, setActiveLog] = useState<'actions' | 'upload' | 'error'>('actions');
+  const [errorDescription, setErrorDescription] = useState('');
   const actionsMenuRef = useRef<HTMLDivElement>(null);
-  const closeMsgModal = () => setIsMsgModalOpen(false);
-  const openMsgModal = (data: ErrorModalData) => {
-    setMsgModalData(data);
-    setIsMsgModalOpen(true);
-  };
 
   useEffect(() => {
     if (!isActionsMenuOpen) return;
@@ -119,6 +113,10 @@ export const FlasherTab: React.FC = () => {
       document.removeEventListener('keydown', closeMenuOnEscape);
     };
   }, [isActionsMenuOpen]);
+
+  useEffect(() => {
+    if (!errorMessage && activeLog === 'error') setActiveLog('actions');
+  }, [activeLog, errorMessage]);
 
   const selectedDevicesCount = useMemo(() => {
     return flashTableData.filter((item) => item.isSelected).length;
@@ -624,29 +622,6 @@ export const FlasherTab: React.FC = () => {
     );
   };
 
-  const failureButtons = () => {
-    if (!errorMessage) return;
-    return (
-      <>
-        <button
-          className="btn-primary mr-2 p-0 px-2"
-          onClick={handleReconnect}
-          disabled={
-            flasherSetting?.type === 'local' && connectionStatus === ClientStatus.CONNECTING
-          }
-        >
-          {displayReconnect()}
-        </button>
-        <button
-          className="btn-primary mr-2 border-warning bg-warning p-0 px-2"
-          onClick={handleErrorMessageDisplay}
-        >
-          Описание ошибки
-        </button>
-      </>
-    );
-  };
-
   const operationButtons = () => {
     const runMenuAction = (action: () => void) => {
       setIsActionsMenuOpen(false);
@@ -727,74 +702,51 @@ export const FlasherTab: React.FC = () => {
 
   const handleErrorMessageDisplay = async () => {
     if (!flasherSetting) return;
-    // выводимое для пользователя сообщение
-    let errorMsg: JSX.Element = <p>`Неизвестный тип ошибки`</p>;
+    setActiveLog('error');
+    setErrorDescription('Получение описания ошибки...');
+
+    let description = 'Неизвестный тип ошибки.';
     if (flasherSetting.type === 'local') {
-      await window.electron.ipcRenderer
-        .invoke('Module:getStatus', 'lapki-flasher')
-        .then(function (obj) {
-          const errorDetails = obj.details;
-          switch (obj.code) {
-            // код 0 означает, что не было попытки запустить загрузчик, по-идее такая ошибка не может возникнуть, если только нет какой-то ошибки в коде.
-            case 0:
-              errorMsg = <p>{'Загрузчик не был запущен по неизвестной причине.'}</p>;
-              break;
-            // код 1 означает, что загрузчик работает, но соединение с ним не установлено.
-            case 1:
-              switch (connectionStatus) {
-                case ClientStatus.CONNECTION_ERROR:
-                  errorMsg = (
-                    <p>
-                      {`Локальный загрузчик работает, но он не может подключиться к IDE из-за ошибки.`}
-                      <br></br>
-                      {errorMessage}
-                    </p>
-                  );
-                  break;
-                default:
-                  errorMsg = (
-                    <p>
-                      {`Локальный загрузчик работает, но IDE не может установить с ним соединение.`}
-                    </p>
-                  );
-                  break;
-              }
-              break;
-            case 2:
-              errorMsg = (
-                <p>
-                  {`Локальный загрузчик не смог запуститься из-за ошибки.`}
-                  <br></br>
-                  {errorDetails}
-                </p>
-              );
-              break;
-            case 3:
-              errorMsg = <p>{`Прервана работа локального загрузчика.`}</p>;
-              break;
-            case 4:
-              errorMsg = <p>{`Платформа ${errorDetails} не поддерживается.`}</p>;
-              break;
-          }
-        });
-    } else {
-      if (connectionStatus == ClientStatus.CONNECTION_ERROR) {
-        errorMsg = (
-          <p>
-            {`Ошибка соединения.`}
-            <br></br>
-            {errorMessage}
-          </p>
+      try {
+        const status = await window.electron.ipcRenderer.invoke(
+          'Module:getStatus',
+          'lapki-flasher'
         );
-      } else {
-        errorMsg = <p>{errorMessage}</p>;
+        const errorDetails = status.details;
+
+        switch (status.code) {
+          // код 0 означает, что не было попытки запустить загрузчик, по-идее такая ошибка не может возникнуть, если только нет какой-то ошибки в коде.
+          case 0:
+            description = 'Загрузчик не был запущен по неизвестной причине.';
+            break;
+          // код 1 означает, что загрузчик работает, но соединение с ним не установлено.
+          case 1:
+            description =
+              connectionStatus === ClientStatus.CONNECTION_ERROR
+                ? `Локальный загрузчик работает, но он не может подключиться к IDE из-за ошибки.\n${errorMessage}`
+                : 'Локальный загрузчик работает, но IDE не может установить с ним соединение.';
+            break;
+          case 2:
+            description = `Локальный загрузчик не смог запуститься из-за ошибки.\n${errorDetails}`;
+            break;
+          case 3:
+            description = 'Прервана работа локального загрузчика.';
+            break;
+          case 4:
+            description = `Платформа ${errorDetails} не поддерживается.`;
+            break;
+        }
+      } catch (error) {
+        description = `Не удалось получить описание ошибки.\n${String(error)}`;
       }
+    } else {
+      description =
+        connectionStatus === ClientStatus.CONNECTION_ERROR
+          ? `Ошибка соединения.\n${errorMessage}`
+          : errorMessage ?? 'Описание ошибки отсутствует.';
     }
-    const msg: ErrorModalData = {
-      text: errorMsg,
-      caption: 'Ошибка',
-    };
-    openMsgModal(msg);
+
+    setErrorDescription(description);
   };
 
   const handleReconnect = async () => {
@@ -890,7 +842,17 @@ export const FlasherTab: React.FC = () => {
     <section className="flex h-full min-h-0 flex-col overflow-hidden bg-bg-primary">
       {(errorMessage || needAvrdude) && (
         <div className="mb-3 flex items-center">
-          {failureButtons()}
+          {errorMessage && (
+            <FailureActions
+              reconnectLabel={displayReconnect()}
+              reconnectDisabled={
+                flasherSetting?.type === 'local' && connectionStatus === ClientStatus.CONNECTING
+              }
+              errorDescriptionActive={activeLog === 'error'}
+              onReconnect={handleReconnect}
+              onShowErrorDescription={handleErrorMessageDisplay}
+            />
+          )}
           {avrdudeCheck()}
         </div>
       )}
@@ -978,18 +940,20 @@ export const FlasherTab: React.FC = () => {
         viewportClassName="whitespace-break-spaces px-3 py-[7px]"
         ref={activeLog === 'actions' ? logContainerRef : undefined}
       >
-        {activeLog === 'actions'
-          ? log.map((msg, index) => (
-              <div key={index} className="select-text">
-                {msg}
-              </div>
-            ))
-          : Array.from(flashResult, ([deviceName, result]) => (
-              <div key={deviceName} className="mb-4 select-text last:mb-0">
-                <div className="font-medium">{deviceName}</div>
-                <div>{result.report()}</div>
-              </div>
-            ))}
+        {activeLog === 'actions' &&
+          log.map((msg, index) => (
+            <div key={index} className="select-text">
+              {msg}
+            </div>
+          ))}
+        {activeLog === 'upload' &&
+          Array.from(flashResult, ([deviceName, result]) => (
+            <div key={deviceName} className="mb-4 select-text last:mb-0">
+              <div className="font-medium">{deviceName}</div>
+              <div>{result.report()}</div>
+            </div>
+          ))}
+        {activeLog === 'error' && <div className="select-text">{errorDescription}</div>}
       </ScrollArea>
       <AddressBookModal
         isOpen={isAddressBookOpen}
@@ -1061,7 +1025,6 @@ export const FlasherTab: React.FC = () => {
       />
       {deviceMsList()}
       <AvrdudeGuideModal isOpen={isAvrdudeGuideModalOpen} onClose={closeAvrdudeGuideModal} />
-      <ErrorModal isOpen={isMsgModalOpen} data={msgModalData} onClose={closeMsgModal} />
     </section>
   );
 };
