@@ -132,7 +132,12 @@ export function ParameterSelect<
         components={{
           DropdownIndicator: (indicatorProps) => (
             <components.DropdownIndicator {...indicatorProps}>
-              <ArrowIcon className={indicatorClassName} />
+              <ArrowIcon
+                className={twMerge(
+                  indicatorClassName,
+                  indicatorProps.isDisabled && 'text-text-inactive'
+                )}
+              />
             </components.DropdownIndicator>
           ),
           IndicatorSeparator: null,

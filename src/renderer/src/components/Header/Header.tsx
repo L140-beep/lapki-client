@@ -228,7 +228,8 @@ export const Header: React.FC<HeaderProps> = ({ fileMenuItems, initialSimulation
           <div className="flex items-center gap-11">
             <span>Симулятор</span>
             <span className="font-normal">
-              Статус: <span className="text-primary">{simulatorStatus}</span>
+              <span className="font-medium">Статус: </span>
+              <span className="text-primary">{simulatorStatus}</span>
             </span>
           </div>
         }

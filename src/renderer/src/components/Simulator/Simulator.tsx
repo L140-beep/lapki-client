@@ -686,7 +686,8 @@ export const Simulator: React.FC<SimulatorProps> = ({
         <div className="mb-6 flex items-center gap-11 border-b border-border-primary pb-3 text-sm font-medium">
           <span>Симулятор</span>
           <span className="font-normal">
-            Статус: <span className="text-primary">{interpreter.status}</span>
+            <span className="font-medium">Статус: </span>
+            <span className="text-primary">{interpreter.status}</span>
           </span>
         </div>
       )}
