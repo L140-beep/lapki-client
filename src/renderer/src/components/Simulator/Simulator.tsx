@@ -509,7 +509,7 @@ const ReaderSimulator: React.FC<ReaderRuntimeProps> = ({
   const [timeout, setTimeoutValue] = useState(10);
 
   return (
-    <div className="grid min-h-0 flex-1 grid-cols-[205px_250px_170px] content-start justify-start gap-x-6 gap-y-5 overflow-auto text-sm max-[729px]:grid-cols-1">
+    <div className="grid min-h-0 flex-1 grid-cols-[205px_250px_170px] justify-start gap-x-6 gap-y-5 overflow-hidden text-sm max-[983px]:content-start max-[983px]:overflow-auto max-[729px]:grid-cols-1">
       <SimulationRunPanel
         machineSelector={machineSelector}
         mode={mode}
@@ -523,7 +523,7 @@ const ReaderSimulator: React.FC<ReaderRuntimeProps> = ({
         onCancel={onCancel}
       />
 
-      <section className="min-w-0">
+      <section className="flex min-h-0 min-w-0 flex-col">
         <h2 className="h2-header mb-2">Импульсы</h2>
         <ReaderResult result={result} stale={stale} />
       </section>

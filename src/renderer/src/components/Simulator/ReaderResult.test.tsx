@@ -1,7 +1,23 @@
+import type { ReactNode } from 'react';
+
 import { renderToStaticMarkup } from 'react-dom/server';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { SimulationResult } from '@renderer/types/InterpreterTypes';
+
+vi.mock('@renderer/components/UI/ScrollArea', () => ({
+  ScrollArea: ({
+    children,
+    horizontalScroll,
+  }: {
+    children: ReactNode;
+    horizontalScroll?: boolean;
+  }) => (
+    <div data-scroll-area="true" data-horizontal-scroll={horizontalScroll}>
+      {children}
+    </div>
+  ),
+}));
 
 import { ReaderResult } from './ReaderResult';
 
@@ -17,10 +33,13 @@ describe('ReaderResult', () => {
   it('shows output impulses without system events', () => {
     const html = renderToStaticMarkup(<ReaderResult result={result} stale={false} />);
 
-    expect(html).toContain('impulseA');
+    expect(html).toContain('Импульс А');
+    expect(html).not.toContain('impulseA');
     expect(html).not.toContain('Завершено');
     expect(html).not.toContain('grid-cols-[2rem_minmax(0,1fr)]');
     expect(html).not.toContain('bg-bg-secondary');
+    expect(html).toContain('data-scroll-area="true"');
+    expect(html).toContain('data-horizontal-scroll="false"');
     expect(html).not.toContain('reader.char_accepted');
     expect(html).not.toContain('reader.line_finished');
     expect(html).not.toContain('Системные события');
@@ -30,7 +49,7 @@ describe('ReaderResult', () => {
     const html = renderToStaticMarkup(<ReaderResult result={result} stale />);
 
     expect(html).toContain('Результат устарел');
-    expect(html).toContain('impulseA');
+    expect(html).toContain('Импульс А');
   });
 
   it('shows an empty state before the first run', () => {
