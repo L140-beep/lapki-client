@@ -281,15 +281,38 @@ export const Documentation: React.FC<DocumentationProps> = ({ width, onWidthChan
   }, [bothMounted, bothVisible, hasVisibleView, isOpen]);
 
   const rememberSplit = (layout: number[]) => {
-    if (bothVisible && layout[0] > 0 && layout[1] > 0) splitLayout.current = layout;
+    if (
+      bothVisible &&
+      layout[0] > collapsedSize + 0.01 &&
+      layout[1] > collapsedSize + 0.01
+    ) {
+      splitLayout.current = [layout[0], layout[1]];
+    }
   };
 
   const togglePanel = (view: 'documentation' | 'tasks') => {
     const panel = view === 'documentation' ? documentationPanelRef.current : tasksPanelRef.current;
     if (!panel) return;
 
-    if (panel.isCollapsed()) panel.expand();
-    else panel.collapse();
+    const isCollapsed =
+      view === 'documentation' ? isDocumentationCollapsed : isTasksCollapsed;
+    const otherPanel =
+      view === 'documentation' ? tasksPanelRef.current : documentationPanelRef.current;
+    const isOtherPanelCollapsed =
+      view === 'documentation' ? isTasksCollapsed : isDocumentationCollapsed;
+    const panelIndex = view === 'documentation' ? 0 : 1;
+    const otherPanelIndex = panelIndex === 0 ? 1 : 0;
+
+    if (isCollapsed) {
+      panel.resize(splitLayout.current[panelIndex]);
+      return;
+    }
+
+    if (isOtherPanelCollapsed) {
+      otherPanel?.resize(splitLayout.current[otherPanelIndex]);
+    }
+
+    panel.collapse();
   };
 
   return (
